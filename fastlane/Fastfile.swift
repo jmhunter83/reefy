@@ -10,7 +10,7 @@ import Foundation
 
 class Fastfile: LaneFile {
     
-    private let swiftfinBundleIdentifier = "org.jellyfin.swiftfin"
+    private let swiftfinBundleIdentifier = "org.jellyfin.swiftfin.tvos"
     private let swiftfinXcodeProject = "Swiftfin.xcodeproj"
     
     // MARK: TestFlight
@@ -97,7 +97,7 @@ class Fastfile: LaneFile {
         )
         
         uploadToTestflight(
-            ipa: "Swiftfin iOS.ipa"
+            ipa: "Swiftfin tvOS.ipa"
         )
     }
     

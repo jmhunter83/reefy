@@ -51,39 +51,70 @@ extension VideoPlayer {
         }
 
         @ViewBuilder
-        private var bottomContent: some View {
+        private var titleOverlay: some View {
             if !isPresentingSupplement {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(manager.item.displayTitle)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.5), radius: 8)
 
-                NavigationBar()
-                    .focusSection()
-                    .isVisible(isScrubbing || isPresentingOverlay)
+                    if let year = manager.item.premiereDateYear {
+                        Text(year)
+                            .font(.title3)
+                            .foregroundStyle(.white.opacity(0.8))
+                            .shadow(color: .black.opacity(0.5), radius: 8)
+                    }
+                }
+                .padding(.leading, 80)
+                .padding(.top, 60)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .isVisible(isScrubbing || isPresentingOverlay)
+            }
+        }
 
-                PlaybackProgress()
-                    .focusGuide(focusGuide, tag: "playbackProgress")
-                    .isVisible(isScrubbing || isPresentingOverlay)
+        @ViewBuilder
+        private var transportBar: some View {
+            if !isPresentingSupplement {
+                VStack(spacing: 16) {
+                    // Action buttons row - right aligned, small icons
+                    HStack {
+                        Spacer()
+
+                        NavigationBar.ActionButtons()
+                            .focusSection()
+                    }
+                    .focusGuide(focusGuide, tag: "actionButtons")
+
+                    // Progress bar with time labels
+                    PlaybackProgress()
+                        .focusGuide(focusGuide, tag: "playbackProgress")
+                }
+                .padding(.horizontal, 60)
+                .padding(.vertical, 30)
+                .background {
+                    TransportBarBackground()
+                }
             }
         }
 
         var body: some View {
             GeometryReader { geometry in
-                VStack {
-                    // Push content to bottom of screen
-                    Spacer()
-                        .frame(minHeight: geometry.size.height * 0.85)
+                ZStack {
+                    // Title in top-left
+                    titleOverlay
 
-                    bottomContent
-                        .padding(.horizontal, 60)
-                        .padding(.bottom, 40)
-                        .background(alignment: .bottom) {
-                            LinearGradient(
-                                colors: [.clear, .black.opacity(0.8)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                            .frame(height: geometry.size.height * 0.35)
+                    // Transport bar in bottom 15%
+                    VStack {
+                        Spacer()
+                            .frame(minHeight: geometry.size.height * 0.85)
+
+                        transportBar
+                            .padding(.horizontal, 40)
+                            .padding(.bottom, 60)
                             .isVisible(isScrubbing || isPresentingOverlay)
-                            .animation(.linear(duration: 0.25), value: isPresentingOverlay)
-                        }
+                    }
                 }
             }
             .animation(.linear(duration: 0.1), value: isScrubbing)

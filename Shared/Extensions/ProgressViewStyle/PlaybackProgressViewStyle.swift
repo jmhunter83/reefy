@@ -34,17 +34,17 @@ struct PlaybackProgressViewStyle: ProgressViewStyle {
             )
             .frame(width: max(contentSize.height, contentSize.width * clampedProgress))
             .shadow(
-                color: isPrimary ? Color.white.opacity(0.3) : Color.clear,
-                radius: isPrimary ? 8 : 0,
+                color: isPrimary ? Color.white.opacity(0.5) : Color.clear,
+                radius: isPrimary ? 4 : 0,
                 y: 0
             )
     }
 
     func makeBody(configuration: Configuration) -> some View {
         ZStack(alignment: .leading) {
-            // Background track - solid dark color to avoid color bleed from video
+            // Background track - native pill style
             Capsule()
-                .fill(Color.white.opacity(0.2))
+                .fill(Color.white.opacity(0.25))
 
             // Secondary progress (buffered)
             if let secondaryProgress, secondaryProgress > 0 {

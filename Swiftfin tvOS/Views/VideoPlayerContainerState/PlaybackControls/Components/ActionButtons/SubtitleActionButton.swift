@@ -58,6 +58,9 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
                         }
                     }
                 }
+                #if os(tvOS)
+                .menuStyle(.automatic)
+                #endif
                 .videoPlayerActionButtonTransition()
                 .assign(playbackItem.$selectedSubtitleStreamIndex, to: $selectedSubtitleStreamIndex)
             }

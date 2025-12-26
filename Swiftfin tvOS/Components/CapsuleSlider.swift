@@ -51,6 +51,6 @@ private struct CapsuleSliderContent: SliderContentView {
     var body: some View {
         ProgressView(value: sliderState.value, total: sliderState.total)
             .progressViewStyle(PlaybackProgressViewStyle(cornerStyle: .round))
-            .frame(height: 30)
+            .frame(height: 8)
     }
 }

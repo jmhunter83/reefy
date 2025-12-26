@@ -120,7 +120,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             .menuStyle(.button)
             .labelStyle(.iconOnly)
             .buttonBorderShape(.circle)
-            .buttonStyle(.plain)
+            .buttonStyle(TransportBarButtonStyle())
         }
     }
 }

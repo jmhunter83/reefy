@@ -1,6 +1,6 @@
 <div align="center">
 
-# atv-fin
+# atvfin
 
 **A tvOS-focused Jellyfin client**
 
@@ -15,7 +15,7 @@
 
 ## About
 
-**atv-fin** is a native Jellyfin media client built exclusively for Apple TV. It uses VLC for direct playback and is designed to feel native on tvOS.
+**atvfin** is a native Jellyfin media client built exclusively for Apple TV. It uses VLC for direct playback and is designed to feel native on tvOS.
 
 This project focuses purely on the tvOS experience — no iOS, just Apple TV.
 

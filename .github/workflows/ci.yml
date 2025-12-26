@@ -15,20 +15,12 @@ jobs:
   build:
     name: "Build 🔨"
     if: github.event.pull_request.draft == false
-    strategy:
-      matrix:
-        scheme:
-          - "Swiftfin"
-          - "Swiftfin tvOS"
-
     runs-on: macos-15
 
     env:
       XCODE_VERSION: "16.4"
-      IOS_VERSION: "18"
       TVOS_VERSION: "18"
       TVOS_SIMULATOR: "Apple TV 4K"
-      IPHONE_SIMULATOR: "iPhone 16 Pro"
 
     steps:    
       - name: Checkout
@@ -48,15 +40,6 @@ jobs:
       - name: Update Carthage
         run: carthage update --use-xcframeworks --cache-builds
 
-      # FIXME: caches would keep failed compiles?
-
-      # - name: Cache Swift packages
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: PackageCache
-      #     key: ${{ runner.os }}-${{ matrix.scheme }}-spm-${{ hashFiles('**/Package.resolved') }}
-      #     restore-keys: ${{ runner.os }}-${{ matrix.scheme }}-spm-
-
       - name: Build
         uses: nick-fields/retry@v2
         with:
@@ -64,5 +47,5 @@ jobs:
           retry_on: error
           timeout_minutes: 60
           command: sudo fastlane buildLane \
-            scheme:"\"${{ matrix.scheme }}\"" \
+            scheme:"\"Swiftfin tvOS\"" \
             xcodeVersion:${{ env.XCODE_VERSION }}
