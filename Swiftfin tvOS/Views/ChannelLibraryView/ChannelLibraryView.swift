@@ -27,7 +27,7 @@ struct ChannelLibraryView: View {
         ) { channel in
             WideChannelGridItem(channel: channel)
                 .onSelect {
-                    guard let mediaSource = channel.channel.mediaSources?.first else { return }
+                    guard channel.channel.mediaSources?.first != nil else { return }
 //                    router.route(
 //                        to: \.liveVideoPlayer,
 //                        LiveVideoPlayerManager(item: channel.channel, mediaSource: mediaSource)

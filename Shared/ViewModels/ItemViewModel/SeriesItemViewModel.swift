@@ -31,7 +31,7 @@ final class SeriesItemViewModel: ItemViewModel {
 
         switch action {
         case .backgroundRefresh, .refresh:
-            let parentState = super.respond(to: action)
+            _ = super.respond(to: action)
 
             seriesItemTask?.cancel()
 

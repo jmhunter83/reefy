@@ -98,7 +98,7 @@ struct Marquee<Content>: View where Content: View {
 
                     initializeAnimation(proxy: proxy)
                 }
-                .onChange(of: proxy.size.width) { _ in
+                .onChange(of: proxy.size.width) { _, _ in
                     guard !isAppear, proxy.size.width != .zero else {
                         return
                     }
@@ -108,13 +108,13 @@ struct Marquee<Content>: View where Content: View {
                 .onDisappear {
                     self.isAppear = false
                 }
-                .onChange(of: isFocused) { newFocused in
+                .onChange(of: isFocused) { _, newFocused in
                     resetAnimation(proxy: proxy, isFocused: newFocused)
                 }
-                .onChange(of: speed) { newSpeed in
+                .onChange(of: speed) { _, newSpeed in
                     resetAnimation(proxy: proxy, speed: newSpeed)
                 }
-                .onChange(of: delay) { newDelay in
+                .onChange(of: delay) { _, newDelay in
                     resetAnimation(proxy: proxy, delay: newDelay)
                 }
             }

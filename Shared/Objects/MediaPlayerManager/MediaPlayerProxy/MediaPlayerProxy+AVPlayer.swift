@@ -75,17 +75,23 @@ class AVMediaPlayerProxy: VideoMediaPlayerProxy {
         self.player = AVPlayer()
         self.avPlayerLayer = AVPlayerLayer(player: player)
 
+        // Capture bindings before closure to avoid main-actor isolation issues
+        let isScrubbing = self.isScrubbing
+        let scrubbedSeconds = self.scrubbedSeconds
+
         timeObserver = player.addPeriodicTimeObserver(
             forInterval: CMTime(seconds: 1, preferredTimescale: 1000),
             queue: .main
-        ) { newTime in
-            let newSeconds = Duration.seconds(newTime.seconds)
+        ) { [weak self] newTime in
+            MainActor.assumeIsolated {
+                let newSeconds = Duration.seconds(newTime.seconds)
 
-            if !self.isScrubbing.wrappedValue {
-                self.scrubbedSeconds.wrappedValue = newSeconds
+                if !isScrubbing.wrappedValue {
+                    scrubbedSeconds.wrappedValue = newSeconds
+                }
+
+                self?.manager?.seconds = newSeconds
             }
-
-            self.manager?.seconds = newSeconds
         }
     }
 
@@ -157,12 +163,14 @@ extension AVMediaPlayerProxy {
     }
 
     private func playNew(item: MediaPlayerItem) {
-        let baseItem = item.baseItem
-
         let newAVPlayerItem = AVPlayerItem(url: item.url)
         newAVPlayerItem.externalMetadata = item.baseItem.avMetadata
 
         player.replaceCurrentItem(with: newAVPlayerItem)
+
+        // Extract values from baseItem before closure to avoid capturing non-Sendable type
+        let baseItemStartSeconds = item.baseItem.startSeconds
+        let resumeOffset = Defaults[.VideoPlayer.resumeOffset]
 
         // TODO: protect against paused
 //        rateObserver = player.observe(\.rate, options: [.new, .initial]) { _, value in
@@ -198,7 +206,7 @@ extension AVMediaPlayerProxy {
                     }
                 }
             case .none, .readyToPlay, .unknown:
-                let startSeconds = max(.zero, (baseItem.startSeconds ?? .zero) - Duration.seconds(Defaults[.VideoPlayer.resumeOffset]))
+                let startSeconds = max(.zero, (baseItemStartSeconds ?? .zero) - Duration.seconds(resumeOffset))
 
                 self.player.seek(
                     to: CMTimeMake(
@@ -208,7 +216,9 @@ extension AVMediaPlayerProxy {
                     toleranceBefore: .zero,
                     toleranceAfter: .zero,
                     completionHandler: { _ in
-                        self.play()
+                        DispatchQueue.main.async {
+                            self.play()
+                        }
                     }
                 )
             @unknown default: ()

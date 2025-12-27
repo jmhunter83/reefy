@@ -24,7 +24,7 @@ struct PlaybackProgressViewStyle: ProgressViewStyle {
     @ViewBuilder
     private func buildProgressFill(for progress: Double, isPrimary: Bool) -> some View {
         let clampedProgress = clamp(progress, min: 0, max: 1)
-        let cornerRadius = cornerStyle == .round ? contentSize.height / 2 : 0
+        // cornerRadius computation removed - value was never used
 
         Capsule()
             .fill(

@@ -12,6 +12,7 @@ import JellyfinAPI
 import SwiftUI
 import VLCUI
 
+@MainActor
 class VLCMediaPlayerProxy: VideoMediaPlayerProxy,
     MediaPlayerOffsetConfigurable,
     MediaPlayerSubtitleConfigurable

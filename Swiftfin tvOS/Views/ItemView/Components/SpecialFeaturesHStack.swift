@@ -24,7 +24,7 @@ extension ItemView {
                 type: .landscape,
                 items: items
             ) { item in
-                guard let mediaSource = item.mediaSources?.first else { return }
+                guard item.mediaSources?.first != nil else { return }
 //                router.route(
 //                    to: .videoPlayer(manager: OnlineVideoPlayerManager(item: item, mediaSource: mediaSource))
 //                )

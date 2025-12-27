@@ -16,6 +16,7 @@ import SwiftUI
 
 /// The proxy for top-down communication to an
 /// underlying media player
+@MainActor
 protocol MediaPlayerProxy: ObservableObject, MediaPlayerObserver {
 
     var isBuffering: PublishedBox<Bool> { get }
