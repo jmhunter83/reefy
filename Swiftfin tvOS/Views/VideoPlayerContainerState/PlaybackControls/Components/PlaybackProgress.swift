@@ -42,6 +42,10 @@ extension VideoPlayer.PlaybackControls {
         @State
         private var previewImageTask: Task<Void, Never>?
 
+        /// Used to validate task currency after async operations to prevent race conditions
+        @State
+        private var previewTaskID: UUID = UUID()
+
         private var isScrubbing: Bool {
             get {
                 containerState.isScrubbing
@@ -211,10 +215,16 @@ extension VideoPlayer.PlaybackControls {
             .onChange(of: scrubbedSeconds) { _, newSeconds in
                 guard isScrubbing else { return }
                 previewImageTask?.cancel()
+
+                // Generate new task ID to validate after async operation
+                let currentTaskID = UUID()
+                previewTaskID = currentTaskID
+
                 previewImageTask = Task {
-                    guard !Task.isCancelled else { return }
+                    guard !Task.isCancelled, currentTaskID == previewTaskID else { return }
                     let image = await manager.playbackItem?.previewImageProvider?.image(for: newSeconds)
-                    guard !Task.isCancelled else { return }
+                    // Validate task is still current after await to prevent race condition
+                    guard !Task.isCancelled, currentTaskID == previewTaskID else { return }
                     previewImage = image
                 }
             }

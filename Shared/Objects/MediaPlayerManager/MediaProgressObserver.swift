@@ -111,19 +111,23 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
         #endif
 
         Task {
-            var info = PlaybackStartInfo()
-            info.audioStreamIndex = item.selectedAudioStreamIndex
-            info.itemID = item.baseItem.id
-            info.mediaSourceID = item.mediaSource.id
-            info.playSessionID = item.playSessionID
-            info.positionTicks = seconds?.ticks
-            info.sessionID = item.playSessionID
-            info.subtitleStreamIndex = item.selectedSubtitleStreamIndex
+            do {
+                var info = PlaybackStartInfo()
+                info.audioStreamIndex = item.selectedAudioStreamIndex
+                info.itemID = item.baseItem.id
+                info.mediaSourceID = item.mediaSource.id
+                info.playSessionID = item.playSessionID
+                info.positionTicks = seconds?.ticks
+                info.sessionID = item.playSessionID
+                info.subtitleStreamIndex = item.selectedSubtitleStreamIndex
 
-            let request = Paths.reportPlaybackStart(info)
-            let _ = try await userSession.client.send(request)
+                let request = Paths.reportPlaybackStart(info)
+                _ = try await userSession.client.send(request)
 
-            self.hasSentStart = true
+                self.hasSentStart = true
+            } catch {
+                logger.error("Failed to send playback start report: \(error.localizedDescription)")
+            }
         }
     }
 
@@ -134,14 +138,18 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
         #endif
 
         Task {
-            var info = PlaybackStopInfo()
-            info.itemID = item.baseItem.id
-            info.mediaSourceID = item.mediaSource.id
-            info.positionTicks = seconds?.ticks
-            info.sessionID = item.playSessionID
+            do {
+                var info = PlaybackStopInfo()
+                info.itemID = item.baseItem.id
+                info.mediaSourceID = item.mediaSource.id
+                info.positionTicks = seconds?.ticks
+                info.sessionID = item.playSessionID
 
-            let request = Paths.reportPlaybackStopped(info)
-            let _ = try await userSession.client.send(request)
+                let request = Paths.reportPlaybackStopped(info)
+                _ = try await userSession.client.send(request)
+            } catch {
+                logger.error("Failed to send playback stop report: \(error.localizedDescription)")
+            }
         }
     }
 
@@ -152,18 +160,23 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
         #endif
 
         Task {
-            var info = PlaybackProgressInfo()
-            info.audioStreamIndex = item.selectedAudioStreamIndex
-            info.isPaused = isPaused
-            info.itemID = item.baseItem.id
-            info.mediaSourceID = item.mediaSource.id
-            info.playSessionID = item.playSessionID
-            info.positionTicks = seconds?.ticks
-            info.sessionID = item.playSessionID
-            info.subtitleStreamIndex = item.selectedSubtitleStreamIndex
+            do {
+                var info = PlaybackProgressInfo()
+                info.audioStreamIndex = item.selectedAudioStreamIndex
+                info.isPaused = isPaused
+                info.itemID = item.baseItem.id
+                info.mediaSourceID = item.mediaSource.id
+                info.playSessionID = item.playSessionID
+                info.positionTicks = seconds?.ticks
+                info.sessionID = item.playSessionID
+                info.subtitleStreamIndex = item.selectedSubtitleStreamIndex
 
-            let request = Paths.reportPlaybackProgress(info)
-            let _ = try await userSession.client.send(request)
+                let request = Paths.reportPlaybackProgress(info)
+                _ = try await userSession.client.send(request)
+            } catch {
+                // Don't log progress errors at error level - they're frequent and expected during network issues
+                logger.warning("Failed to send playback progress report: \(error.localizedDescription)")
+            }
         }
     }
 

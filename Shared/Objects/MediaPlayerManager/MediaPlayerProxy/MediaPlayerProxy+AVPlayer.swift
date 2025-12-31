@@ -169,6 +169,12 @@ class AVMediaPlayerProxy: VideoMediaPlayerProxy {
     }
 
     deinit {
+        // CRITICAL: Remove time observer synchronously before deallocation
+        // Apple docs: "You must remove the time observer before deallocating the player"
+        if let timeObserver {
+            player.removeTimeObserver(timeObserver)
+        }
+
         statusObserver?.invalidate()
         timeControlStatusObserver?.invalidate()
         managerItemObserver?.cancel()
@@ -181,11 +187,10 @@ extension AVMediaPlayerProxy {
     private func playbackStopped() {
         player.pause()
 
+        // Remove time observer synchronously - async dispatch may not execute before deallocation
         if let timeObserver {
-            DispatchQueue.main.async {
-                self.player.removeTimeObserver(timeObserver)
-                self.timeObserver = nil
-            }
+            player.removeTimeObserver(timeObserver)
+            self.timeObserver = nil
         }
 
         if let statusObserver {
@@ -222,10 +227,11 @@ extension AVMediaPlayerProxy {
 //            }
 //        }
 
-        timeControlStatusObserver = player.observe(\.timeControlStatus, options: [.new, .initial]) { player, _ in
+        timeControlStatusObserver = player.observe(\.timeControlStatus, options: [.new, .initial]) { [weak self] player, _ in
             let timeControlStatus = player.timeControlStatus
 
-            DispatchQueue.main.async {
+            Task { @MainActor in
+                guard let self else { return }
                 switch timeControlStatus {
                 case .waitingToPlayAtSpecifiedRate:
                     self.isBuffering.value = true
@@ -241,12 +247,12 @@ extension AVMediaPlayerProxy {
         }
 
         // TODO: proper handling of none/unknown states
-        statusObserver = player.observe(\.currentItem?.status, options: [.new, .initial]) { _, value in
-            guard let newValue = value.newValue else { return }
+        statusObserver = player.observe(\.currentItem?.status, options: [.new, .initial]) { [weak self] _, value in
+            guard let self, let newValue = value.newValue else { return }
             switch newValue {
             case .failed:
                 if let error = self.player.error {
-                    DispatchQueue.main.async {
+                    Task { @MainActor in
                         self.manager?.error(ErrorMessage("AVPlayer error: \(error.localizedDescription)"))
                     }
                 }
@@ -260,9 +266,9 @@ extension AVMediaPlayerProxy {
                     ),
                     toleranceBefore: .zero,
                     toleranceAfter: .zero,
-                    completionHandler: { _ in
-                        DispatchQueue.main.async {
-                            self.play()
+                    completionHandler: { [weak self] _ in
+                        Task { @MainActor in
+                            self?.play()
                         }
                     }
                 )
