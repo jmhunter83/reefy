@@ -73,16 +73,36 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
         }
     }
 
-    static let defaultBarActionButtons: [VideoPlayerActionButton] = [
-        .aspectFill,
-        .autoPlay,
-        .playPreviousItem,
-        .playNextItem,
-    ]
+    static let defaultBarActionButtons: [VideoPlayerActionButton] = {
+        #if os(tvOS)
+        return [
+            .subtitles,
+            .audio,
+            .playPreviousItem,
+            .playNextItem,
+        ]
+        #else
+        return [
+            .aspectFill,
+            .autoPlay,
+            .playPreviousItem,
+            .playNextItem,
+        ]
+        #endif
+    }()
 
-    static let defaultMenuActionButtons: [VideoPlayerActionButton] = [
-        .audio,
-        .subtitles,
-        .playbackSpeed,
-    ]
+    static let defaultMenuActionButtons: [VideoPlayerActionButton] = {
+        #if os(tvOS)
+        return [
+            .autoPlay,
+            .playbackSpeed,
+        ]
+        #else
+        return [
+            .audio,
+            .subtitles,
+            .playbackSpeed,
+        ]
+        #endif
+    }()
 }
