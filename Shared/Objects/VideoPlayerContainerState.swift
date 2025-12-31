@@ -10,11 +10,45 @@ import Combine
 import Foundation
 import SwiftUI
 
+// MARK: - State Enums (Phase 3.1)
+
+/// Overlay visibility state
+enum OverlayVisibility {
+    case hidden
+    case visible
+    case locked // gestures locked, overlay hidden
+}
+
+/// Supplement panel state
+enum SupplementVisibility {
+    case closed
+    case open
+}
+
+/// Scrubbing state
+enum ScrubState {
+    case idle
+    case scrubbing
+}
+
 // TODO: turned into spaghetti to get out, clean up with a better state system
 // TODO: verify timer states
 
 @MainActor
 class VideoPlayerContainerState: ObservableObject {
+
+    // MARK: - New enum-based state (Phase 3.1 - coexists with booleans during migration)
+
+    @Published
+    var overlayState: OverlayVisibility = .hidden
+
+    @Published
+    var supplementState: SupplementVisibility = .closed
+
+    @Published
+    var scrubState: ScrubState = .idle
+
+    // MARK: - Legacy boolean state (will be deprecated after migration)
 
     @Published
     var isAspectFilled: Bool = false
@@ -24,6 +58,9 @@ class VideoPlayerContainerState: ObservableObject {
         didSet {
             if isGestureLocked {
                 isPresentingOverlay = false
+                overlayState = .locked
+            } else if !isPresentingOverlay {
+                overlayState = .hidden
             }
         }
     }
@@ -74,6 +111,13 @@ class VideoPlayerContainerState: ObservableObject {
         didSet {
             setPlaybackControlsVisibility()
 
+            // Sync enum state (Phase 3.1)
+            if isGestureLocked {
+                overlayState = .locked
+            } else {
+                overlayState = isPresentingOverlay ? .visible : .hidden
+            }
+
             if isPresentingOverlay, !isPresentingSupplement {
                 timer.poke()
             }
@@ -85,6 +129,9 @@ class VideoPlayerContainerState: ObservableObject {
         didSet {
             setPlaybackControlsVisibility()
             presentationControllerShouldDismiss = !isPresentingSupplement
+
+            // Sync enum state (Phase 3.1)
+            supplementState = isPresentingSupplement ? .open : .closed
 
             if isPresentingSupplement {
                 timer.stop()
@@ -98,6 +145,9 @@ class VideoPlayerContainerState: ObservableObject {
     @Published
     var isScrubbing: Bool = false {
         didSet {
+            // Sync enum state (Phase 3.1)
+            scrubState = isScrubbing ? .scrubbing : .idle
+
             if isScrubbing {
                 timer.stop()
             } else {

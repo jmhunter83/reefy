@@ -90,18 +90,37 @@ extension VideoPlayer.PlaybackControls {
             }
         }
 
+        @State
+        private var isPulsing = false
+
         @ViewBuilder
         private var liveIndicator: some View {
-            Text("Live")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 4)
-                .background {
-                    Capsule()
-                        .fill(Color.gray)
-                }
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(Color.red)
+                    .frame(width: 8, height: 8)
+                    .scaleEffect(isPulsing ? 1.2 : 0.8)
+                    .opacity(isPulsing ? 1.0 : 0.6)
+                    .animation(
+                        .easeInOut(duration: 0.8)
+                            .repeatForever(autoreverses: true),
+                        value: isPulsing
+                    )
+
+                Text("Live")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background {
+                Capsule()
+                    .fill(Color.gray.opacity(0.3))
+            }
+            .onAppear {
+                isPulsing = true
+            }
         }
 
         @ViewBuilder
