@@ -9,13 +9,35 @@
 import SwiftUI
 
 /// Button style for transport bar action buttons
-/// Uses glass effect on tvOS 18+ with press state feedback
-/// Note: @Environment(\.isFocused) doesn't work reliably in ButtonStyle,
-/// so we use configuration.isPressed for interaction feedback and show
-/// a subtle background always to indicate interactivity.
+/// Uses Liquid Glass on tvOS 26+, materials on tvOS 18+, with press feedback
 struct TransportBarButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
+        #if os(tvOS)
+        if #available(tvOS 26.0, *) {
+            // tvOS 26+ Liquid Glass buttons
+            configuration.label
+                .font(.title3)
+                .fontWeight(.medium)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .glassEffect(
+                    configuration.isPressed ? .regular.interactive() : .regular,
+                    in: .capsule
+                )
+                .scaleEffect(configuration.isPressed ? 1.1 : 1.0)
+                .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
+        } else {
+            legacyButton(configuration: configuration)
+        }
+        #else
+        legacyButton(configuration: configuration)
+        #endif
+    }
+
+    @ViewBuilder
+    private func legacyButton(configuration: Configuration) -> some View {
         configuration.label
             .font(.title3)
             .foregroundStyle(.white)
@@ -24,8 +46,12 @@ struct TransportBarButtonStyle: ButtonStyle {
                 #if os(tvOS)
                 if #available(tvOS 18.0, *) {
                     Capsule()
-                        .fill(.regularMaterial)
-                        .opacity(configuration.isPressed ? 1.0 : 0.5)
+                        .fill(.ultraThinMaterial)
+                        .opacity(configuration.isPressed ? 1.0 : 0.6)
+                        .overlay {
+                            Capsule()
+                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                        }
                 } else {
                     Capsule()
                         .fill(.white.opacity(configuration.isPressed ? 0.5 : 0.2))

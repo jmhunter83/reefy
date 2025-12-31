@@ -24,7 +24,6 @@ struct PlaybackProgressViewStyle: ProgressViewStyle {
     @ViewBuilder
     private func buildProgressFill(for progress: Double, isPrimary: Bool) -> some View {
         let clampedProgress = clamp(progress, min: 0, max: 1)
-        // cornerRadius computation removed - value was never used
 
         Capsule()
             .fill(
@@ -34,17 +33,32 @@ struct PlaybackProgressViewStyle: ProgressViewStyle {
             )
             .frame(width: max(contentSize.height, contentSize.width * clampedProgress))
             .shadow(
-                color: isPrimary ? Color.white.opacity(0.5) : Color.clear,
-                radius: isPrimary ? 4 : 0,
+                color: isPrimary ? Color.white.opacity(0.6) : Color.clear,
+                radius: isPrimary ? 6 : 0,
                 y: 0
             )
     }
 
     func makeBody(configuration: Configuration) -> some View {
         ZStack(alignment: .leading) {
-            // Background track - native pill style
+            // Background track with glass effect on tvOS 26+
+            #if os(tvOS)
+            if #available(tvOS 26.0, *) {
+                Capsule()
+                    .fill(.clear)
+                    .glassEffect(.clear, in: .capsule)
+            } else {
+                Capsule()
+                    .fill(Color.white.opacity(0.2))
+                    .overlay {
+                        Capsule()
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    }
+            }
+            #else
             Capsule()
                 .fill(Color.white.opacity(0.25))
+            #endif
 
             // Secondary progress (buffered)
             if let secondaryProgress, secondaryProgress > 0 {

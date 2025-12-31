@@ -84,6 +84,7 @@ private struct PlatformForm<Image: View, Content: View>: PlatformView {
             .backport
             .scrollClipDisabled()
         }
+        .background(Color.black.ignoresSafeArea())
     }
 
     @ViewBuilder

@@ -85,6 +85,7 @@ struct NavigationInjectionView: View {
             NavigationInjectionView(coordinator: newCoordinator) {
                 route.destination
             }
+            .background(Color.black.ignoresSafeArea())
         }
         #else
         .presentation(
@@ -137,6 +138,7 @@ private struct TVSheetPresentationModifier: ViewModifier {
                     NavigationInjectionView(coordinator: newCoordinator) {
                         route.destination
                     }
+                    .background(Color.black.ignoresSafeArea())
                 }
         } else {
             content
@@ -148,7 +150,7 @@ private struct TVSheetPresentationModifier: ViewModifier {
                     NavigationInjectionView(coordinator: newCoordinator) {
                         route.destination
                     }
-                    .background(.regularMaterial)
+                    .background(Color.black.ignoresSafeArea())
                 }
         }
     }
