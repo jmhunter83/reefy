@@ -17,7 +17,6 @@ import SwiftUI
 //       observers to AVPlayerView, like the VLC delegate
 //       - wouldn't need to have MediaPlayerProxy: MediaPlayerObserver
 // TODO: report playback information, see VLCUI.PlaybackInformation (dropped frames, etc.)
-// TODO: report buffering state
 // TODO: have set seconds with completion handler
 
 @MainActor
@@ -124,10 +123,41 @@ class AVMediaPlayerProxy: VideoMediaPlayerProxy {
         player.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
-    // TODO: complete
-    func setRate(_ rate: Float) {}
-    func setAudioStream(_ stream: MediaStream) {}
-    func setSubtitleStream(_ stream: MediaStream) {}
+    func setRate(_ rate: Float) {
+        player.rate = rate
+    }
+
+    func setAudioStream(_ stream: MediaStream) {
+        guard let playerItem = player.currentItem else { return }
+        guard let group = playerItem.asset.mediaSelectionGroup(forMediaCharacteristic: .audible) else { return }
+
+        // Find matching option by index
+        if let index = stream.index {
+            let options = group.options
+            if index >= 0, index < options.count {
+                playerItem.select(options[index], in: group)
+            }
+        }
+    }
+
+    func setSubtitleStream(_ stream: MediaStream) {
+        guard let playerItem = player.currentItem else { return }
+        guard let group = playerItem.asset.mediaSelectionGroup(forMediaCharacteristic: .legible) else { return }
+
+        // Handle "Off" (index -1)
+        if stream.index == -1 {
+            playerItem.select(nil, in: group)
+            return
+        }
+
+        // Find matching option by index
+        if let index = stream.index {
+            let options = group.options
+            if index < options.count {
+                playerItem.select(options[index], in: group)
+            }
+        }
+    }
 
     func setAspectFill(_ aspectFill: Bool) {
         avPlayerLayer.videoGravity = aspectFill ? .resizeAspectFill : .resizeAspect
@@ -197,12 +227,14 @@ extension AVMediaPlayerProxy {
 
             DispatchQueue.main.async {
                 switch timeControlStatus {
-                case .paused:
-                    self.manager?.setPlaybackRequestStatus(status: .paused)
-                case .waitingToPlayAtSpecifiedRate: ()
-                // TODO: buffering
+                case .waitingToPlayAtSpecifiedRate:
+                    self.isBuffering.value = true
                 case .playing:
+                    self.isBuffering.value = false
                     self.manager?.setPlaybackRequestStatus(status: .playing)
+                case .paused:
+                    self.isBuffering.value = false
+                    self.manager?.setPlaybackRequestStatus(status: .paused)
                 @unknown default: ()
                 }
             }
