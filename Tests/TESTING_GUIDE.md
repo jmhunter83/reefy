@@ -18,14 +18,14 @@ Tests/
 ## Running Tests
 
 ### Via Xcode
-1. Open `Swiftfin.xcodeproj`
+1. Open `Swiftfin.xcodeproj` (Note: Update to actual project file name)
 2. Select the test scheme
 3. Press `Cmd+U` to run all tests
 4. Press `Cmd+Control+Option+U` to run tests with code coverage
 
 ### Via Command Line
 ```bash
-# Run all tests
+# Run all tests (update scheme name to match your project)
 xcodebuild test -scheme "Swiftfin tvOS" -destination "platform=tvOS Simulator,name=Apple TV 4K"
 
 # Run specific test class

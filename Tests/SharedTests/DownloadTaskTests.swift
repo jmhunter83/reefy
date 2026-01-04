@@ -7,7 +7,9 @@
 //
 
 import XCTest
-@testable import Swiftfin_tvOS
+// NOTE: Update the module name below to match your actual tvOS target name
+// @testable import Swiftfin_tvOS
+// For atvfin project, this might be different. Check your target name in Xcode.
 
 /// Example unit tests for DownloadTask
 /// 

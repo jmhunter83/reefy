@@ -78,10 +78,14 @@ identifier_name:
     - y
 
 # Force unwrapping - warning only for now, gradually fix
+# TODO: Escalate to error level after addressing existing force unwraps
+# Target: 6 months (by Q3 2025) - track progress in issue tracker
 force_unwrapping:
   severity: warning
 
 # Implicitly unwrapped optionals - warning only for now
+# TODO: Escalate to error level after refactoring dependency injection patterns
+# Target: 6 months (by Q3 2025) - track progress in issue tracker
 implicitly_unwrapped_optional:
   severity: warning
 
@@ -95,6 +99,8 @@ custom_rules:
     message: "Use logger instead of print statements"
     severity: warning
     
+  # NOTE: This rule may produce false positives for debug text or test strings
+  # Adjust as needed or disable for specific files using exclusions above
   no_hardcoded_strings:
     name: "No Hardcoded Localizable Strings"
     regex: 'Text\("(?!.*L10n\.)'
