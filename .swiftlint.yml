@@ -1,0 +1,124 @@
+# SwiftLint Configuration for atvfin
+# Version: 0.54.0+
+
+# Paths to exclude from linting
+excluded:
+  - Carthage
+  - fastlane
+  - Shared/Generated
+  - Shared/Strings/Strings.swift
+  - .build
+  - DerivedData
+  - Pods
+
+# Enabled rules
+opt_in_rules:
+  - explicit_init
+  - explicit_type_interface
+  - fatal_error_message
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - multiline_arguments
+  - multiline_parameters
+  - overridden_super_call
+  - redundant_nil_coalescing
+  - sorted_imports
+  - strict_fileprivate
+  - toggle_bool
+  - unused_import
+  - vertical_parameter_alignment_on_call
+
+# Disabled rules (to allow gradual adoption)
+disabled_rules:
+  - todo  # Allow TODOs for now, but track them separately
+  - trailing_whitespace  # Handled by SwiftFormat
+
+# Rule configurations
+line_length:
+  warning: 140
+  error: 160
+  ignores_function_declarations: false
+  ignores_comments: false
+  ignores_urls: true
+
+file_length:
+  warning: 500
+  error: 1000
+
+function_body_length:
+  warning: 50
+  error: 100
+
+type_body_length:
+  warning: 300
+  error: 500
+
+cyclomatic_complexity:
+  warning: 15
+  error: 25
+
+nesting:
+  type_level:
+    warning: 2
+  statement_level:
+    warning: 5
+
+identifier_name:
+  min_length:
+    warning: 2
+    error: 1
+  max_length:
+    warning: 50
+    error: 60
+  excluded:
+    - id
+    - URL
+    - i
+    - x
+    - y
+
+# Force unwrapping - warning only for now, gradually fix
+force_unwrapping:
+  severity: warning
+
+# Implicitly unwrapped optionals - warning only for now
+implicitly_unwrapped_optional:
+  severity: warning
+
+# Custom rules
+custom_rules:
+  no_print_statements:
+    name: "No Print Statements"
+    regex: '^\s*print\('
+    match_kinds:
+      - identifier
+    message: "Use logger instead of print statements"
+    severity: warning
+    
+  no_hardcoded_strings:
+    name: "No Hardcoded Localizable Strings"
+    regex: 'Text\("(?!.*L10n\.)'
+    message: "Use localized strings (L10n) instead of hardcoded text"
+    severity: warning
+
+# Reporter type
+reporter: "xcode"
+
+# Paths to include (if not specified, all Swift files are included)
+included:
+  - Shared
+  - Swiftfin tvOS
+  - PreferencesView/Sources
+
+# Allow these specific patterns
+force_cast: warning
+force_try: warning
+
+# Large tuple
+large_tuple:
+  warning: 3
+  error: 4
+
+# Vertical whitespace
+vertical_whitespace:
+  max_empty_lines: 2

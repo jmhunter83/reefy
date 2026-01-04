@@ -29,11 +29,15 @@ class DownloadManager: ObservableObject {
     }
 
     private func createDownloadDirectory() {
-
-        try? FileManager.default.createDirectory(
-            at: URL.downloads,
-            withIntermediateDirectories: true
-        )
+        do {
+            try FileManager.default.createDirectory(
+                at: URL.downloads,
+                withIntermediateDirectories: true
+            )
+            logger.trace("Created download directory at: \(URL.downloads.path)")
+        } catch {
+            logger.error("Failed to create download directory: \(error.localizedDescription)")
+        }
     }
 
     func clearTmp() {
@@ -59,10 +63,11 @@ class DownloadManager: ObservableObject {
             return currentlyDownloading
         } else {
             var isDir: ObjCBool = true
-            guard let downloadFolder = item.downloadFolder else { return nil }
+            guard let downloadFolder = item.downloadFolder,
+                  let itemID = item.id else { return nil }
             guard FileManager.default.fileExists(atPath: downloadFolder.path, isDirectory: &isDir) else { return nil }
 
-            return parseDownloadItem(with: item.id!)
+            return parseDownloadItem(with: itemID)
         }
     }
 

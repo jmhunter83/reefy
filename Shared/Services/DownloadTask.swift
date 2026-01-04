@@ -21,11 +21,17 @@ class DownloadTask: NSObject, ObservableObject {
     enum DownloadError: Error {
 
         case notEnoughStorage
+        case missingItemID
+        case encodingFailed
 
         var localizedDescription: String {
             switch self {
             case .notEnoughStorage:
                 return "Not enough storage"
+            case .missingItemID:
+                return "Item missing required ID"
+            case .encodingFailed:
+                return "Failed to encode item metadata"
             }
         }
     }
@@ -109,19 +115,29 @@ class DownloadTask: NSObject, ObservableObject {
         try? FileManager.default.removeItem(at: downloadFolder)
     }
 
-    func encodeMetadata() -> Data {
-        try! JSONEncoder().encode(item)
+    func encodeMetadata() throws -> Data {
+        do {
+            return try JSONEncoder().encode(item)
+        } catch {
+            logger.error("Failed to encode item metadata: \(error.localizedDescription)")
+            throw DownloadError.encodingFailed
+        }
     }
 
     private func downloadMedia() async throws {
 
         guard let downloadFolder = item.downloadFolder else { return }
+        
+        guard let itemID = item.id else {
+            logger.error("Item missing ID for download")
+            throw DownloadError.missingItemID
+        }
 
-        let request = Paths.getDownload(itemID: item.id!)
+        let request = Paths.getDownload(itemID: itemID)
         let response = try await userSession.client.download(for: request, delegate: self)
 
         let subtype = response.response.mimeSubtype
-        let mediaExtension = subtype == nil ? "" : ".\(subtype!)"
+        let mediaExtension = subtype.map { ".\($0)" } ?? ""
 
         do {
             try FileManager.default.createDirectory(at: downloadFolder, withIntermediateDirectories: true)
@@ -217,11 +233,11 @@ class DownloadTask: NSObject, ObservableObject {
         let jsonEncoder = JSONEncoder()
         jsonEncoder.outputFormatting = .prettyPrinted
 
-        let itemJsonData = try! jsonEncoder.encode(item)
-        let itemJson = String(data: itemJsonData, encoding: .utf8)
-        let itemFileURL = metadataFolder.appendingPathComponent("Item.json")
-
         do {
+            let itemJsonData = try jsonEncoder.encode(item)
+            let itemJson = String(data: itemJsonData, encoding: .utf8)
+            let itemFileURL = metadataFolder.appendingPathComponent("Item.json")
+
             try FileManager.default.createDirectory(at: metadataFolder, withIntermediateDirectories: true)
 
             try itemJson?.write(to: itemFileURL, atomically: true, encoding: .utf8)
