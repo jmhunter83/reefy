@@ -60,18 +60,28 @@ private struct CapsuleSliderContent: SliderContentView {
         VStack(spacing: 8) {
             // Skip mode indicator - shown when clicks detected
             if sliderState.isEditing {
-                HStack(spacing: 6) {
-                    Image(systemName: "forward.fill")
-                        .font(.system(size: 12, weight: .semibold))
-                    Text("SKIP READY")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                    Text("• Swipe left/right to skip")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    // Back arrow and time
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14, weight: .bold))
+                    Text(sliderState.currentSkipLabel)
+                        .font(.system(size: 16, weight: .bold, design: .monospaced))
+
+                    // Divider
+                    Text("|")
+                        .font(.system(size: 14, weight: .light))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .padding(.horizontal, 6)
+
+                    // Forward time and arrow
+                    Text(sliderState.currentSkipLabel)
+                        .font(.system(size: 16, weight: .bold, design: .monospaced))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .bold))
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
                 .background {
                     Capsule()
                         .fill(.ultraThinMaterial)

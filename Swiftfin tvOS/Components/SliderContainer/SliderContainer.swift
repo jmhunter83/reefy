@@ -158,7 +158,8 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
             clickCount = 3
         }
 
-        // Update editing state to show visual feedback
+        // Update state for visual feedback
+        containerState.clickCount = clickCount
         containerState.isEditing = true
         onEditingChanged(true)
 
@@ -170,6 +171,7 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
 
     private func resetClickState() {
         clickCount = 0
+        containerState.clickCount = 0
         containerState.isEditing = false
         onEditingChanged(false)
         clickResetTimer?.invalidate()
