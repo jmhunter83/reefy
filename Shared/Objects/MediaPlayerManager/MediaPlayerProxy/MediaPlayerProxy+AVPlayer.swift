@@ -104,6 +104,7 @@ class AVMediaPlayerProxy: VideoMediaPlayerProxy {
 
     func stop() {
         player.pause()
+        player.replaceCurrentItem(with: nil)
     }
 
     func jumpForward(_ seconds: Duration) {
@@ -186,6 +187,7 @@ extension AVMediaPlayerProxy {
 
     private func playbackStopped() {
         player.pause()
+        player.replaceCurrentItem(with: nil)
 
         // Remove time observer synchronously - async dispatch may not execute before deallocation
         if let timeObserver {
