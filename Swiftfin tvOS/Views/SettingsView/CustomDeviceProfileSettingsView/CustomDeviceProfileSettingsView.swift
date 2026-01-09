@@ -36,67 +36,60 @@ struct CustomDeviceProfileSettingsView: View {
     }
 
     var body: some View {
-        SplitFormWindowView()
-            .descriptionView {
-                Image(systemName: "doc.on.doc")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 400)
-            }
-            .contentView {
-                Section {
-                    ListRowMenu(L10n.behavior, selection: $customDeviceProfileAction)
-                } header: {
-                    Text(L10n.behavior)
-                } footer: {
-                    VStack(spacing: 8) {
-                        switch customDeviceProfileAction {
-                        case .add:
-                            Text(L10n.customDeviceProfileAdd)
-                        case .replace:
-                            Text(L10n.customDeviceProfileReplace)
-                        }
+        Form(systemImage: "doc.on.doc") {
+            Section {
+                ListRowMenu(L10n.behavior, selection: $customDeviceProfileAction)
+            } header: {
+                Text(L10n.behavior)
+            } footer: {
+                VStack(spacing: 8) {
+                    switch customDeviceProfileAction {
+                    case .add:
+                        Text(L10n.customDeviceProfileAdd)
+                    case .replace:
+                        Text(L10n.customDeviceProfileReplace)
+                    }
 
-                        if !isValid {
-                            Label(L10n.noDeviceProfileWarning, systemImage: "exclamationmark.circle.fill")
-                        }
+                    if !isValid {
+                        Label(L10n.noDeviceProfileWarning, systemImage: "exclamationmark.circle.fill")
+                    }
+                }
+            }
+
+            Section {
+                if customProfiles.isEmpty {
+                    Button(L10n.add) {
+                        router.route(to: .createCustomDeviceProfile)
                     }
                 }
 
-                Section {
-                    if customProfiles.isEmpty {
+                List {
+                    ForEach($customProfiles, id: \.self) { $profile in
+                        CustomProfileButton(profile: profile) {
+                            router.route(to: .editCustomDeviceProfile(profile: $profile))
+                        }
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                deleteProfile(profile)
+                            } label: {
+                                Label(L10n.delete, systemImage: "trash")
+                            }
+                        }
+                    }
+                    .onDelete(perform: removeProfile)
+                }
+            } header: {
+                HStack {
+                    Text(L10n.profiles)
+                    Spacer()
+                    if customProfiles.isNotEmpty {
                         Button(L10n.add) {
                             router.route(to: .createCustomDeviceProfile)
                         }
                     }
-
-                    List {
-                        ForEach($customProfiles, id: \.self) { $profile in
-                            CustomProfileButton(profile: profile) {
-                                router.route(to: .editCustomDeviceProfile(profile: $profile))
-                            }
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    deleteProfile(profile)
-                                } label: {
-                                    Label(L10n.delete, systemImage: "trash")
-                                }
-                            }
-                        }
-                        .onDelete(perform: removeProfile)
-                    }
-                } header: {
-                    HStack {
-                        Text(L10n.profiles)
-                        Spacer()
-                        if customProfiles.isNotEmpty {
-                            Button(L10n.add) {
-                                router.route(to: .createCustomDeviceProfile)
-                            }
-                        }
-                    }
                 }
             }
-            .navigationTitle(L10n.profiles)
+        }
+        .navigationTitle(L10n.profiles)
     }
 }

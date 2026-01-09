@@ -14,6 +14,21 @@ struct SplitFormWindowView: View {
     private var contentView: () -> any View
     private var descriptionView: () -> any View
 
+    private init(
+        contentView: @escaping () -> any View,
+        descriptionView: @escaping () -> any View
+    ) {
+        self.contentView = contentView
+        self.descriptionView = descriptionView
+    }
+
+    init() {
+        self.init(
+            contentView: { EmptyView() },
+            descriptionView: { Color.clear }
+        )
+    }
+
     var body: some View {
         HStack {
 
@@ -29,16 +44,6 @@ struct SplitFormWindowView: View {
             .scrollClipDisabled()
         }
         .background(Color.black.ignoresSafeArea())
-    }
-}
-
-extension SplitFormWindowView {
-
-    init() {
-        self.init(
-            contentView: { EmptyView() },
-            descriptionView: { Color.clear }
-        )
     }
 
     func contentView(@ViewBuilder _ content: @escaping () -> any View) -> Self {

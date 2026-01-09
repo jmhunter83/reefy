@@ -23,8 +23,12 @@ class MediaPlayerItem: ViewModel, MediaPlayerObserver {
     @Published
     var selectedAudioStreamIndex: Int? = nil {
         didSet {
-            if let proxy = manager?.proxy as? any VideoMediaPlayerProxy {
-                proxy.setAudioStream(.init(index: selectedAudioStreamIndex))
+            // Use Task to avoid blocking main thread during track change
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                if let proxy = manager?.proxy as? any VideoMediaPlayerProxy {
+                    proxy.setAudioStream(.init(index: selectedAudioStreamIndex))
+                }
             }
 
             // Persist the selected language as the user's preference
@@ -40,8 +44,12 @@ class MediaPlayerItem: ViewModel, MediaPlayerObserver {
     @Published
     var selectedSubtitleStreamIndex: Int? = nil {
         didSet {
-            if let proxy = manager?.proxy as? any VideoMediaPlayerProxy {
-                proxy.setSubtitleStream(.init(index: selectedSubtitleStreamIndex))
+            // Use Task to avoid blocking main thread during subtitle track change
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                if let proxy = manager?.proxy as? any VideoMediaPlayerProxy {
+                    proxy.setSubtitleStream(.init(index: selectedSubtitleStreamIndex))
+                }
             }
         }
     }

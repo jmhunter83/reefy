@@ -17,27 +17,28 @@ struct EnumPickerView<EnumType: CaseIterable & Displayable & Hashable & RawRepre
     private var title: String?
 
     var body: some View {
-        SplitFormWindowView()
-            .descriptionView(descriptionView)
-            .contentView {
-                Section {
-                    ForEach(EnumType.allCases.asArray, id: \.hashValue) { item in
-                        Button {
-                            selection = item
-                        } label: {
-                            HStack {
-                                Text(item.displayTitle)
+        Form(content: {
+            Section {
+                ForEach(EnumType.allCases.asArray, id: \.hashValue) { item in
+                    Button {
+                        selection = item
+                    } label: {
+                        HStack {
+                            Text(item.displayTitle)
 
-                                Spacer()
+                            Spacer()
 
-                                if selection == item {
-                                    Image(systemName: "checkmark.circle.fill")
-                                }
+                            if selection == item {
+                                Image(systemName: "checkmark.circle.fill")
                             }
                         }
                     }
                 }
             }
+        }, image: {
+            descriptionView()
+                .eraseToAnyView()
+        })
     }
 }
 

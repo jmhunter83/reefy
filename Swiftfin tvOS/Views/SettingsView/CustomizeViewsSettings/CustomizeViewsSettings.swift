@@ -35,47 +35,30 @@ struct CustomizeViewsSettings: View {
     private var router
 
     var body: some View {
-        SplitFormWindowView()
-            .descriptionView {
-                Image(systemName: "gearshape")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 400)
+        Form(systemImage: "gearshape") {
+            Section(L10n.missingItems) {
+                Toggle(L10n.showMissingSeasons, isOn: $shouldShowMissingSeasons)
+                Toggle(L10n.showMissingEpisodes, isOn: $shouldShowMissingEpisodes)
             }
-            .contentView {
 
-                Section(L10n.missingItems) {
-
-                    Toggle(L10n.showMissingSeasons, isOn: $shouldShowMissingSeasons)
-
-                    Toggle(L10n.showMissingEpisodes, isOn: $shouldShowMissingEpisodes)
+            Section(L10n.posters) {
+                ChevronButton(L10n.indicators) {
+                    router.route(to: .indicatorSettings)
                 }
 
-                Section(L10n.posters) {
+                Toggle(L10n.showPosterLabels, isOn: $showPosterLabels)
 
-                    ChevronButton(L10n.indicators) {
-                        router.route(to: .indicatorSettings)
-                    }
-
-                    Toggle(L10n.showPosterLabels, isOn: $showPosterLabels)
-
-                    ListRowMenu(L10n.next, selection: $nextUpPosterType)
-
-                    ListRowMenu(L10n.recentlyAdded, selection: $recentlyAddedPosterType)
-
-                    ListRowMenu(L10n.latestWithString(L10n.library), selection: $latestInLibraryPosterType)
-
-                    ListRowMenu(L10n.recommended, selection: $similarPosterType)
-
-                    ListRowMenu(L10n.search, selection: $searchPosterType)
-                }
-
-                LibrarySection()
-
-                ItemSection()
-
-                HomeSection()
+                ListRowMenu(L10n.next, selection: $nextUpPosterType)
+                ListRowMenu(L10n.recentlyAdded, selection: $recentlyAddedPosterType)
+                ListRowMenu(L10n.latestWithString(L10n.library), selection: $latestInLibraryPosterType)
+                ListRowMenu(L10n.recommended, selection: $similarPosterType)
+                ListRowMenu(L10n.search, selection: $searchPosterType)
             }
-            .navigationTitle(L10n.customize)
+
+            LibrarySection()
+            ItemSection()
+            HomeSection()
+        }
+        .navigationTitle(L10n.customize)
     }
 }

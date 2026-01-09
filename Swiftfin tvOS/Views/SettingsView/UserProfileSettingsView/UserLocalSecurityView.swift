@@ -122,109 +122,107 @@ struct UserLocalSecurityView: View {
     // MARK: - Body
 
     var body: some View {
-        SplitFormWindowView()
-            .descriptionView {
-                descriptionView
-            }
-            .contentView {
-                Section {
-                    Toggle(
-                        L10n.pin,
-                        isOn: Binding<Bool>(
-                            get: { signInPolicy == .requirePin },
-                            set: { signInPolicy = $0 ? .requirePin : .none }
-                        )
+        Form(content: {
+            Section {
+                Toggle(
+                    L10n.pin,
+                    isOn: Binding<Bool>(
+                        get: { signInPolicy == .requirePin },
+                        set: { signInPolicy = $0 ? .requirePin : .none }
                     )
-                    .focused($focusedItem, equals: .security)
-                    /* Picker(L10n.security, selection: $signInPolicy) {
-                         ForEach(UserAccessPolicy.allCases.filter { $0 != .requireDeviceAuthentication }, id: \.self) { policy in
-                             Text(policy.displayTitle)
-                         }
-                     } */
-                }
+                )
+                .focused($focusedItem, equals: .security)
+                /* Picker(L10n.security, selection: $signInPolicy) {
+                     ForEach(UserAccessPolicy.allCases.filter { $0 != .requireDeviceAuthentication }, id: \.self) { policy in
+                         Text(policy.displayTitle)
+                     }
+                 } */
+            }
 
-                if signInPolicy == .requirePin {
-                    Section {
-                        ChevronButton(
-                            L10n.hint,
-                            subtitle: pinHint,
-                            description: L10n.setPinHintDescription
-                        ) {
-                            Backport.textField(L10n.hint, text: $pinHint)
-                        }
-                    } header: {
-                        Text(L10n.hint)
-                    } footer: {
-                        Text(L10n.setPinHintDescription)
+            if signInPolicy == .requirePin {
+                Section {
+                    ChevronButton(
+                        L10n.hint,
+                        subtitle: pinHint,
+                        description: L10n.setPinHintDescription
+                    ) {
+                        Backport.textField(L10n.hint, text: $pinHint)
+                    }
+                } header: {
+                    Text(L10n.hint)
+                } footer: {
+                    Text(L10n.setPinHintDescription)
+                }
+            }
+        }, image: {
+            descriptionView
+        })
+        .animation(.linear, value: signInPolicy)
+        .navigationTitle(L10n.security)
+        .onFirstAppear {
+            pinHint = viewModel.userSession.user.pinHint
+            signInPolicy = viewModel.userSession.user.accessPolicy
+        }
+        .onReceive(viewModel.events) { event in
+            onReceive(event)
+        }
+        .topBarTrailing {
+            Button {
+                checkOldPolicy()
+            } label: {
+                Group {
+                    if signInPolicy == .requirePin, signInPolicy == viewModel.userSession.user.accessPolicy {
+                        Text(L10n.changePin)
+                    } else {
+                        Text(L10n.save)
                     }
                 }
-            }
-            .animation(.linear, value: signInPolicy)
-            .navigationTitle(L10n.security)
-            .onFirstAppear {
-                pinHint = viewModel.userSession.user.pinHint
-                signInPolicy = viewModel.userSession.user.accessPolicy
-            }
-            .onReceive(viewModel.events) { event in
-                onReceive(event)
-            }
-            .topBarTrailing {
-                Button {
-                    checkOldPolicy()
-                } label: {
-                    Group {
-                        if signInPolicy == .requirePin, signInPolicy == viewModel.userSession.user.accessPolicy {
-                            Text(L10n.changePin)
-                        } else {
-                            Text(L10n.save)
-                        }
-                    }
-                    .foregroundStyle(accentColor.overlayColor)
-                    .font(.headline)
-                    .padding(.vertical, 5)
-                    .padding(.horizontal, 10)
-                    .background {
-                        accentColor
-                    }
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                .foregroundStyle(accentColor.overlayColor)
+                .font(.headline)
+                .padding(.vertical, 5)
+                .padding(.horizontal, 10)
+                .background {
+                    accentColor
                 }
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
-            .trackingSize($listSize)
-            .alert(
-                L10n.enterPin,
-                isPresented: $isPresentingOldPinPrompt,
-                presenting: onPinCompletion
-            ) { completion in
+        }
+        .trackingSize($listSize)
+        .alert(
+            L10n.enterPin,
+            isPresented: $isPresentingOldPinPrompt,
+            presenting: onPinCompletion
+        ) { completion in
 
-                Backport.secureField(L10n.pin, text: $pin)
-                    .keyboardType(.numberPad)
+            Backport.secureField(L10n.pin, text: $pin)
+                .keyboardType(.numberPad)
 
-                Button(L10n.continue) {
-                    completion()
-                }
-
-                Button(L10n.cancel, role: .cancel) {}
-            } message: { _ in
-                Text(L10n.enterPinForUser(viewModel.userSession.user.username))
+            Button(L10n.continue) {
+                completion()
             }
-            .alert(
-                L10n.setPin,
-                isPresented: $isPresentingNewPinPrompt,
-                presenting: onPinCompletion
-            ) { completion in
 
-                Backport.secureField(L10n.pin, text: $pin)
-                    .keyboardType(.numberPad)
+            Button(L10n.cancel, role: .cancel) {}
+        } message: { _ in
+            Text(L10n.enterPinForUser(viewModel.userSession.user.username))
+        }
+        .alert(
+            L10n.setPin,
+            isPresented: $isPresentingNewPinPrompt,
+            presenting: onPinCompletion
+        ) { completion in
 
-                Button(L10n.set) {
-                    completion()
-                }
+            Backport.secureField(L10n.pin, text: $pin)
+                .keyboardType(.numberPad)
 
-                Button(L10n.cancel, role: .cancel) {}
-            } message: { _ in
-                Text(L10n.createPinForUser(viewModel.userSession.user.username))
+            Button(L10n.set) {
+                completion()
             }
-            .errorMessage($error)
+
+            Button(L10n.cancel, role: .cancel) {}
+        } message: { _ in
+            Text(L10n.createPinForUser(viewModel.userSession.user.username))
+        }
+        .errorMessage($error)
     }
 
     // MARK: - Description View Icon

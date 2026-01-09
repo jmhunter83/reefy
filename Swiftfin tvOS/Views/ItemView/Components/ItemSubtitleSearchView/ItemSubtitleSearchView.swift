@@ -96,17 +96,10 @@ struct ItemSubtitleSearchView: View {
     // MARK: - Search View
 
     private var searchView: some View {
-        SplitFormWindowView()
-            .descriptionView {
-                Image(systemName: "textformat")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 400)
-            }
-            .contentView {
-                searchSection
-                resultsSection
-            }
+        Form(systemImage: "textformat") {
+            searchSection
+            resultsSection
+        }
     }
 
     // MARK: - Search Section

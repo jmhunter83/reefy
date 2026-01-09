@@ -23,26 +23,14 @@ struct IndicatorSettingsView: View {
     private var showWatched
 
     var body: some View {
-        SplitFormWindowView()
-            .descriptionView {
-                Image(systemName: "checkmark.circle.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 400)
+        Form(systemImage: "checkmark.circle.fill") {
+            Section(L10n.posters) {
+                Toggle(L10n.showFavorited, isOn: $showFavorited)
+                Toggle(L10n.showProgress, isOn: $showProgress)
+                Toggle(L10n.showUnwatched, isOn: $showUnwatched)
+                Toggle(L10n.showWatched, isOn: $showWatched)
             }
-            .contentView {
-
-                Section(L10n.posters) {
-
-                    Toggle(L10n.showFavorited, isOn: $showFavorited)
-
-                    Toggle(L10n.showProgress, isOn: $showProgress)
-
-                    Toggle(L10n.showUnwatched, isOn: $showUnwatched)
-
-                    Toggle(L10n.showWatched, isOn: $showWatched)
-                }
-            }
-            .navigationTitle(L10n.indicators)
+        }
+        .navigationTitle(L10n.indicators)
     }
 }

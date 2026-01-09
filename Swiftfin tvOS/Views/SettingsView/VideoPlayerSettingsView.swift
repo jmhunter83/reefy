@@ -73,170 +73,162 @@ struct VideoPlayerSettingsView: View {
     private var isPresentingSubtitleOffsetStepper: Bool = false
 
     var body: some View {
-        SplitFormWindowView()
-            .descriptionView {
-                Image(systemName: "tv")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 400)
-            }
-            .contentView {
-
-                // SECTION: Action Buttons
-                Section(L10n.buttons) {
-                    ChevronButton(L10n.barButtons) {
-                        router.route(to: .actionBarButtonSelector(
-                            selectedButtonsBinding: $barActionButtons
-                        ))
-                    }
-
-                    ChevronButton(L10n.menuButtons) {
-                        router.route(to: .actionMenuButtonSelector(
-                            selectedButtonsBinding: $menuActionButtons
-                        ))
-                    }
-                }
-                .onChange(of: barActionButtons) { _, newValue in
-                    autoPlayEnabled = newValue.contains(.autoPlay) || menuActionButtons.contains(.autoPlay)
-                }
-                .onChange(of: menuActionButtons) { _, newValue in
-                    autoPlayEnabled = newValue.contains(.autoPlay) || barActionButtons.contains(.autoPlay)
+        Form(systemImage: "tv") {
+            // SECTION: Action Buttons
+            Section(L10n.buttons) {
+                ChevronButton(L10n.barButtons) {
+                    router.route(to: .actionBarButtonSelector(
+                        selectedButtonsBinding: $barActionButtons
+                    ))
                 }
 
-                // SECTION: Jump Intervals
-                Section(L10n.jump) {
-                    JumpIntervalPicker(L10n.jumpBackwardLength, selection: $jumpBackwardLength)
-                    JumpIntervalPicker(L10n.jumpForwardLength, selection: $jumpForwardLength)
-                }
-
-                // SECTION: Resume Offset
-                Section {
-                    ChevronButton(
-                        L10n.offset,
-                        subtitle: resumeOffset.secondLabel
-                    ) {
-                        isPresentingResumeOffsetStepper = true
-                    }
-                } header: {
-                    Text(L10n.resume)
-                } footer: {
-                    Text(L10n.resumeOffsetDescription)
-                }
-
-                // SECTION: Slider / Progress
-                Section(L10n.slider) {
-                    Toggle(L10n.chapterSlider, isOn: $chapterSlider)
-
-                    ListRowMenu(
-                        L10n.previewImage,
-                        selection: $previewImageScrubbing
-                    )
-                }
-
-                // SECTION: Timestamp
-                Section(L10n.timestamp) {
-                    ListRowMenu(
-                        L10n.trailingValue,
-                        selection: $trailingTimestampType
-                    )
-                }
-
-                // SECTION: Subtitles
-                Section {
-                    ChevronButton(L10n.subtitleFont, subtitle: subtitleFontName) {
-                        router.route(to: .fontPicker(selection: $subtitleFontName))
-                    }
-
-                    ChevronButton(
-                        L10n.subtitleSize,
-                        subtitle: "\(subtitleSize)"
-                    ) {
-                        isPresentingSubtitleSizeStepper = true
-                    }
-
-                    ListRowMenu(L10n.subtitleColor) {
-                        Circle()
-                            .fill(subtitleColor)
-                            .frame(width: 20, height: 20)
-                    } content: {
-                        Picker(L10n.subtitleColor, selection: $subtitleColor) {
-                            Text("White").tag(Color.white)
-                            Text(L10n.yellow).tag(Color.yellow)
-                            Text(L10n.red).tag(Color.red)
-                            Text(L10n.green).tag(Color.green)
-                            Text(L10n.blue).tag(Color.blue)
-                        }
-                    }
-                } header: {
-                    Text(L10n.subtitles)
-                } footer: {
-                    Text(L10n.subtitlesDisclaimer)
-                }
-
-                // SECTION: Sync Offset
-                Section {
-                    ChevronButton(
-                        L10n.audio,
-                        subtitle: audioOffset.millisecondLabel
-                    ) {
-                        isPresentingAudioOffsetStepper = true
-                    }
-
-                    ChevronButton(
-                        L10n.subtitles,
-                        subtitle: subtitleOffset.millisecondLabel
-                    ) {
-                        isPresentingSubtitleOffsetStepper = true
-                    }
-                } header: {
-                    Text("Sync")
-                } footer: {
-                    Text("Adjust audio and subtitle sync in milliseconds")
+                ChevronButton(L10n.menuButtons) {
+                    router.route(to: .actionMenuButtonSelector(
+                        selectedButtonsBinding: $menuActionButtons
+                    ))
                 }
             }
-            .navigationTitle(L10n.videoPlayer.localizedCapitalized)
-            .blurredFullScreenCover(isPresented: $isPresentingResumeOffsetStepper) {
-                StepperView(
-                    title: L10n.resumeOffsetTitle,
-                    description: L10n.resumeOffsetDescription,
-                    value: $resumeOffset,
-                    range: 0 ... 30,
-                    step: 1
+            .onChange(of: barActionButtons) { _, newValue in
+                autoPlayEnabled = newValue.contains(.autoPlay) || menuActionButtons.contains(.autoPlay)
+            }
+            .onChange(of: menuActionButtons) { _, newValue in
+                autoPlayEnabled = newValue.contains(.autoPlay) || barActionButtons.contains(.autoPlay)
+            }
+
+            // SECTION: Jump Intervals
+            Section(L10n.jump) {
+                JumpIntervalPicker(L10n.jumpBackwardLength, selection: $jumpBackwardLength)
+                JumpIntervalPicker(L10n.jumpForwardLength, selection: $jumpForwardLength)
+            }
+
+            // SECTION: Resume Offset
+            Section {
+                ChevronButton(
+                    L10n.offset,
+                    subtitle: resumeOffset.secondLabel
+                ) {
+                    isPresentingResumeOffsetStepper = true
+                }
+            } header: {
+                Text(L10n.resume)
+            } footer: {
+                Text(L10n.resumeOffsetDescription)
+            }
+
+            // SECTION: Slider / Progress
+            Section(L10n.slider) {
+                Toggle(L10n.chapterSlider, isOn: $chapterSlider)
+
+                ListRowMenu(
+                    L10n.previewImage,
+                    selection: $previewImageScrubbing
                 )
-                .valueFormatter { $0.secondLabel }
-                .onCloseSelected { isPresentingResumeOffsetStepper = false }
             }
-            .blurredFullScreenCover(isPresented: $isPresentingSubtitleSizeStepper) {
-                StepperView(
-                    title: L10n.subtitleSize,
-                    description: L10n.subtitlesDisclaimer,
-                    value: $subtitleSize,
-                    range: 1 ... 20,
-                    step: 1
+
+            // SECTION: Timestamp
+            Section(L10n.timestamp) {
+                ListRowMenu(
+                    L10n.trailingValue,
+                    selection: $trailingTimestampType
                 )
-                .onCloseSelected { isPresentingSubtitleSizeStepper = false }
             }
-            .blurredFullScreenCover(isPresented: $isPresentingAudioOffsetStepper) {
-                StepperView(
-                    title: "Audio Offset",
-                    description: "Adjust audio sync in milliseconds",
-                    value: $audioOffset,
-                    range: -5000 ... 5000,
-                    step: 100
-                )
-                .valueFormatter { $0.millisecondLabel }
-                .onCloseSelected { isPresentingAudioOffsetStepper = false }
+
+            // SECTION: Subtitles
+            Section {
+                ChevronButton(L10n.subtitleFont, subtitle: subtitleFontName) {
+                    router.route(to: .fontPicker(selection: $subtitleFontName))
+                }
+
+                ChevronButton(
+                    L10n.subtitleSize,
+                    subtitle: "\(subtitleSize)"
+                ) {
+                    isPresentingSubtitleSizeStepper = true
+                }
+
+                ListRowMenu(L10n.subtitleColor) {
+                    Circle()
+                        .fill(subtitleColor)
+                        .frame(width: 20, height: 20)
+                } content: {
+                    Picker(L10n.subtitleColor, selection: $subtitleColor) {
+                        Text("White").tag(Color.white)
+                        Text(L10n.yellow).tag(Color.yellow)
+                        Text(L10n.red).tag(Color.red)
+                        Text(L10n.green).tag(Color.green)
+                        Text(L10n.blue).tag(Color.blue)
+                    }
+                }
+            } header: {
+                Text(L10n.subtitles)
+            } footer: {
+                Text(L10n.subtitlesDisclaimer)
             }
-            .blurredFullScreenCover(isPresented: $isPresentingSubtitleOffsetStepper) {
-                StepperView(
-                    title: "Subtitle Offset",
-                    description: "Adjust subtitle sync in milliseconds",
-                    value: $subtitleOffset,
-                    range: -5000 ... 5000,
-                    step: 100
-                )
-                .valueFormatter { $0.millisecondLabel }
-                .onCloseSelected { isPresentingSubtitleOffsetStepper = false }
+
+            // SECTION: Sync Offset
+            Section {
+                ChevronButton(
+                    L10n.audio,
+                    subtitle: audioOffset.millisecondLabel
+                ) {
+                    isPresentingAudioOffsetStepper = true
+                }
+
+                ChevronButton(
+                    L10n.subtitles,
+                    subtitle: subtitleOffset.millisecondLabel
+                ) {
+                    isPresentingSubtitleOffsetStepper = true
+                }
+            } header: {
+                Text("Sync")
+            } footer: {
+                Text("Adjust audio and subtitle sync in milliseconds")
             }
+        }
+        .navigationTitle(L10n.videoPlayer.localizedCapitalized)
+        .blurredFullScreenCover(isPresented: $isPresentingResumeOffsetStepper) {
+            StepperView(
+                title: L10n.resumeOffsetTitle,
+                description: L10n.resumeOffsetDescription,
+                value: $resumeOffset,
+                range: 0 ... 30,
+                step: 1
+            )
+            .valueFormatter { $0.secondLabel }
+            .onCloseSelected { isPresentingResumeOffsetStepper = false }
+        }
+        .blurredFullScreenCover(isPresented: $isPresentingSubtitleSizeStepper) {
+            StepperView(
+                title: L10n.subtitleSize,
+                description: L10n.subtitlesDisclaimer,
+                value: $subtitleSize,
+                range: 1 ... 20,
+                step: 1
+            )
+            .onCloseSelected { isPresentingSubtitleSizeStepper = false }
+        }
+        .blurredFullScreenCover(isPresented: $isPresentingAudioOffsetStepper) {
+            StepperView(
+                title: "Audio Offset",
+                description: "Adjust audio sync in milliseconds",
+                value: $audioOffset,
+                range: -5000 ... 5000,
+                step: 100
+            )
+            .valueFormatter { $0.millisecondLabel }
+            .onCloseSelected { isPresentingAudioOffsetStepper = false }
+        }
+        .blurredFullScreenCover(isPresented: $isPresentingSubtitleOffsetStepper) {
+            StepperView(
+                title: "Subtitle Offset",
+                description: "Adjust subtitle sync in milliseconds",
+                value: $subtitleOffset,
+                range: -5000 ... 5000,
+                step: 100
+            )
+            .valueFormatter { $0.millisecondLabel }
+            .onCloseSelected { isPresentingSubtitleOffsetStepper = false }
+        }
     }
 }

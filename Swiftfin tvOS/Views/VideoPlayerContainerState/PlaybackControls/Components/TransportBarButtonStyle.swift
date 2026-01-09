@@ -14,6 +14,9 @@ import SwiftUI
 /// with the signature "lift and glow" effect
 struct TransportBarButton<Label: View>: View {
 
+    @EnvironmentObject
+    private var containerState: VideoPlayerContainerState
+
     @FocusState
     private var isFocused: Bool
 
@@ -55,6 +58,12 @@ struct TransportBarButton<Label: View>: View {
         )
         // Use linear animation to reduce main thread load (prevents audio crackling)
         .animation(.easeOut(duration: 0.15), value: isFocused)
+        // Poke timer when focused to keep overlay visible
+        .onChange(of: isFocused) { _, newValue in
+            if newValue {
+                containerState.timer.poke()
+            }
+        }
     }
 
     @ViewBuilder
@@ -74,8 +83,19 @@ struct TransportBarButton<Label: View>: View {
 /// A menu wrapper with native focus behavior
 struct TransportBarMenu<Label: View, Content: View>: View {
 
+    @EnvironmentObject
+    private var containerState: VideoPlayerContainerState
+
     @FocusState
     private var isFocused: Bool
+
+    /// Tracks if we were focused (to detect menu open when focus leaves)
+    @State
+    private var wasFocused: Bool = false
+
+    /// Task that continuously pokes timer while menu is open
+    @State
+    private var menuOpenPokeTask: Task<Void, Never>?
 
     let title: String
     let label: () -> Label
@@ -118,6 +138,30 @@ struct TransportBarMenu<Label: View, Content: View>: View {
         )
         // Use linear animation to reduce main thread load (prevents audio crackling)
         .animation(.easeOut(duration: 0.15), value: isFocused)
+        // Prevent overlay from hiding while menu is open
+        .onChange(of: isFocused) { _, newValue in
+            if newValue {
+                // Button became focused - poke timer and cancel any existing poke task
+                containerState.timer.poke()
+                menuOpenPokeTask?.cancel()
+                menuOpenPokeTask = nil
+                wasFocused = true
+            } else if wasFocused {
+                // Focus left after we were focused - menu likely opened
+                // Start continuous poke to keep overlay visible while browsing menu
+                wasFocused = false
+                menuOpenPokeTask?.cancel()
+                menuOpenPokeTask = Task { @MainActor in
+                    while !Task.isCancelled {
+                        containerState.timer.poke()
+                        try? await Task.sleep(for: .seconds(3))
+                    }
+                }
+            }
+        }
+        .onDisappear {
+            menuOpenPokeTask?.cancel()
+        }
     }
 
     @ViewBuilder

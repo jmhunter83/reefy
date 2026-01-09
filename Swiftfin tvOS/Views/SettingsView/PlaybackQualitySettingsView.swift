@@ -33,45 +33,43 @@ struct PlaybackQualitySettingsView: View {
     // MARK: - Body
 
     var body: some View {
-        SplitFormWindowView()
-            .descriptionView {
-                descriptionView
+        Form(content: {
+            Section {
+                ListRowMenu(L10n.maximumBitrate, selection: $appMaximumBitrate)
+                    .focused($focusedItem, equals: .maximumBitrate)
+            } header: {
+                Text(L10n.bitrateDefault)
+            } footer: {
+                Text(L10n.bitrateDefaultDescription)
             }
-            .contentView {
+            .animation(.none, value: appMaximumBitrate)
+
+            if appMaximumBitrate == .auto {
                 Section {
-                    ListRowMenu(L10n.maximumBitrate, selection: $appMaximumBitrate)
-                        .focused($focusedItem, equals: .maximumBitrate)
-                } header: {
-                    Text(L10n.bitrateDefault)
+                    ListRowMenu(L10n.testSize, selection: $appMaximumBitrateTest)
                 } footer: {
-                    Text(L10n.bitrateDefaultDescription)
-                }
-                .animation(.none, value: appMaximumBitrate)
-
-                if appMaximumBitrate == .auto {
-                    Section {
-                        ListRowMenu(L10n.testSize, selection: $appMaximumBitrateTest)
-                    } footer: {
-                        Text(L10n.bitrateTestDisclaimer)
-                    }
-                }
-
-                Section {
-                    ListRowMenu(L10n.compatibility, selection: $compatibilityMode)
-                        .focused($focusedItem, equals: .compatibility)
-
-                    if compatibilityMode == .custom {
-                        ChevronButton(L10n.profiles) {
-                            router.route(to: .customDeviceProfileSettings)
-                        }
-                    }
-                } header: {
-                    Text(L10n.deviceProfile)
-                } footer: {
-                    Text(L10n.deviceProfileDescription)
+                    Text(L10n.bitrateTestDisclaimer)
                 }
             }
-            .navigationTitle(L10n.playbackQuality.localizedCapitalized)
+
+            Section {
+                ListRowMenu(L10n.compatibility, selection: $compatibilityMode)
+                    .focused($focusedItem, equals: .compatibility)
+
+                if compatibilityMode == .custom {
+                    ChevronButton(L10n.profiles) {
+                        router.route(to: .customDeviceProfileSettings)
+                    }
+                }
+            } header: {
+                Text(L10n.deviceProfile)
+            } footer: {
+                Text(L10n.deviceProfileDescription)
+            }
+        }, image: {
+            descriptionView
+        })
+        .navigationTitle(L10n.playbackQuality.localizedCapitalized)
     }
 
     // MARK: - Description View Icon

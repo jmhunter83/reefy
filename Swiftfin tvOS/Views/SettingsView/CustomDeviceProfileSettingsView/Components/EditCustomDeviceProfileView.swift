@@ -80,66 +80,59 @@ extension CustomDeviceProfileSettingsView {
         }
 
         var body: some View {
-            SplitFormWindowView()
-                .descriptionView {
-                    Image(systemName: "doc")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: 400)
-                }
-                .contentView {
-                    Section {
-                        Toggle(L10n.useAsTranscodingProfile, isOn: $profile.value.useAsTranscodingProfile)
-                            .padding(.vertical)
-                    } header: {
-                        HStack {
-                            Text(L10n.customProfile)
-                            Spacer()
-                            Button(L10n.save) {
-                                if createProfile {
-                                    customDeviceProfiles.append(profile.value)
-                                }
-                                router.dismiss()
+            Form(systemImage: "doc") {
+                Section {
+                    Toggle(L10n.useAsTranscodingProfile, isOn: $profile.value.useAsTranscodingProfile)
+                        .padding(.vertical)
+                } header: {
+                    HStack {
+                        Text(L10n.customProfile)
+                        Spacer()
+                        Button(L10n.save) {
+                            if createProfile {
+                                customDeviceProfiles.append(profile.value)
                             }
-                            .disabled(!isValid)
+                            router.dismiss()
                         }
-                    }
-
-                    codecSection(
-                        title: L10n.audio,
-                        content: profile.value.audio.map(\.displayTitle).joined(separator: ", ")
-                    ) {
-                        router.route(to: .editCustomDeviceProfileAudio(selection: $profile.value.audio))
-                    }
-                    .padding(.vertical)
-
-                    codecSection(
-                        title: L10n.video,
-                        content: profile.value.video.map(\.displayTitle).joined(separator: ", ")
-                    ) {
-                        router.route(to: .editCustomDeviceProfileVideo(selection: $profile.value.video))
-                    }
-                    .padding(.vertical)
-
-                    codecSection(
-                        title: L10n.containers,
-                        content: profile.value.container.map(\.displayTitle).joined(separator: ", ")
-                    ) {
-                        router.route(to: .editCustomDeviceProfileContainer(selection: $profile.value.container))
-                    }
-                    .padding(.vertical)
-
-                    if !isValid {
-                        Label(L10n.replaceDeviceProfileWarning, systemImage: "exclamationmark.circle.fill")
+                        .disabled(!isValid)
                     }
                 }
-                .navigationTitle(L10n.customProfile.localizedCapitalized)
-                .alert(L10n.profileNotSaved, isPresented: $isPresentingNotSaved) {
-                    Button(L10n.close, role: .destructive) {
-                        router.dismiss()
-                    }
+
+                codecSection(
+                    title: L10n.audio,
+                    content: profile.value.audio.map(\.displayTitle).joined(separator: ", ")
+                ) {
+                    router.route(to: .editCustomDeviceProfileAudio(selection: $profile.value.audio))
                 }
-                .interactiveDismissDisabled(true)
+                .padding(.vertical)
+
+                codecSection(
+                    title: L10n.video,
+                    content: profile.value.video.map(\.displayTitle).joined(separator: ", ")
+                ) {
+                    router.route(to: .editCustomDeviceProfileVideo(selection: $profile.value.video))
+                }
+                .padding(.vertical)
+
+                codecSection(
+                    title: L10n.containers,
+                    content: profile.value.container.map(\.displayTitle).joined(separator: ", ")
+                ) {
+                    router.route(to: .editCustomDeviceProfileContainer(selection: $profile.value.container))
+                }
+                .padding(.vertical)
+
+                if !isValid {
+                    Label(L10n.replaceDeviceProfileWarning, systemImage: "exclamationmark.circle.fill")
+                }
+            }
+            .navigationTitle(L10n.customProfile.localizedCapitalized)
+            .alert(L10n.profileNotSaved, isPresented: $isPresentingNotSaved) {
+                Button(L10n.close, role: .destructive) {
+                    router.dismiss()
+                }
+            }
+            .interactiveDismissDisabled(true)
         }
     }
 }

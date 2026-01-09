@@ -15,14 +15,9 @@ import SwiftUI
 struct ExperimentalSettingsView: View {
 
     var body: some View {
-        SplitFormWindowView()
-            .descriptionView {
-                Image(systemName: "gearshape")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 400)
-            }
-            .contentView {}
-            .navigationTitle(L10n.experimental)
+        Form(systemImage: "gearshape") {
+            // Empty - used for experimental settings that may be added later
+        }
+        .navigationTitle(L10n.experimental)
     }
 }

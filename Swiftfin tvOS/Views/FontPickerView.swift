@@ -23,31 +23,24 @@ struct FontPickerView: View {
     }
 
     var body: some View {
-        SplitFormWindowView()
-            .descriptionView {
-                Image(systemName: "character.textbox")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 400)
-            }
-            .contentView {
-                ForEach(UIFont.familyNames, id: \.self) { fontFamily in
-                    Button {
-                        selection = fontFamily
-                        updateSelection = fontFamily
-                    } label: {
-                        HStack {
-                            Text(fontFamily)
-                                .font(.custom(fontFamily, size: 28))
+        Form(systemImage: "character.textbox") {
+            ForEach(UIFont.familyNames, id: \.self) { fontFamily in
+                Button {
+                    selection = fontFamily
+                    updateSelection = fontFamily
+                } label: {
+                    HStack {
+                        Text(fontFamily)
+                            .font(.custom(fontFamily, size: 28))
 
-                            Spacer()
+                        Spacer()
 
-                            if updateSelection == fontFamily {
-                                Image(systemName: "checkmark.circle.fill")
-                            }
+                        if updateSelection == fontFamily {
+                            Image(systemName: "checkmark.circle.fill")
                         }
                     }
                 }
             }
+        }
     }
 }
