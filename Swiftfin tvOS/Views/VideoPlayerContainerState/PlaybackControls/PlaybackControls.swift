@@ -20,6 +20,11 @@ extension VideoPlayer {
         @Environment(\.safeAreaInsets)
         private var safeAreaInsets
 
+        @Default(.VideoPlayer.jumpBackwardInterval)
+        private var jumpBackwardInterval
+        @Default(.VideoPlayer.jumpForwardInterval)
+        private var jumpForwardInterval
+
         @EnvironmentObject
         private var containerState: VideoPlayerContainerState
         @EnvironmentObject
@@ -37,6 +42,22 @@ extension VideoPlayer {
         private var contentSize: CGSize = .zero
         @State
         private var effectiveSafeArea: EdgeInsets = .zero
+
+        // Double-tap detection for 5-minute skip
+        @State
+        private var lastSkipDirection: SkipDirection? = nil
+        @State
+        private var lastSkipTime: Date = .distantPast
+        @State
+        private var skipIndicatorText: String? = nil
+
+        private enum SkipDirection {
+            case forward
+            case backward
+        }
+
+        private let doubleTapThreshold: TimeInterval = 0.5
+        private let longSkipDuration: Duration = .seconds(300) // 5 minutes
 
         private var isPresentingOverlay: Bool {
             containerState.isPresentingOverlay
@@ -74,15 +95,7 @@ extension VideoPlayer {
             }
         }
 
-        /// Center playback buttons (play/pause + jump forward/backward)
-        @ViewBuilder
-        private var centerPlaybackButtons: some View {
-            if !isPresentingSupplement && !isScrubbing {
-                PlaybackButtons()
-                    .focusGuide(focusGuide, tag: "playbackButtons", bottom: "actionButtons")
-                    .isVisible(isPresentingOverlay)
-            }
-        }
+        // Center playback buttons removed - using remote control for play/pause and skip
 
         @ViewBuilder
         private var transportBar: some View {
@@ -95,7 +108,7 @@ extension VideoPlayer {
                         NavigationBar.ActionButtons()
                             .focusSection()
                     }
-                    .focusGuide(focusGuide, tag: "actionButtons", top: "playbackButtons", bottom: "playbackProgress")
+                    .focusGuide(focusGuide, tag: "actionButtons", bottom: "playbackProgress")
 
                     // Progress bar with time labels
                     PlaybackProgress()
@@ -109,15 +122,28 @@ extension VideoPlayer {
             }
         }
 
+        // MARK: - Skip Indicator
+
+        @ViewBuilder
+        private var skipIndicator: some View {
+            if let text = skipIndicatorText {
+                Text(text)
+                    .font(.system(size: 72, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.5), radius: 10)
+                    .transition(.scale.combined(with: .opacity))
+            }
+        }
+
         var body: some View {
             GeometryReader { geometry in
                 ZStack {
                     // Title in top-left
                     titleOverlay
 
-                    // Center playback buttons (play/pause + jump)
-                    centerPlaybackButtons
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    // Skip indicator in center
+                    skipIndicator
+                        .animation(.easeOut(duration: 0.2), value: skipIndicatorText)
 
                     // Transport bar in bottom 15%
                     VStack {
@@ -137,10 +163,9 @@ extension VideoPlayer {
             .animation(.bouncy(duration: 0.25), value: isPresentingOverlay)
             .onChange(of: isPresentingOverlay) { _, isPresenting in
                 if isPresenting {
-                    // Focus center playback buttons when overlay appears
-                    // Use longer delay to ensure view layout is complete
+                    // Focus action buttons when overlay appears
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        focusGuide.transition(to: "playbackButtons")
+                        focusGuide.transition(to: "actionButtons")
                     }
                 }
             }
@@ -156,6 +181,52 @@ extension VideoPlayer {
                         containerState.timer.poke()
                     }
                     manager.togglePlayPause()
+
+                case (.leftArrow, _):
+                    // Skip backward (only when not scrubbing)
+                    if !isScrubbing {
+                        let now = Date()
+                        if lastSkipDirection == .backward,
+                           now.timeIntervalSince(lastSkipTime) < doubleTapThreshold
+                        {
+                            // Double-tap: skip 5 minutes
+                            manager.proxy?.jumpBackward(longSkipDuration)
+                            skipIndicatorText = "−5:00"
+                            lastSkipDirection = nil
+                        } else {
+                            // Single tap: skip configured interval
+                            manager.proxy?.jumpBackward(jumpBackwardInterval.rawValue)
+                            lastSkipDirection = .backward
+                        }
+                        lastSkipTime = now
+                        // Auto-hide indicator after delay
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            skipIndicatorText = nil
+                        }
+                    }
+
+                case (.rightArrow, _):
+                    // Skip forward (only when not scrubbing)
+                    if !isScrubbing {
+                        let now = Date()
+                        if lastSkipDirection == .forward,
+                           now.timeIntervalSince(lastSkipTime) < doubleTapThreshold
+                        {
+                            // Double-tap: skip 5 minutes
+                            manager.proxy?.jumpForward(longSkipDuration)
+                            skipIndicatorText = "+5:00"
+                            lastSkipDirection = nil
+                        } else {
+                            // Single tap: skip configured interval
+                            manager.proxy?.jumpForward(jumpForwardInterval.rawValue)
+                            lastSkipDirection = .forward
+                        }
+                        lastSkipTime = now
+                        // Auto-hide indicator after delay
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            skipIndicatorText = nil
+                        }
+                    }
 
                 case (.menu, _):
                     if isPresentingSupplement {

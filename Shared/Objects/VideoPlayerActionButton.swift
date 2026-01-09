@@ -103,10 +103,7 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
 
     static let defaultMenuActionButtons: [VideoPlayerActionButton] = {
         #if os(tvOS)
-        return [
-            .playbackQuality,
-            .autoPlay,
-        ]
+        return []
         #else
         return [
             .audio,
