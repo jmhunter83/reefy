@@ -35,7 +35,7 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
         case .gestureLock:
             return L10n.gestureLock
         case .info:
-            return L10n.info
+            return "Information"
         case .playbackSpeed:
             return L10n.playbackSpeed
         case .playbackQuality:

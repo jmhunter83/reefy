@@ -31,7 +31,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
                         containerState.select(supplement: supplement)
                     }
                 } label: {
-                    Label(L10n.info, systemImage: "info.circle")
+                    Label("Information", systemImage: "info.circle")
                 }
             } else {
                 TransportBarButton {
