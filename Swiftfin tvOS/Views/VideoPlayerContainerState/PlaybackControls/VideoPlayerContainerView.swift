@@ -150,6 +150,7 @@ extension VideoPlayer {
 
             containerState.containerView = self
             containerState.manager = manager
+            containerState.observePlaybackStatus()
         }
 
         @available(*, unavailable)

@@ -45,11 +45,63 @@ private struct CapsuleSliderContent: SliderContentView {
     @EnvironmentObject
     var sliderState: SliderContainerState<Double>
 
+    /// Height: normal 8pt, focused 10pt, editing 14pt
+    private var barHeight: CGFloat {
+        if sliderState.isEditing {
+            return 14
+        } else if sliderState.isFocused {
+            return 10
+        } else {
+            return 8
+        }
+    }
+
     var body: some View {
-        ProgressView(value: sliderState.value, total: sliderState.total)
-            .progressViewStyle(PlaybackProgressViewStyle(cornerStyle: .round))
-            .frame(height: 8)
-            .scaleEffect(sliderState.isFocused ? 1.05 : 1.0)
-            .animation(.easeInOut(duration: 0.2), value: sliderState.isFocused)
+        VStack(spacing: 8) {
+            // Scrub mode indicator
+            if sliderState.isEditing {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.left.arrow.right")
+                        .font(.system(size: 12, weight: .semibold))
+                    Text("SCRUBBING")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                    Text("• Swipe to seek • Click to confirm")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background {
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay {
+                            Capsule()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        }
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+            }
+
+            // Progress bar with visual states
+            ProgressView(value: sliderState.value, total: sliderState.total)
+                .progressViewStyle(PlaybackProgressViewStyle(cornerStyle: .round))
+                .frame(height: barHeight)
+                .overlay {
+                    // Glow border when editing
+                    if sliderState.isEditing {
+                        RoundedRectangle(cornerRadius: barHeight / 2)
+                            .stroke(Color.white.opacity(0.6), lineWidth: 2)
+                            .shadow(color: .white.opacity(0.4), radius: 8)
+                    } else if sliderState.isFocused {
+                        RoundedRectangle(cornerRadius: barHeight / 2)
+                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                    }
+                }
+                .scaleEffect(sliderState.isEditing ? 1.1 : (sliderState.isFocused ? 1.05 : 1.0))
+                .animation(.easeInOut(duration: 0.2), value: sliderState.isFocused)
+                .animation(.easeInOut(duration: 0.15), value: sliderState.isEditing)
+        }
+        .animation(.easeInOut(duration: 0.2), value: sliderState.isEditing)
     }
 }

@@ -28,7 +28,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
             if isInMenu {
                 Button {
                     if let supplement = infoSupplement {
-                        containerState.select(supplement: supplement)
+                        containerState.select(supplement: supplement, isGuest: true)
                     }
                 } label: {
                     Label("Information", systemImage: "info.circle")
@@ -36,7 +36,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
             } else {
                 TransportBarButton {
                     if let supplement = infoSupplement {
-                        containerState.select(supplement: supplement)
+                        containerState.select(supplement: supplement, isGuest: true)
                     }
                 } label: {
                     Image(systemName: "info.circle")

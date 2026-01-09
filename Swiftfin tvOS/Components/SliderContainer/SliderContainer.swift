@@ -66,6 +66,9 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
     private let valueBinding: Binding<Value>
 
     private var panGestureRecognizer: DirectionalPanGestureRecognizer!
+    private var selectGestureRecognizer: UITapGestureRecognizer!
+    private var menuGestureRecognizer: UITapGestureRecognizer!
+
     private lazy var progressHostingController: UIHostingController<AnyView> = {
         let hostingController = UIHostingController(rootView: AnyView(view.environmentObject(containerState)))
         hostingController.view.backgroundColor = .clear
@@ -78,6 +81,17 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
     let containerState: SliderContainerState<Value>
     let view: AnyView
     private var decelerationTimer: Timer?
+
+    // MARK: - Scrub Mode State
+
+    /// Whether the user has clicked to enter active scrub mode
+    private var isInScrubMode: Bool = false
+
+    /// The value when scrub mode was entered (for cancel)
+    private var scrubModeStartValue: Value = 0
+
+    /// The current scrubbed value (before commit)
+    private var scrubbedValue: Value = 0
 
     init(
         value: Binding<Value>,
@@ -98,7 +112,7 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
         super.init(frame: .zero)
 
         setupViews()
-        setupGestureRecognizer()
+        setupGestureRecognizers()
     }
 
     @available(*, unavailable)
@@ -121,13 +135,77 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
         ])
     }
 
-    private func setupGestureRecognizer() {
+    private func setupGestureRecognizers() {
+        // Pan gesture for scrubbing (only active in scrub mode)
         panGestureRecognizer = DirectionalPanGestureRecognizer(
             direction: .horizontal,
             target: self,
             action: #selector(didPan)
         )
         addGestureRecognizer(panGestureRecognizer)
+
+        // Select/click gesture to enter/confirm scrub mode
+        selectGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(didSelect))
+        selectGestureRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.select.rawValue)]
+        addGestureRecognizer(selectGestureRecognizer)
+
+        // Menu gesture to cancel scrub mode
+        menuGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(didPressMenu))
+        menuGestureRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
+        addGestureRecognizer(menuGestureRecognizer)
+    }
+
+    // MARK: - Scrub Mode Control
+
+    private func enterScrubMode() {
+        guard !isInScrubMode else { return }
+        isInScrubMode = true
+        scrubModeStartValue = containerState.value
+        scrubbedValue = containerState.value
+        onEditingChanged(true)
+        containerState.isEditing = true
+    }
+
+    private func commitScrub() {
+        guard isInScrubMode else { return }
+        isInScrubMode = false
+        // Value is already set during scrubbing
+        valueBinding.wrappedValue = scrubbedValue
+        containerState.value = scrubbedValue
+        onEditingChanged(false)
+        containerState.isEditing = false
+        stopDeceleratingTimer()
+    }
+
+    private func cancelScrub() {
+        guard isInScrubMode else { return }
+        isInScrubMode = false
+        // Restore original value
+        containerState.value = scrubModeStartValue
+        valueBinding.wrappedValue = scrubModeStartValue
+        onEditingChanged(false)
+        containerState.isEditing = false
+        stopDeceleratingTimer()
+    }
+
+    @objc
+    private func didSelect() {
+        if isInScrubMode {
+            // Already scrubbing - commit the seek
+            commitScrub()
+        } else {
+            // Enter scrub mode
+            enterScrubMode()
+        }
+    }
+
+    @objc
+    private func didPressMenu() {
+        if isInScrubMode {
+            // Cancel scrub and restore position
+            cancelScrub()
+        }
+        // If not in scrub mode, let the event propagate (don't handle it)
     }
 
     private var panDeceleratingVelocity: CGFloat = 0
@@ -135,13 +213,15 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
 
     @objc
     private func didPan(_ gestureRecognizer: UIPanGestureRecognizer) {
+        // Only respond to pan gestures when in scrub mode
+        guard isInScrubMode else { return }
+
         let translation = gestureRecognizer.translation(in: self).x
         let velocity = gestureRecognizer.velocity(in: self).x
 
         switch gestureRecognizer.state {
         case .began:
-            onEditingChanged(true)
-            panStartValue = containerState.value
+            panStartValue = scrubbedValue
             stopDeceleratingTimer()
         case .changed:
             let dampedTranslation = translation / panDampingValue
@@ -150,10 +230,11 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
 
             sendActions(for: .valueChanged)
 
+            scrubbedValue = clampedValue
             containerState.value = clampedValue
-            valueBinding.wrappedValue = clampedValue
+        // Don't update binding yet - only on commit
         case .ended, .cancelled:
-            panStartValue = containerState.value
+            panStartValue = scrubbedValue
 
             if abs(velocity) > fineTuningVelocityThreshold {
                 let direction: CGFloat = velocity > 0 ? 1 : -1
@@ -166,9 +247,6 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
                     userInfo: nil,
                     repeats: true
                 )
-            } else {
-                onEditingChanged(false)
-                stopDeceleratingTimer()
             }
         default:
             break
@@ -177,6 +255,11 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
 
     @objc
     private func handleDeceleratingTimer(time: Timer) {
+        guard isInScrubMode else {
+            stopDeceleratingTimer()
+            return
+        }
+
         let newValue = panStartValue + Value(panDeceleratingVelocity) * 0.01
         let clampedValue = clamp(newValue, min: 0, max: containerState.total)
 
@@ -189,9 +272,8 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
             stopDeceleratingTimer()
         }
 
-        valueBinding.wrappedValue = clampedValue
+        scrubbedValue = clampedValue
         containerState.value = clampedValue
-        onEditingChanged(false)
     }
 
     private func stopDeceleratingTimer() {
@@ -206,6 +288,12 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        let wasFocused = containerState.isFocused
         containerState.isFocused = (context.nextFocusedView == self)
+
+        // If losing focus while in scrub mode, cancel the scrub
+        if wasFocused && !containerState.isFocused && isInScrubMode {
+            cancelScrub()
+        }
     }
 }

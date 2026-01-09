@@ -31,27 +31,30 @@ struct TransportBarButton<Label: View>: View {
     var body: some View {
         Button(action: action) {
             label()
-                .font(.title3)
+                .font(.title2)
                 .fontWeight(.medium)
-                .foregroundStyle(isFocused ? .black : .white)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
+                .foregroundStyle(isFocused ? .black : .white.opacity(0.9))
+                // Padding only when focused for capsule background
+                .padding(.horizontal, isFocused ? 24 : 8)
+                .padding(.vertical, isFocused ? 16 : 8)
                 .background {
                     backgroundView
                 }
+                // Clip to capsule shape
+                .clipShape(Capsule())
         }
         .buttonStyle(.plain)
         .focused($isFocused)
         // Native Apple TV focus effect: lift + shadow
         .scaleEffect(isFocused ? 1.1 : 1.0)
         .shadow(
-            color: isFocused ? .black.opacity(0.3) : .clear,
-            radius: isFocused ? 20 : 0,
+            color: isFocused ? .black.opacity(0.4) : .clear,
+            radius: isFocused ? 15 : 0,
             x: 0,
-            y: isFocused ? 15 : 0
+            y: isFocused ? 10 : 0
         )
         // Use linear animation to reduce main thread load (prevents audio crackling)
-        .animation(.linear(duration: 0.15), value: isFocused)
+        .animation(.easeOut(duration: 0.15), value: isFocused)
     }
 
     @ViewBuilder
@@ -60,8 +63,8 @@ struct TransportBarButton<Label: View>: View {
             // Focused: solid white capsule (Apple TV standard)
             Capsule().fill(Color.white)
         } else {
-            // Unfocused: transparent - button blends with transport bar glass
-            Color.clear
+            // Unfocused: subtle glass effect, icon-only appearance
+            Capsule().fill(.ultraThinMaterial.opacity(0.3))
         }
     }
 }
@@ -93,25 +96,28 @@ struct TransportBarMenu<Label: View, Content: View>: View {
             content()
         } label: {
             label()
-                .font(.title3)
+                .font(.title2)
                 .fontWeight(.medium)
-                .foregroundStyle(isFocused ? .black : .white)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
+                .foregroundStyle(isFocused ? .black : .white.opacity(0.9))
+                // Padding only when focused for capsule background
+                .padding(.horizontal, isFocused ? 24 : 8)
+                .padding(.vertical, isFocused ? 16 : 8)
                 .background {
                     backgroundView
                 }
+                // Clip to capsule shape
+                .clipShape(Capsule())
         }
         .focused($isFocused)
         .scaleEffect(isFocused ? 1.1 : 1.0)
         .shadow(
-            color: isFocused ? .black.opacity(0.3) : .clear,
-            radius: isFocused ? 20 : 0,
+            color: isFocused ? .black.opacity(0.4) : .clear,
+            radius: isFocused ? 15 : 0,
             x: 0,
-            y: isFocused ? 15 : 0
+            y: isFocused ? 10 : 0
         )
         // Use linear animation to reduce main thread load (prevents audio crackling)
-        .animation(.linear(duration: 0.15), value: isFocused)
+        .animation(.easeOut(duration: 0.15), value: isFocused)
     }
 
     @ViewBuilder
@@ -120,8 +126,8 @@ struct TransportBarMenu<Label: View, Content: View>: View {
             // Focused: solid white capsule (Apple TV standard)
             Capsule().fill(Color.white)
         } else {
-            // Unfocused: transparent - button blends with transport bar glass
-            Color.clear
+            // Unfocused: subtle glass effect, icon-only appearance
+            Capsule().fill(.ultraThinMaterial.opacity(0.3))
         }
     }
 }

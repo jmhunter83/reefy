@@ -19,21 +19,21 @@ struct TransportBarBackground: View {
             Color.clear
                 .glassEffect(.regular, in: .rect(cornerRadius: 24))
         } else if #available(tvOS 18.0, *) {
-            // tvOS 18-25 enhanced material
+            // tvOS 18-25 - lighter, more transparent background
             RoundedRectangle(cornerRadius: 24)
-                .fill(.ultraThinMaterial)
+                .fill(.black.opacity(0.4))
                 .overlay {
                     RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
                 }
-                .shadow(color: .black.opacity(0.4), radius: 30, y: 12)
+                .shadow(color: .black.opacity(0.3), radius: 20, y: 8)
         } else {
-            // tvOS 17 fallback
-            BlurView(style: .prominent)
-                .clipShape(RoundedRectangle(cornerRadius: 24))
+            // tvOS 17 fallback - lighter
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.black.opacity(0.4))
                 .overlay {
                     RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
                 }
         }
         #else

@@ -167,6 +167,7 @@ class VideoPlayerContainerState: ObservableObject {
 
     private var jumpProgressCancellable: AnyCancellable?
     private var timerCancellable: AnyCancellable?
+    private var playbackStatusCancellable: AnyCancellable?
 
     // MARK: - Initialization
 
@@ -190,6 +191,32 @@ class VideoPlayerContainerState: ObservableObject {
                 self?.lastTapLocation = nil
             }
         #endif
+    }
+
+    /// Call this after manager is set to observe playback status
+    func observePlaybackStatus() {
+        guard let manager else { return }
+
+        playbackStatusCancellable = manager.$playbackRequestStatus
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] status in
+                guard let self else { return }
+
+                if status == .paused {
+                    // When paused, show overlay and stop timer
+                    if self.overlayState != .visible && !self.isGestureLocked {
+                        withAnimation(.linear(duration: 0.25)) {
+                            self.overlayState = .visible
+                        }
+                    }
+                    self.timer.stop()
+                } else if status == .playing {
+                    // When playing, start the auto-hide timer
+                    if self.overlayState == .visible && self.supplementState == .closed {
+                        self.timer.poke()
+                    }
+                }
+            }
     }
 
     // MARK: - State Mutations

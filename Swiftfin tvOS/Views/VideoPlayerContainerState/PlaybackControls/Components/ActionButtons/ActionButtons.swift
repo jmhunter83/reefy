@@ -7,7 +7,6 @@
 //
 
 import Defaults
-import Logging
 import SwiftUI
 
 extension VideoPlayer.PlaybackControls.NavigationBar {
@@ -24,85 +23,45 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
         @EnvironmentObject
         private var manager: MediaPlayerManager
 
-        private let logger = Logger.swiftfin()
-
-        private func filteredActionButtons(_ rawButtons: [VideoPlayerActionButton]) -> [VideoPlayerActionButton] {
-            var filteredButtons = rawButtons
-
-            // DEBUG: Log audio stream state
-            let audioCount = manager.playbackItem?.audioStreams.count ?? -1
-            let subtitleCount = manager.playbackItem?.subtitleStreams.count ?? -1
-            let isLive = manager.item.isLiveStream
-            logger.debug(
-                "ActionButtons: audio=\(audioCount), subs=\(subtitleCount), live=\(isLive)"
-            )
-
-            if manager.playbackItem?.audioStreams.isEmpty == true {
-                logger.debug("Filtering out audio - no streams")
-                filteredButtons.removeAll { $0 == .audio }
-            }
-
-            if manager.playbackItem?.subtitleStreams.isEmpty == true {
-                filteredButtons.removeAll { $0 == .subtitles }
-            }
-
-            if manager.queue == nil {
-                filteredButtons.removeAll { $0 == .autoPlay }
-                filteredButtons.removeAll { $0 == .playNextItem }
-                filteredButtons.removeAll { $0 == .playPreviousItem }
-            }
-
-            if manager.item.isLiveStream {
-                filteredButtons.removeAll { $0 == .audio }
-                filteredButtons.removeAll { $0 == .autoPlay }
-                filteredButtons.removeAll { $0 == .playbackSpeed }
-                filteredButtons.removeAll { $0 == .playbackQuality }
-                filteredButtons.removeAll { $0 == .subtitles }
-            }
-
-            // Episodes button only for episode content
-            if manager.item.type != .episode {
-                filteredButtons.removeAll { $0 == .episodes }
-            }
-
-            return filteredButtons
-        }
-
-        /// All action buttons shown directly in bar (no overflow menu)
+        /// Cached filtered buttons - computed once per body evaluation
         private var allActionButtons: [VideoPlayerActionButton] {
             // Combine bar + menu buttons, removing duplicates
             var combined = rawBarActionButtons
             for button in rawMenuActionButtons where !combined.contains(button) {
                 combined.append(button)
             }
-            return filteredActionButtons(combined)
-        }
 
-        // MARK: - Button Groups
+            // Filter based on current state
+            var filtered = combined
 
-        /// Queue control buttons (previous, next, autoplay)
-        private var queueButtons: [VideoPlayerActionButton] {
-            allActionButtons.filter { [.playPreviousItem, .playNextItem, .autoPlay].contains($0) }
-        }
+            if manager.playbackItem?.audioStreams.isEmpty == true {
+                filtered.removeAll { $0 == .audio }
+            }
 
-        /// Track selection buttons (subtitles, audio)
-        private var trackButtons: [VideoPlayerActionButton] {
-            allActionButtons.filter { [.subtitles, .audio].contains($0) }
-        }
+            if manager.playbackItem?.subtitleStreams.isEmpty == true {
+                filtered.removeAll { $0 == .subtitles }
+            }
 
-        /// Playback settings buttons (speed, quality)
-        private var settingsButtons: [VideoPlayerActionButton] {
-            allActionButtons.filter { [.playbackSpeed, .playbackQuality].contains($0) }
-        }
+            if manager.queue == nil {
+                filtered.removeAll { $0 == .autoPlay }
+                filtered.removeAll { $0 == .playNextItem }
+                filtered.removeAll { $0 == .playPreviousItem }
+            }
 
-        /// Content buttons (info, episodes)
-        private var contentButtons: [VideoPlayerActionButton] {
-            allActionButtons.filter { [.info, .episodes].contains($0) }
-        }
+            if manager.item.isLiveStream {
+                filtered.removeAll { $0 == .audio }
+                filtered.removeAll { $0 == .autoPlay }
+                filtered.removeAll { $0 == .playbackSpeed }
+                filtered.removeAll { $0 == .playbackQuality }
+                filtered.removeAll { $0 == .subtitles }
+            }
 
-        /// View buttons (aspect fill)
-        private var viewButtons: [VideoPlayerActionButton] {
-            allActionButtons.filter { [.aspectFill].contains($0) }
+            // Episodes button only for episode content
+            if manager.item.type != .episode {
+                filtered.removeAll { $0 == .episodes }
+            }
+
+            return filtered
         }
 
         @ViewBuilder
@@ -143,21 +102,24 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
         }
 
         var body: some View {
+            // Compute once and filter for each group
+            let buttons = allActionButtons
+
             HStack(spacing: 24) {
                 // Queue group: ◀️ ▶️ 🔁
-                buttonGroup(queueButtons)
+                buttonGroup(buttons.filter { [.playPreviousItem, .playNextItem, .autoPlay].contains($0) })
 
                 // Tracks group: CC 🔊
-                buttonGroup(trackButtons)
+                buttonGroup(buttons.filter { [.subtitles, .audio].contains($0) })
 
                 // Content group: ℹ️ 📺
-                buttonGroup(contentButtons)
+                buttonGroup(buttons.filter { [.info, .episodes].contains($0) })
 
                 // Settings group: ⏱️ 📺
-                buttonGroup(settingsButtons)
+                buttonGroup(buttons.filter { [.playbackSpeed, .playbackQuality].contains($0) })
 
                 // View group: ⬜
-                buttonGroup(viewButtons)
+                buttonGroup(buttons.filter { [.aspectFill].contains($0) })
             }
             .labelStyle(.iconOnly)
         }
