@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "tvosfin-logo.png",
+      "filename" : "reefy-logo.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "tvosfin-logo@2x.png",
+      "filename" : "reefy-logo@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "tvosfin-logo@3x.png",
+      "filename" : "reefy-logo@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

@@ -33,7 +33,7 @@ struct SettingsView: View {
     // MARK: - Body
 
     var body: some View {
-        Form(image: .tvosfinLogo) {
+        Form(image: .reefyLogo) {
             serverSection
             videoPlayerSection
             customizationSection

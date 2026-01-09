@@ -38,7 +38,7 @@ struct AppSettingsView: View {
     }
 
     var body: some View {
-        Form(image: .tvosfinLogo) {
+        Form(image: .reefyLogo) {
             LabeledContent(
                 L10n.version,
                 value: "\(UIApplication.appVersion ?? .emptyDash) (\(UIApplication.bundleVersion ?? .emptyDash))"

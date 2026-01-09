@@ -17,7 +17,7 @@ struct NavigationBarBrandingModifier: ViewModifier {
         content
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Image(.tvosfinLogo)
+                    Image(.reefyLogo)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(height: 100)

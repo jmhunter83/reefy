@@ -1,6 +1,6 @@
 # Architecture Overview
 
-This document provides an overview of key architectural patterns used in atvfin.
+This document provides an overview of key architectural patterns used in Reefy.
 
 ---
 

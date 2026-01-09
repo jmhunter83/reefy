@@ -1,6 +1,6 @@
 <div align="center">
 
-# atvfin
+# Reefy
 
 **A tvOS-focused Jellyfin client**
 
@@ -15,7 +15,7 @@
 
 ## About
 
-**atvfin** is a native Jellyfin media client built exclusively for Apple TV. It uses VLC for direct playback and is designed to feel native on tvOS.
+**Reefy** is a native Jellyfin media client built exclusively for Apple TV. It uses VLC for direct playback and is designed to feel native on tvOS.
 
 This project focuses purely on the tvOS experience — no iOS, just Apple TV. Will likely launch a Testflight (BETA) in January 2026.
 

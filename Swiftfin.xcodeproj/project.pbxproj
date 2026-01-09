@@ -657,7 +657,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.atvfin.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.reefy.tests;
 				PRODUCT_MODULE_NAME = Swiftfin_tvOS_Tests;
 				PRODUCT_NAME = "Swiftfin tvOS Tests";
 				SDKROOT = appletvos;
@@ -688,7 +688,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.atvfin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.reefy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -718,7 +718,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.atvfin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.reefy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -869,7 +869,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.atvfin.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.reefy.tests;
 				PRODUCT_MODULE_NAME = Swiftfin_tvOS_Tests;
 				PRODUCT_NAME = "Swiftfin tvOS Tests";
 				SDKROOT = appletvos;

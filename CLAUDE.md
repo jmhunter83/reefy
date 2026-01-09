@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**atvfin** is a native tvOS Jellyfin client, forked from Swiftfin. It focuses exclusively on Apple TV with VLC-based playback and tvOS 18 Liquid Glass effects.
+**Reefy** is a native tvOS Jellyfin client, forked from Swiftfin. It focuses exclusively on Apple TV with VLC-based playback and tvOS 18 Liquid Glass effects.
 
 - **Target**: tvOS 17+ (tvOS 18 for Liquid Glass)
 - **Language**: Swift 5.9+
