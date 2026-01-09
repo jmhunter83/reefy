@@ -60,15 +60,49 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
                 filteredButtons.removeAll { $0 == .subtitles }
             }
 
+            // Episodes button only for episode content
+            if manager.item.type != .episode {
+                filteredButtons.removeAll { $0 == .episodes }
+            }
+
             return filteredButtons
         }
 
-        private var barActionButtons: [VideoPlayerActionButton] {
-            filteredActionButtons(rawBarActionButtons)
+        /// All action buttons shown directly in bar (no overflow menu)
+        private var allActionButtons: [VideoPlayerActionButton] {
+            // Combine bar + menu buttons, removing duplicates
+            var combined = rawBarActionButtons
+            for button in rawMenuActionButtons where !combined.contains(button) {
+                combined.append(button)
+            }
+            return filteredActionButtons(combined)
         }
 
-        private var menuActionButtons: [VideoPlayerActionButton] {
-            filteredActionButtons(rawMenuActionButtons)
+        // MARK: - Button Groups
+
+        /// Queue control buttons (previous, next, autoplay)
+        private var queueButtons: [VideoPlayerActionButton] {
+            allActionButtons.filter { [.playPreviousItem, .playNextItem, .autoPlay].contains($0) }
+        }
+
+        /// Track selection buttons (subtitles, audio)
+        private var trackButtons: [VideoPlayerActionButton] {
+            allActionButtons.filter { [.subtitles, .audio].contains($0) }
+        }
+
+        /// Playback settings buttons (speed, quality)
+        private var settingsButtons: [VideoPlayerActionButton] {
+            allActionButtons.filter { [.playbackSpeed, .playbackQuality].contains($0) }
+        }
+
+        /// Content buttons (info, episodes)
+        private var contentButtons: [VideoPlayerActionButton] {
+            allActionButtons.filter { [.info, .episodes].contains($0) }
+        }
+
+        /// View buttons (aspect fill)
+        private var viewButtons: [VideoPlayerActionButton] {
+            allActionButtons.filter { [.aspectFill].contains($0) }
         }
 
         @ViewBuilder
@@ -80,9 +114,12 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
                 Audio()
             case .autoPlay:
                 AutoPlay()
+            case .episodes:
+                Episodes()
             case .gestureLock:
                 EmptyView()
-//                GestureLock()
+            case .info:
+                Info()
             case .playbackSpeed:
                 PlaybackSpeed()
             case .playbackQuality:
@@ -96,24 +133,31 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             }
         }
 
-        var body: some View {
-            HStack(spacing: 10) {
-                ForEach(
-                    barActionButtons,
-                    content: view(for:)
-                )
-
-                if menuActionButtons.isNotEmpty {
-                    TransportBarMenu(L10n.menu) {
-                        Image(systemName: "ellipsis.circle")
-                    } content: {
-                        ForEach(
-                            menuActionButtons,
-                            content: view(for:)
-                        )
-                        .environment(\.isInMenu, true)
-                    }
+        @ViewBuilder
+        private func buttonGroup(_ buttons: [VideoPlayerActionButton]) -> some View {
+            if buttons.isNotEmpty {
+                HStack(spacing: 8) {
+                    ForEach(buttons, content: view(for:))
                 }
+            }
+        }
+
+        var body: some View {
+            HStack(spacing: 24) {
+                // Queue group: ◀️ ▶️ 🔁
+                buttonGroup(queueButtons)
+
+                // Tracks group: CC 🔊
+                buttonGroup(trackButtons)
+
+                // Content group: ℹ️ 📺
+                buttonGroup(contentButtons)
+
+                // Settings group: ⏱️ 📺
+                buttonGroup(settingsButtons)
+
+                // View group: ⬜
+                buttonGroup(viewButtons)
             }
             .labelStyle(.iconOnly)
         }

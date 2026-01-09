@@ -3,7 +3,7 @@
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, you can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Copyright (c) 2025 Jellyfin & Jellyfin Contributors
+// Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
 // TODO: add audio/subtitle offset
@@ -13,9 +13,11 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
     case aspectFill
     case audio
     case autoPlay
+    case episodes
     case gestureLock
+    case info
     case playbackSpeed
-//    case playbackQuality
+    case playbackQuality
     case playNextItem
     case playPreviousItem
     case subtitles
@@ -28,12 +30,16 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
             return L10n.audio
         case .autoPlay:
             return L10n.autoPlay
+        case .episodes:
+            return L10n.episodes
         case .gestureLock:
             return L10n.gestureLock
+        case .info:
+            return L10n.info
         case .playbackSpeed:
             return L10n.playbackSpeed
-//        case .playbackQuality:
-//            return L10n.playbackQuality
+        case .playbackQuality:
+            return L10n.playbackQuality
         case .playNextItem:
             return L10n.playNextItem
         case .playPreviousItem:
@@ -52,9 +58,11 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
         case .aspectFill: "arrow.up.left.and.arrow.down.right"
         case .audio: "speaker.wave.2.fill"
         case .autoPlay: "play.circle.fill"
+        case .episodes: "tv"
         case .gestureLock: "lock.circle.fill"
+        case .info: "info.circle"
         case .playbackSpeed: "speedometer"
-//        case .playbackQuality: "tv.circle.fill"
+        case .playbackQuality: "tv.circle.fill"
         case .playNextItem: "forward.end.circle.fill"
         case .playPreviousItem: "backward.end.circle.fill"
         case .subtitles: "captions.bubble.fill"
@@ -76,10 +84,12 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
     static let defaultBarActionButtons: [VideoPlayerActionButton] = {
         #if os(tvOS)
         return [
-            .subtitles,
-            .audio,
             .playPreviousItem,
             .playNextItem,
+            .subtitles,
+            .audio,
+            .info,
+            .episodes,
         ]
         #else
         return [
@@ -94,8 +104,10 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
     static let defaultMenuActionButtons: [VideoPlayerActionButton] = {
         #if os(tvOS)
         return [
-            .autoPlay,
             .playbackSpeed,
+            .playbackQuality,
+            .autoPlay,
+            .aspectFill,
         ]
         #else
         return [

@@ -74,6 +74,16 @@ extension VideoPlayer {
             }
         }
 
+        /// Center playback buttons (play/pause + jump forward/backward)
+        @ViewBuilder
+        private var centerPlaybackButtons: some View {
+            if !isPresentingSupplement && !isScrubbing {
+                PlaybackButtons()
+                    .focusGuide(focusGuide, tag: "playbackButtons")
+                    .isVisible(isPresentingOverlay)
+            }
+        }
+
         @ViewBuilder
         private var transportBar: some View {
             if !isPresentingSupplement {
@@ -105,6 +115,10 @@ extension VideoPlayer {
                     // Title in top-left
                     titleOverlay
 
+                    // Center playback buttons (play/pause + jump)
+                    centerPlaybackButtons
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
                     // Transport bar in bottom 15%
                     VStack {
                         Spacer()
@@ -123,10 +137,10 @@ extension VideoPlayer {
             .animation(.bouncy(duration: 0.25), value: isPresentingOverlay)
             .onChange(of: isPresentingOverlay) { _, isPresenting in
                 if isPresenting {
-                    // Transition focus to playback progress when overlay appears
+                    // Focus center playback buttons when overlay appears
                     // Use longer delay to ensure view layout is complete
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        focusGuide.transition(to: "playbackProgress")
+                        focusGuide.transition(to: "playbackButtons")
                     }
                 }
             }

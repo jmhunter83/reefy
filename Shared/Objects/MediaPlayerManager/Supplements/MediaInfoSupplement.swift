@@ -3,9 +3,10 @@
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, you can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Copyright (c) 2025 Jellyfin & Jellyfin Contributors
+// Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import Defaults
 import JellyfinAPI
 import SwiftUI
 
@@ -172,6 +173,110 @@ extension MediaInfoSupplement {
             }
         }
 
-        var tvOSView: some View { EmptyView() }
+        var tvOSView: some View {
+            TVOSInfoOverlay(item: item)
+        }
+    }
+
+    // MARK: - tvOS Info Overlay
+
+    private struct TVOSInfoOverlay: View {
+
+        @Default(.accentColor)
+        private var accentColor
+
+        @EnvironmentObject
+        private var containerState: VideoPlayerContainerState
+        @EnvironmentObject
+        private var manager: MediaPlayerManager
+
+        @FocusState
+        private var isFocused: Bool
+
+        let item: BaseItemDto
+
+        @ViewBuilder
+        private var accessoryView: some View {
+            DotHStack {
+                if item.type == .episode, let seasonEpisodeLocator = item.seasonEpisodeLabel {
+                    Text(seasonEpisodeLocator)
+                } else if let premiereYear = item.premiereDateYear {
+                    Text(premiereYear)
+                }
+
+                if let runtime = item.runTimeLabel {
+                    Text(runtime)
+                }
+
+                if let officialRating = item.officialRating {
+                    Text(officialRating)
+                }
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+
+        var body: some View {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: 40) {
+                    // Poster
+                    ImageView(item.imageSource(.primary, maxWidth: 300))
+                        .failure {
+                            SystemImageContentView(systemName: item.systemImage)
+                        }
+                        .aspectRatio(2 / 3, contentMode: .fit)
+                        .frame(height: 400)
+                        .posterBorder()
+                        .cornerRadius(12)
+
+                    // Info content
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(item.displayTitle)
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .lineLimit(2)
+
+                        accessoryView
+
+                        if let overview = item.overview {
+                            Text(overview)
+                                .font(.body)
+                                .foregroundStyle(.white.opacity(0.9))
+                                .lineLimit(6)
+                                .frame(maxWidth: 800, alignment: .leading)
+                        }
+
+                        // From Beginning button
+                        if !item.isLiveStream {
+                            Button {
+                                manager.proxy?.setSeconds(.zero)
+                                manager.setPlaybackRequestStatus(status: .playing)
+                                containerState.select(supplement: nil)
+                            } label: {
+                                Label("From Beginning", systemImage: "play.fill")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(isFocused ? .black : .white)
+                                    .padding(.horizontal, 30)
+                                    .padding(.vertical, 16)
+                                    .background {
+                                        Capsule()
+                                            .fill(isFocused ? Color.white : Color.white.opacity(0.3))
+                                    }
+                            }
+                            .buttonStyle(.plain)
+                            .focused($isFocused)
+                            .scaleEffect(isFocused ? 1.05 : 1.0)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isFocused)
+                            .padding(.top, 16)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, EdgeInsets.edgePadding * 2)
+            }
+            .focusSection()
+        }
     }
 }

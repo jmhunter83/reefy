@@ -3,7 +3,7 @@
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, you can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Copyright (c) 2025 Jellyfin & Jellyfin Contributors
+// Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
 import CollectionHStack
@@ -182,7 +182,23 @@ extension EpisodeMediaPlayerQueue {
             manager.playNewItem(provider: provider)
         }
 
-        var tvOSView: some View { EmptyView() }
+        var tvOSView: some View {
+            TVOSEpisodeOverlay(
+                viewModel: viewModel,
+                selection: $selection,
+                selectAction: select
+            )
+            .onAppear {
+                if let seasonID = manager.item.seasonID, let season = viewModel.seasons[id: seasonID] {
+                    if season.elements.isEmpty {
+                        season.send(.refresh)
+                    }
+                    selection = season.id
+                } else {
+                    selection = viewModel.seasons.first?.id
+                }
+            }
+        }
 
         var iOSView: some View {
             CompactOrRegularView(
@@ -209,6 +225,198 @@ extension EpisodeMediaPlayerQueue {
                     selection = viewModel.seasons.first?.id
                 }
             }
+        }
+    }
+
+    // MARK: - tvOS Episode Overlay
+
+    private struct TVOSEpisodeOverlay: View {
+
+        @Default(.accentColor)
+        private var accentColor
+
+        @EnvironmentObject
+        private var containerState: VideoPlayerContainerState
+        @EnvironmentObject
+        private var manager: MediaPlayerManager
+
+        @ObservedObject
+        var viewModel: SeriesItemViewModel
+
+        @Binding
+        var selection: SeasonItemViewModel.ID?
+
+        let selectAction: (BaseItemDto) -> Void
+
+        private var selectionViewModel: SeasonItemViewModel? {
+            guard let selection else { return nil }
+            return viewModel.seasons[id: selection]
+        }
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 24) {
+                // Season selector (if multiple seasons)
+                if viewModel.seasons.count > 1 {
+                    seasonSelector
+                }
+
+                // Episode scroll view
+                if let selectionViewModel {
+                    TVOSEpisodeScrollView(
+                        seasonViewModel: selectionViewModel,
+                        currentEpisodeID: manager.item.id,
+                        selectAction: selectAction
+                    )
+                }
+            }
+            .padding(.horizontal, EdgeInsets.edgePadding * 2)
+            .focusSection()
+        }
+
+        @ViewBuilder
+        private var seasonSelector: some View {
+            Menu {
+                ForEach(viewModel.seasons, id: \.season.id) { season in
+                    Button {
+                        selection = season.id
+                        if season.elements.isEmpty {
+                            season.send(.refresh)
+                        }
+                    } label: {
+                        if season.id == selection {
+                            Label(season.season.displayTitle, systemImage: "checkmark")
+                        } else {
+                            Text(season.season.displayTitle)
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Text(selectionViewModel?.season.displayTitle ?? L10n.episodes)
+                        .font(.title3)
+                        .fontWeight(.semibold)
+
+                    Image(systemName: "chevron.down")
+                        .font(.subheadline)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                #if os(tvOS)
+                    .background {
+                        if #available(tvOS 26.0, *) {
+                            Color.clear
+                                .glassEffect(.regular, in: .capsule)
+                        } else {
+                            Capsule()
+                                .fill(.ultraThinMaterial)
+                        }
+                    }
+                #endif
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private struct TVOSEpisodeScrollView: View {
+
+        @Default(.accentColor)
+        private var accentColor
+
+        @EnvironmentObject
+        private var containerState: VideoPlayerContainerState
+
+        @ObservedObject
+        var seasonViewModel: SeasonItemViewModel
+
+        let currentEpisodeID: String?
+        let selectAction: (BaseItemDto) -> Void
+
+        var body: some View {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 20) {
+                    ForEach(seasonViewModel.elements, id: \.unwrappedIDHashOrZero) { episode in
+                        TVOSEpisodeCard(
+                            episode: episode,
+                            isCurrentEpisode: episode.id == currentEpisodeID,
+                            selectAction: { selectAction(episode) }
+                        )
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+    }
+
+    private struct TVOSEpisodeCard: View {
+
+        @Default(.accentColor)
+        private var accentColor
+
+        @EnvironmentObject
+        private var containerState: VideoPlayerContainerState
+
+        @FocusState
+        private var isFocused: Bool
+
+        let episode: BaseItemDto
+        let isCurrentEpisode: Bool
+        let selectAction: () -> Void
+
+        var body: some View {
+            Button(action: {
+                selectAction()
+                containerState.select(supplement: nil)
+            }) {
+                VStack(alignment: .leading, spacing: 10) {
+                    // Episode thumbnail
+                    ZStack {
+                        Rectangle()
+                            .fill(.complexSecondary)
+
+                        ImageView(episode.imageSource(.primary, maxWidth: 400))
+                            .failure {
+                                SystemImageContentView(systemName: episode.systemImage)
+                            }
+                    }
+                    .aspectRatio(16 / 9, contentMode: .fit)
+                    .frame(width: 320, height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        if isCurrentEpisode {
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(accentColor, lineWidth: 4)
+                        }
+                    }
+                    .shadow(color: .black.opacity(isFocused ? 0.4 : 0.2), radius: isFocused ? 12 : 4)
+
+                    // Episode info
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(episode.displayTitle)
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+
+                        DotHStack {
+                            if let seasonEpisodeLabel = episode.seasonEpisodeLabel {
+                                Text(seasonEpisodeLabel)
+                            }
+
+                            if let runtime = episode.runTimeLabel {
+                                Text(runtime)
+                            }
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    }
+                    .frame(width: 320, alignment: .leading)
+                }
+            }
+            .buttonStyle(.plain)
+            .focused($isFocused)
+            .scaleEffect(isFocused ? 1.05 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isFocused)
         }
     }
 
