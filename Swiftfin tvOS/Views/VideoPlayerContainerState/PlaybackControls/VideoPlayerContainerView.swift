@@ -196,6 +196,11 @@ extension VideoPlayer {
             view.addGestureRecognizer(gesture)
         }
 
+        override func viewDidDisappear(_ animated: Bool) {
+            super.viewDidDisappear(animated)
+            manager.stop()
+        }
+
         private func setupFocusObserver() {
             containerState.$overlayState
                 .removeDuplicates()

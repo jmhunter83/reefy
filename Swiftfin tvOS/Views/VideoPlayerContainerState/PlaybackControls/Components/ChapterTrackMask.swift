@@ -21,15 +21,13 @@ extension VideoPlayer.PlaybackControls.PlaybackProgress {
         private var unitPoints: [Double] {
             chapters.compactMap { chapter in
                 guard let startSeconds = chapter.chapterInfo.startSeconds,
-                      startSeconds<
-                          runtime,
-                          startSeconds
-                      >.zero
+                      startSeconds > .zero,
+                      runtime > .zero
                 else {
                     return nil
                 }
 
-                return startSeconds / runtime
+                return startSeconds.seconds / runtime.seconds
             }
         }
 
