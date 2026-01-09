@@ -11,13 +11,6 @@ import SwiftUI
 
 struct VideoPlayerSettingsView: View {
 
-    // MARK: - Jump Intervals
-
-    @Default(.VideoPlayer.jumpBackwardInterval)
-    private var jumpBackwardLength
-    @Default(.VideoPlayer.jumpForwardInterval)
-    private var jumpForwardLength
-
     // MARK: - Resume
 
     @Default(.VideoPlayer.resumeOffset)
@@ -93,12 +86,6 @@ struct VideoPlayerSettingsView: View {
             }
             .onChange(of: menuActionButtons) { _, newValue in
                 autoPlayEnabled = newValue.contains(.autoPlay) || barActionButtons.contains(.autoPlay)
-            }
-
-            // SECTION: Jump Intervals
-            Section(L10n.jump) {
-                JumpIntervalPicker(L10n.jumpBackwardLength, selection: $jumpBackwardLength)
-                JumpIntervalPicker(L10n.jumpForwardLength, selection: $jumpForwardLength)
             }
 
             // SECTION: Resume Offset
