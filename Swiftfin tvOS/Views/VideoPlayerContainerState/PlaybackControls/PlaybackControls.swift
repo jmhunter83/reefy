@@ -214,8 +214,9 @@ extension VideoPlayer {
                     manager.togglePlayPause()
 
                 case (.leftArrow, _):
-                    // Skip backward (only when not scrubbing)
-                    if !isScrubbing {
+                    // Skip backward (only when not scrubbing and action buttons not focused)
+                    // When action buttons are focused, let SwiftUI handle navigation
+                    if !isScrubbing && !containerState.isActionButtonsFocused {
                         let now = Date()
                         if lastSkipDirection == .backward,
                            now.timeIntervalSince(lastSkipTime) < doubleTapThreshold
@@ -237,8 +238,9 @@ extension VideoPlayer {
                     }
 
                 case (.rightArrow, _):
-                    // Skip forward (only when not scrubbing)
-                    if !isScrubbing {
+                    // Skip forward (only when not scrubbing and action buttons not focused)
+                    // When action buttons are focused, let SwiftUI handle navigation
+                    if !isScrubbing && !containerState.isActionButtonsFocused {
                         let now = Date()
                         if lastSkipDirection == .forward,
                            now.timeIntervalSince(lastSkipTime) < doubleTapThreshold

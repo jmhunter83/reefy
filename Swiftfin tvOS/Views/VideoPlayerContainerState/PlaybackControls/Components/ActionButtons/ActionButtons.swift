@@ -133,6 +133,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
                     view(for: button)
                 }
             }
+            .focusSection()
             .labelStyle(.iconOnly)
         }
     }

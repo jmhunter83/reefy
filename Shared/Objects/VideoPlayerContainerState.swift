@@ -124,6 +124,9 @@ class VideoPlayerContainerState: ObservableObject {
     var isPresentingPlaybackControls: Bool = false
 
     @Published
+    var isActionButtonsFocused: Bool = false
+
+    @Published
     var isCompact: Bool = false {
         didSet {
             updatePlaybackControlsVisibility()
