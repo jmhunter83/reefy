@@ -118,8 +118,8 @@ struct SettingsView: View {
             }
         } learnMore: {
             LabeledContent(
-                "Swiftfin",
-                value: L10n.playerSwiftfinDescription
+                "Reefy",
+                value: L10n.playerReefyDescription
             )
             LabeledContent(
                 L10n.native,
