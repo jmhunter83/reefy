@@ -58,12 +58,14 @@ struct TransportBarButton<Label: View>: View {
         )
         // Use linear animation to reduce main thread load (prevents audio crackling)
         .animation(.easeOut(duration: 0.15), value: isFocused)
-        // Poke timer when focused to keep overlay visible
+        // Track focus state and poke timer to keep overlay visible
         .onChange(of: isFocused) { _, newValue in
             if newValue {
                 containerState.timer.poke()
+                containerState.isActionButtonsFocused = true
             }
-            // Note: isActionButtonsFocused is tracked at ActionButtons level to avoid race conditions
+            // Don't set false on blur - let the focus system handle it
+            // The isActionButtonsFocused flag stays true as long as ANY button is focused
         }
     }
 
@@ -145,6 +147,7 @@ struct TransportBarMenu<Label: View, Content: View>: View {
             if newValue {
                 // Button became focused - poke timer and cancel any existing poke task
                 containerState.timer.poke()
+                containerState.isActionButtonsFocused = true
                 menuOpenPokeTask?.cancel()
                 menuOpenPokeTask = nil
                 wasFocused = true
@@ -160,7 +163,7 @@ struct TransportBarMenu<Label: View, Content: View>: View {
                     }
                 }
             }
-            // Note: isActionButtonsFocused is tracked at ActionButtons level to avoid race conditions
+            // Don't set false on blur - stays true as long as ANY action button is focused
         }
         .onDisappear {
             menuOpenPokeTask?.cancel()

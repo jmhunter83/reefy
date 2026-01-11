@@ -198,6 +198,9 @@ extension VideoPlayer {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         focusGuide.transition(to: "actionButtons")
                     }
+                } else {
+                    // Reset focus tracking when overlay hides
+                    containerState.isActionButtonsFocused = false
                 }
             }
             .onReceive(onPressEvent) { press in
