@@ -65,6 +65,10 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
                 filtered.removeAll { $0 == .episodes }
             }
 
+            // Remove non-functional buttons on tvOS
+            filtered.removeAll { $0 == .info }
+            filtered.removeAll { $0 == .aspectFill }
+
             return filtered
         }
 
