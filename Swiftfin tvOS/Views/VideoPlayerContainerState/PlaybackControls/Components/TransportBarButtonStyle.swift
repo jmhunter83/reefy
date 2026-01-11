@@ -58,14 +58,12 @@ struct TransportBarButton<Label: View>: View {
         )
         // Use linear animation to reduce main thread load (prevents audio crackling)
         .animation(.easeOut(duration: 0.15), value: isFocused)
-        // Track focus state and poke timer to keep overlay visible
+        // Poke timer when focused to keep overlay visible
         .onChange(of: isFocused) { _, newValue in
             if newValue {
                 containerState.timer.poke()
-                containerState.isActionButtonsFocused = true
-            } else {
-                containerState.isActionButtonsFocused = false
             }
+            // Note: isActionButtonsFocused is tracked at ActionButtons level to avoid race conditions
         }
     }
 
@@ -142,19 +140,17 @@ struct TransportBarMenu<Label: View, Content: View>: View {
         )
         // Use linear animation to reduce main thread load (prevents audio crackling)
         .animation(.easeOut(duration: 0.15), value: isFocused)
-        // Track focus state and prevent overlay from hiding while menu is open
+        // Poke timer and handle menu open state
         .onChange(of: isFocused) { _, newValue in
             if newValue {
                 // Button became focused - poke timer and cancel any existing poke task
                 containerState.timer.poke()
-                containerState.isActionButtonsFocused = true
                 menuOpenPokeTask?.cancel()
                 menuOpenPokeTask = nil
                 wasFocused = true
             } else if wasFocused {
                 // Focus left after we were focused - menu likely opened
                 // Start continuous poke to keep overlay visible while browsing menu
-                containerState.isActionButtonsFocused = false
                 wasFocused = false
                 menuOpenPokeTask?.cancel()
                 menuOpenPokeTask = Task { @MainActor in
@@ -164,6 +160,7 @@ struct TransportBarMenu<Label: View, Content: View>: View {
                     }
                 }
             }
+            // Note: isActionButtonsFocused is tracked at ActionButtons level to avoid race conditions
         }
         .onDisappear {
             menuOpenPokeTask?.cancel()
