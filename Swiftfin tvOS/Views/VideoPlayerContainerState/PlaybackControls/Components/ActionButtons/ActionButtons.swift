@@ -140,6 +140,10 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             }
             .labelStyle(.iconOnly)
             .defaultFocus($focusedButton, .subtitles)
+            // Track focus state at parent level to avoid race conditions between buttons
+            .onChange(of: focusedButton) { _, newValue in
+                containerState.isActionButtonsFocused = (newValue != nil)
+            }
         }
     }
 }
