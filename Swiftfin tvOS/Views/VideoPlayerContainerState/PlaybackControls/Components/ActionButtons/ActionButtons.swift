@@ -104,25 +104,6 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             }
         }
 
-        /// Define button groups in display order
-        private static let buttonGroups: [[VideoPlayerActionButton]] = [
-            [.playPreviousItem, .playNextItem, .autoPlay], // Queue group
-            [.subtitles, .audio], // Tracks group
-            [.info, .episodes], // Content group
-            [.playbackSpeed, .playbackQuality], // Settings group
-            [.aspectFill], // View group
-        ]
-
-        /// Get the group index for a button (used for spacing)
-        private func groupIndex(for button: VideoPlayerActionButton) -> Int {
-            for (index, group) in Self.buttonGroups.enumerated() {
-                if group.contains(button) {
-                    return index
-                }
-            }
-            return -1
-        }
-
         /// Determine default focus button - subtitles is universal across movies/shows
         private func defaultFocusButton(from buttons: [VideoPlayerActionButton]) -> VideoPlayerActionButton? {
             // Prefer subtitles as default (universal for movies/shows)
@@ -136,30 +117,15 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
         var body: some View {
             let buttons = allActionButtons
 
-            // Flat HStack with all buttons - no nesting
-            HStack(spacing: 8) {
-                ForEach(Array(buttons.enumerated()), id: \.element) { index, button in
-                    // Add extra spacing between groups (not before first button)
-                    if index > 0 {
-                        let prevButton = buttons[index - 1]
-                        let prevGroup = groupIndex(for: prevButton)
-                        let currentGroup = groupIndex(for: button)
-
-                        // Add spacer when transitioning between groups
-                        if prevGroup != currentGroup {
-                            Spacer()
-                                .frame(width: 16)
-                        }
-                    }
-
+            // Flat HStack with consistent spacing - no Spacers that break focus chain
+            HStack(spacing: 24) {
+                ForEach(buttons, id: \.self) { button in
                     // Button with focus binding - enables horizontal navigation
                     view(for: button, isFocused: focusedButton == button)
                         .focused($focusedButton, equals: button)
                 }
             }
             .labelStyle(.iconOnly)
-            // Focus section enables directional navigation within this container
-            .focusSection()
             // Set default focus to subtitles button (universal across content types)
             .defaultFocus($focusedButton, defaultFocusButton(from: buttons))
             // Track when action buttons gain/lose focus
