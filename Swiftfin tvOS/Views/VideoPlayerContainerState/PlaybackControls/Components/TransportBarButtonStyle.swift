@@ -11,22 +11,22 @@ import SwiftUI
 // MARK: - Native tvOS Focus Button
 
 /// A button wrapper that provides native Apple TV focus behavior
-/// with the signature "lift and glow" effect
+/// with the signature "lift and glow" effect.
+///
+/// NOTE: This is a visual component only. Focus state is managed by the parent
+/// ActionButtons view using a single @FocusState to enable proper horizontal navigation.
 struct TransportBarButton<Label: View>: View {
 
-    @EnvironmentObject
-    private var containerState: VideoPlayerContainerState
-
-    @FocusState
-    private var isFocused: Bool
-
+    let isFocused: Bool
     let action: () -> Void
     let label: () -> Label
 
     init(
+        isFocused: Bool,
         action: @escaping () -> Void,
         @ViewBuilder label: @escaping () -> Label
     ) {
+        self.isFocused = isFocused
         self.action = action
         self.label = label
     }
@@ -47,7 +47,6 @@ struct TransportBarButton<Label: View>: View {
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)
-        .focused($isFocused)
         // Native Apple TV focus effect: lift + shadow
         .scaleEffect(isFocused ? 1.1 : 1.0)
         .shadow(
@@ -58,15 +57,6 @@ struct TransportBarButton<Label: View>: View {
         )
         // Use linear animation to reduce main thread load (prevents audio crackling)
         .animation(.easeOut(duration: 0.15), value: isFocused)
-        // Track focus state and poke timer to keep overlay visible
-        .onChange(of: isFocused) { _, newValue in
-            if newValue {
-                containerState.timer.poke()
-                containerState.isActionButtonsFocused = true
-            }
-            // Don't set false on blur - let the focus system handle it
-            // The isActionButtonsFocused flag stays true as long as ANY button is focused
-        }
     }
 
     @ViewBuilder
@@ -83,14 +73,16 @@ struct TransportBarButton<Label: View>: View {
 
 // MARK: - Transport Bar Menu Button
 
-/// A menu wrapper with native focus behavior
+/// A menu wrapper with native focus behavior.
+///
+/// NOTE: This is a visual component only. Focus state is managed by the parent
+/// ActionButtons view using a single @FocusState to enable proper horizontal navigation.
 struct TransportBarMenu<Label: View, Content: View>: View {
 
     @EnvironmentObject
     private var containerState: VideoPlayerContainerState
 
-    @FocusState
-    private var isFocused: Bool
+    let isFocused: Bool
 
     /// Tracks if we were focused (to detect menu open when focus leaves)
     @State
@@ -106,10 +98,12 @@ struct TransportBarMenu<Label: View, Content: View>: View {
 
     init(
         _ title: String,
+        isFocused: Bool,
         @ViewBuilder label: @escaping () -> Label,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.title = title
+        self.isFocused = isFocused
         self.label = label
         self.content = content
     }
@@ -132,7 +126,6 @@ struct TransportBarMenu<Label: View, Content: View>: View {
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)
-        .focused($isFocused)
         .scaleEffect(isFocused ? 1.1 : 1.0)
         .shadow(
             color: isFocused ? .black.opacity(0.4) : .clear,
@@ -142,12 +135,10 @@ struct TransportBarMenu<Label: View, Content: View>: View {
         )
         // Use linear animation to reduce main thread load (prevents audio crackling)
         .animation(.easeOut(duration: 0.15), value: isFocused)
-        // Poke timer and handle menu open state
+        // Handle menu open state - keep overlay visible while browsing menu
         .onChange(of: isFocused) { _, newValue in
             if newValue {
-                // Button became focused - poke timer and cancel any existing poke task
-                containerState.timer.poke()
-                containerState.isActionButtonsFocused = true
+                // Button became focused - cancel any existing poke task
                 menuOpenPokeTask?.cancel()
                 menuOpenPokeTask = nil
                 wasFocused = true
@@ -163,7 +154,6 @@ struct TransportBarMenu<Label: View, Content: View>: View {
                     }
                 }
             }
-            // Don't set false on blur - stays true as long as ANY action button is focused
         }
         .onDisappear {
             menuOpenPokeTask?.cancel()

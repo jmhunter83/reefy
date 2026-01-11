@@ -13,6 +13,9 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct PlaybackQuality: View {
 
+        /// Focus state passed from parent ActionButtons view
+        let isFocused: Bool
+
         @Environment(\.isInMenu)
         private var isInMenu
 
@@ -49,7 +52,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
                 }
             } else {
                 // In bar - use native focus wrapper
-                TransportBarMenu(L10n.playbackQuality) {
+                TransportBarMenu(L10n.playbackQuality, isFocused: isFocused) {
                     Image(systemName: "tv.circle")
                 } content: {
                     Section(L10n.playbackQuality) {

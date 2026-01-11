@@ -12,6 +12,9 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct PlayNextItem: View {
 
+        /// Focus state passed from parent ActionButtons view
+        let isFocused: Bool
+
         @Environment(\.isInMenu)
         private var isInMenu
 
@@ -20,7 +23,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
         var body: some View {
             if let queue = manager.queue {
-                _PlayNextItem(queue: queue, isInMenu: isInMenu)
+                _PlayNextItem(queue: queue, isInMenu: isInMenu, isFocused: isFocused)
             }
         }
     }
@@ -34,6 +37,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         var queue: AnyMediaPlayerQueue
 
         let isInMenu: Bool
+        let isFocused: Bool
 
         var body: some View {
             if isInMenu {
@@ -48,7 +52,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
                 .disabled(queue.nextItem == nil)
             } else {
                 // In bar - use native focus wrapper
-                TransportBarButton {
+                TransportBarButton(isFocused: isFocused) {
                     guard let nextItem = queue.nextItem else { return }
                     manager.playNewItem(provider: nextItem)
                 } label: {

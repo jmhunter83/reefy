@@ -23,6 +23,13 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
         @EnvironmentObject
         private var manager: MediaPlayerManager
 
+        // MARK: - Single Focus State for All Buttons
+
+        /// Single source of truth for button focus - enables horizontal navigation
+        /// per WWDC21/23 recommendations. Each button is visual-only; parent manages focus.
+        @FocusState
+        private var focusedButton: VideoPlayerActionButton?
+
         /// Cached filtered buttons - computed once per body evaluation
         private var allActionButtons: [VideoPlayerActionButton] {
             // Combine bar + menu buttons, removing duplicates
@@ -68,31 +75,32 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             return filtered
         }
 
+        /// Creates the view for a button, passing the focus state
         @ViewBuilder
-        private func view(for button: VideoPlayerActionButton) -> some View {
+        private func view(for button: VideoPlayerActionButton, isFocused: Bool) -> some View {
             switch button {
             case .aspectFill:
-                AspectFill()
+                AspectFill(isFocused: isFocused)
             case .audio:
-                Audio()
+                Audio(isFocused: isFocused)
             case .autoPlay:
-                AutoPlay()
+                AutoPlay(isFocused: isFocused)
             case .episodes:
-                Episodes()
+                Episodes(isFocused: isFocused)
             case .gestureLock:
                 EmptyView()
             case .info:
-                Info()
+                Info(isFocused: isFocused)
             case .playbackSpeed:
-                PlaybackSpeed()
+                PlaybackSpeed(isFocused: isFocused)
             case .playbackQuality:
-                PlaybackQuality()
+                PlaybackQuality(isFocused: isFocused)
             case .playNextItem:
-                PlayNextItem()
+                PlayNextItem(isFocused: isFocused)
             case .playPreviousItem:
-                PlayPreviousItem()
+                PlayPreviousItem(isFocused: isFocused)
             case .subtitles:
-                Subtitles()
+                Subtitles(isFocused: isFocused)
             }
         }
 
@@ -115,6 +123,16 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             return -1
         }
 
+        /// Determine default focus button - subtitles is universal across movies/shows
+        private func defaultFocusButton(from buttons: [VideoPlayerActionButton]) -> VideoPlayerActionButton? {
+            // Prefer subtitles as default (universal for movies/shows)
+            if buttons.contains(.subtitles) {
+                return .subtitles
+            }
+            // Fall back to first available button
+            return buttons.first
+        }
+
         var body: some View {
             let buttons = allActionButtons
 
@@ -134,10 +152,25 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
                         }
                     }
 
-                    view(for: button)
+                    // Button with focus binding - enables horizontal navigation
+                    view(for: button, isFocused: focusedButton == button)
+                        .focused($focusedButton, equals: button)
                 }
             }
             .labelStyle(.iconOnly)
+            // Focus section enables directional navigation within this container
+            .focusSection()
+            // Set default focus to subtitles button (universal across content types)
+            .defaultFocus($focusedButton, defaultFocusButton(from: buttons))
+            // Track when action buttons gain/lose focus
+            .onChange(of: focusedButton) { _, newValue in
+                if newValue != nil {
+                    // Poke timer when focus moves between buttons
+                    containerState.timer.poke()
+                }
+                // Update container state for arrow key handling
+                containerState.isActionButtonsFocused = (newValue != nil)
+            }
         }
     }
 }

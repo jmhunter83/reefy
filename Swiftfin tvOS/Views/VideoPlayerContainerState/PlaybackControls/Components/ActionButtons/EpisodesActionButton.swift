@@ -12,6 +12,9 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct Episodes: View {
 
+        /// Focus state passed from parent ActionButtons view
+        let isFocused: Bool
+
         @Environment(\.isInMenu)
         private var isInMenu
 
@@ -41,7 +44,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
                         Label(L10n.episodes, systemImage: "tv")
                     }
                 } else {
-                    TransportBarButton {
+                    TransportBarButton(isFocused: isFocused) {
                         if let supplement = episodesSupplement {
                             containerState.select(supplement: supplement)
                         }

@@ -12,6 +12,9 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct Subtitles: View {
 
+        /// Focus state passed from parent ActionButtons view
+        let isFocused: Bool
+
         @Environment(\.isInMenu)
         private var isInMenu
 
@@ -71,7 +74,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
                     .assign(playbackItem.$selectedSubtitleStreamIndex, to: $selectedSubtitleStreamIndex)
                 } else {
                     // In bar - use native focus wrapper
-                    TransportBarMenu(L10n.subtitles) {
+                    TransportBarMenu(L10n.subtitles, isFocused: isFocused) {
                         Image(systemName: systemImage)
                     } content: {
                         Section(L10n.subtitles) {
