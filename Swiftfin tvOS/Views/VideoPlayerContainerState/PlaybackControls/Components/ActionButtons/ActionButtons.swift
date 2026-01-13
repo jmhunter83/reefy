@@ -23,10 +23,6 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
         @EnvironmentObject
         private var manager: MediaPlayerManager
 
-        // MARK: - Single Focus State for All Buttons
-
-        /// Single source of truth for button focus - enables horizontal navigation
-        /// per WWDC21/23 recommendations. Each button is visual-only; parent manages focus.
         @FocusState
         private var focusedButton: VideoPlayerActionButton?
 
@@ -38,104 +34,93 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
                 combined.append(button)
             }
 
-            // Filter based on current state
-            var filtered = combined
+            // Build set of buttons to exclude based on current state
+            var excluded: Set<VideoPlayerActionButton> = [.info, .aspectFill]
 
             if manager.playbackItem?.audioStreams.isEmpty == true {
-                filtered.removeAll { $0 == .audio }
+                excluded.insert(.audio)
             }
 
             if manager.playbackItem?.subtitleStreams.isEmpty == true {
-                filtered.removeAll { $0 == .subtitles }
+                excluded.insert(.subtitles)
             }
 
             if manager.queue == nil {
-                filtered.removeAll { $0 == .autoPlay }
-                filtered.removeAll { $0 == .playNextItem }
-                filtered.removeAll { $0 == .playPreviousItem }
+                excluded.formUnion([.autoPlay, .playNextItem, .playPreviousItem])
             }
 
             if manager.item.isLiveStream {
-                filtered.removeAll { $0 == .audio }
-                filtered.removeAll { $0 == .autoPlay }
-                filtered.removeAll { $0 == .playbackSpeed }
-                filtered.removeAll { $0 == .playbackQuality }
-                filtered.removeAll { $0 == .subtitles }
+                excluded.formUnion([.audio, .autoPlay, .playbackSpeed, .playbackQuality, .subtitles])
             }
 
-            // Episodes button only for episode content
             if manager.item.type != .episode {
-                filtered.removeAll { $0 == .episodes }
+                excluded.insert(.episodes)
             }
 
-            // Remove non-functional buttons on tvOS
-            filtered.removeAll { $0 == .info }
-            filtered.removeAll { $0 == .aspectFill }
-
-            return filtered
+            return combined.filter { !excluded.contains($0) }
         }
 
-        /// Creates the view for a button, passing the focus state
         @ViewBuilder
-        private func view(for button: VideoPlayerActionButton, isFocused: Bool) -> some View {
+        private func view(for button: VideoPlayerActionButton) -> some View {
             switch button {
             case .aspectFill:
-                AspectFill(isFocused: isFocused)
+                AspectFill(focusBinding: $focusedButton, buttonType: button)
             case .audio:
-                Audio(isFocused: isFocused)
+                Audio(focusBinding: $focusedButton, buttonType: button)
             case .autoPlay:
-                AutoPlay(isFocused: isFocused)
+                AutoPlay(focusBinding: $focusedButton, buttonType: button)
             case .episodes:
-                Episodes(isFocused: isFocused)
+                Episodes(focusBinding: $focusedButton, buttonType: button)
             case .gestureLock:
                 EmptyView()
             case .info:
-                Info(isFocused: isFocused)
+                Info(focusBinding: $focusedButton, buttonType: button)
             case .playbackSpeed:
-                PlaybackSpeed(isFocused: isFocused)
+                PlaybackSpeed(focusBinding: $focusedButton, buttonType: button)
             case .playbackQuality:
-                PlaybackQuality(isFocused: isFocused)
+                PlaybackQuality(focusBinding: $focusedButton, buttonType: button)
             case .playNextItem:
-                PlayNextItem(isFocused: isFocused)
+                PlayNextItem(focusBinding: $focusedButton, buttonType: button)
             case .playPreviousItem:
-                PlayPreviousItem(isFocused: isFocused)
+                PlayPreviousItem(focusBinding: $focusedButton, buttonType: button)
             case .subtitles:
-                Subtitles(isFocused: isFocused)
+                Subtitles(focusBinding: $focusedButton, buttonType: button)
             }
         }
 
-        /// Determine default focus button - subtitles is universal across movies/shows
         private func defaultFocusButton(from buttons: [VideoPlayerActionButton]) -> VideoPlayerActionButton? {
-            // Prefer subtitles as default (universal for movies/shows)
-            if buttons.contains(.subtitles) {
-                return .subtitles
-            }
-            // Fall back to first available button
-            return buttons.first
+            buttons.contains(.subtitles) ? .subtitles : buttons.first
         }
 
         var body: some View {
             let buttons = allActionButtons
 
-            // Flat HStack with consistent spacing - no Spacers that break focus chain
             HStack(spacing: 24) {
                 ForEach(buttons, id: \.self) { button in
-                    // Button with focus binding - enables horizontal navigation
-                    view(for: button, isFocused: focusedButton == button)
-                        .focused($focusedButton, equals: button)
+                    view(for: button)
                 }
             }
+            .focusSection()
             .labelStyle(.iconOnly)
-            // Set default focus to subtitles button (universal across content types)
             .defaultFocus($focusedButton, defaultFocusButton(from: buttons))
-            // Track when action buttons gain/lose focus
-            .onChange(of: focusedButton) { _, newValue in
+            .onChange(of: focusedButton) { oldValue, newValue in
                 if newValue != nil {
-                    // Poke timer when focus moves between buttons
                     containerState.timer.poke()
                 }
-                // Update container state for arrow key handling
                 containerState.isActionButtonsFocused = (newValue != nil)
+
+                guard let oldValue, let newValue else { return }
+
+                let oldIndex = buttons.firstIndex(of: oldValue)
+                let newIndex = buttons.firstIndex(of: newValue)
+
+                if let oldIdx = oldIndex, let newIdx = newIndex {
+                    if oldIdx == 0 && newIdx == buttons.count - 1 {
+                        focusedButton = buttons.first
+                    } else if oldIdx == buttons.count - 1 && newIdx == 0 {
+                        focusedButton = buttons.last
+                    }
+                }
             }
         }
     }

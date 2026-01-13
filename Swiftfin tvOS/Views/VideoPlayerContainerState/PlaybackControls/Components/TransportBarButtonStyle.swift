@@ -8,25 +8,72 @@
 
 import SwiftUI
 
-// MARK: - Native tvOS Focus Button
+// MARK: - Shared Focus Styling
 
-/// A button wrapper that provides native Apple TV focus behavior
-/// with the signature "lift and glow" effect.
-///
-/// NOTE: This is a visual component only. Focus state is managed by the parent
-/// ActionButtons view using a single @FocusState to enable proper horizontal navigation.
-struct TransportBarButton<Label: View>: View {
+/// View modifier that applies consistent tvOS transport bar focus styling.
+/// Used by both TransportBarButton and TransportBarMenu to avoid duplication.
+private struct TransportBarFocusStyle: ViewModifier {
 
     let isFocused: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .font(.title2)
+            .fontWeight(.medium)
+            .foregroundStyle(isFocused ? .black : .white.opacity(0.9))
+            .padding(.horizontal, isFocused ? 24 : 8)
+            .padding(.vertical, isFocused ? 16 : 8)
+            .background {
+                if isFocused {
+                    Capsule().fill(Color.white)
+                } else {
+                    Capsule().fill(.ultraThinMaterial.opacity(0.3))
+                }
+            }
+            .clipShape(Capsule())
+    }
+}
+
+/// View modifier for the outer container focus effects (scale, shadow, animation).
+private struct TransportBarFocusEffects: ViewModifier {
+
+    let isFocused: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isFocused ? 1.1 : 1.0)
+            .shadow(
+                color: isFocused ? .black.opacity(0.4) : .clear,
+                radius: isFocused ? 15 : 0,
+                x: 0,
+                y: isFocused ? 10 : 0
+            )
+            .animation(.easeOut(duration: 0.15), value: isFocused)
+    }
+}
+
+// MARK: - Transport Bar Button
+
+/// Button with native Apple TV focus behavior (lift and glow effect).
+struct TransportBarButton<Label: View>: View {
+
+    var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+    let buttonType: VideoPlayerActionButton
     let action: () -> Void
     let label: () -> Label
 
+    private var isFocused: Bool {
+        focusBinding.wrappedValue == buttonType
+    }
+
     init(
-        isFocused: Bool,
+        focusBinding: FocusState<VideoPlayerActionButton?>.Binding,
+        buttonType: VideoPlayerActionButton,
         action: @escaping () -> Void,
         @ViewBuilder label: @escaping () -> Label
     ) {
-        self.isFocused = isFocused
+        self.focusBinding = focusBinding
+        self.buttonType = buttonType
         self.action = action
         self.label = label
     }
@@ -34,61 +81,31 @@ struct TransportBarButton<Label: View>: View {
     var body: some View {
         Button(action: action) {
             label()
-                .font(.title2)
-                .fontWeight(.medium)
-                .foregroundStyle(isFocused ? .black : .white.opacity(0.9))
-                // Padding only when focused for capsule background
-                .padding(.horizontal, isFocused ? 24 : 8)
-                .padding(.vertical, isFocused ? 16 : 8)
-                .background {
-                    backgroundView
-                }
-                // Clip to capsule shape
-                .clipShape(Capsule())
+                .modifier(TransportBarFocusStyle(isFocused: isFocused))
         }
         .buttonStyle(.plain)
-        // Native Apple TV focus effect: lift + shadow
-        .scaleEffect(isFocused ? 1.1 : 1.0)
-        .shadow(
-            color: isFocused ? .black.opacity(0.4) : .clear,
-            radius: isFocused ? 15 : 0,
-            x: 0,
-            y: isFocused ? 10 : 0
-        )
-        // Use linear animation to reduce main thread load (prevents audio crackling)
-        .animation(.easeOut(duration: 0.15), value: isFocused)
-    }
-
-    @ViewBuilder
-    private var backgroundView: some View {
-        if isFocused {
-            // Focused: solid white capsule (Apple TV standard)
-            Capsule().fill(Color.white)
-        } else {
-            // Unfocused: subtle glass effect, icon-only appearance
-            Capsule().fill(.ultraThinMaterial.opacity(0.3))
-        }
+        .focused(focusBinding, equals: buttonType)
+        .modifier(TransportBarFocusEffects(isFocused: isFocused))
     }
 }
 
-// MARK: - Transport Bar Menu Button
+// MARK: - Transport Bar Menu
 
-/// A menu wrapper with native focus behavior.
-///
-/// NOTE: This is a visual component only. Focus state is managed by the parent
-/// ActionButtons view using a single @FocusState to enable proper horizontal navigation.
+/// Menu with native Apple TV focus behavior. Keeps overlay visible while menu is open.
 struct TransportBarMenu<Label: View, Content: View>: View {
 
     @EnvironmentObject
     private var containerState: VideoPlayerContainerState
 
-    let isFocused: Bool
+    var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+    let buttonType: VideoPlayerActionButton
 
-    /// Tracks if we were focused (to detect menu open when focus leaves)
+    private var isFocused: Bool {
+        focusBinding.wrappedValue == buttonType
+    }
+
     @State
-    private var wasFocused: Bool = false
-
-    /// Task that continuously pokes timer while menu is open
+    private var wasFocused = false
     @State
     private var menuOpenPokeTask: Task<Void, Never>?
 
@@ -98,12 +115,14 @@ struct TransportBarMenu<Label: View, Content: View>: View {
 
     init(
         _ title: String,
-        isFocused: Bool,
+        focusBinding: FocusState<VideoPlayerActionButton?>.Binding,
+        buttonType: VideoPlayerActionButton,
         @ViewBuilder label: @escaping () -> Label,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.title = title
-        self.isFocused = isFocused
+        self.focusBinding = focusBinding
+        self.buttonType = buttonType
         self.label = label
         self.content = content
     }
@@ -113,69 +132,41 @@ struct TransportBarMenu<Label: View, Content: View>: View {
             content()
         } label: {
             label()
-                .font(.title2)
-                .fontWeight(.medium)
-                .foregroundStyle(isFocused ? .black : .white.opacity(0.9))
-                // Padding only when focused for capsule background
-                .padding(.horizontal, isFocused ? 24 : 8)
-                .padding(.vertical, isFocused ? 16 : 8)
-                .background {
-                    backgroundView
-                }
-                // Clip to capsule shape
-                .clipShape(Capsule())
+                .modifier(TransportBarFocusStyle(isFocused: isFocused))
         }
         .buttonStyle(.plain)
-        .scaleEffect(isFocused ? 1.1 : 1.0)
-        .shadow(
-            color: isFocused ? .black.opacity(0.4) : .clear,
-            radius: isFocused ? 15 : 0,
-            x: 0,
-            y: isFocused ? 10 : 0
-        )
-        // Use linear animation to reduce main thread load (prevents audio crackling)
-        .animation(.easeOut(duration: 0.15), value: isFocused)
-        // Handle menu open state - keep overlay visible while browsing menu
+        .focused(focusBinding, equals: buttonType)
+        .modifier(TransportBarFocusEffects(isFocused: isFocused))
         .onChange(of: isFocused) { _, newValue in
-            if newValue {
-                // Button became focused - cancel any existing poke task
-                menuOpenPokeTask?.cancel()
-                menuOpenPokeTask = nil
-                wasFocused = true
-            } else if wasFocused {
-                // Focus left after we were focused - menu likely opened
-                // Start continuous poke to keep overlay visible while browsing menu
-                wasFocused = false
-                menuOpenPokeTask?.cancel()
-                menuOpenPokeTask = Task { @MainActor in
-                    while !Task.isCancelled {
-                        containerState.timer.poke()
-                        try? await Task.sleep(for: .seconds(3))
-                    }
-                }
-            }
+            handleFocusChange(newValue)
         }
         .onDisappear {
             menuOpenPokeTask?.cancel()
         }
     }
 
-    @ViewBuilder
-    private var backgroundView: some View {
-        if isFocused {
-            // Focused: solid white capsule (Apple TV standard)
-            Capsule().fill(Color.white)
-        } else {
-            // Unfocused: subtle glass effect, icon-only appearance
-            Capsule().fill(.ultraThinMaterial.opacity(0.3))
+    private func handleFocusChange(_ newValue: Bool) {
+        if newValue {
+            menuOpenPokeTask?.cancel()
+            menuOpenPokeTask = nil
+            wasFocused = true
+        } else if wasFocused {
+            wasFocused = false
+            menuOpenPokeTask?.cancel()
+            menuOpenPokeTask = Task { @MainActor in
+                while !Task.isCancelled {
+                    containerState.timer.poke()
+                    try? await Task.sleep(for: .seconds(3))
+                }
+            }
         }
     }
 }
 
-// MARK: - Legacy ButtonStyle (kept for compatibility)
+// MARK: - Legacy Button Style
 
-/// Button style for transport bar action buttons
-/// Note: Prefer TransportBarButton for proper focus handling
+/// Button style for transport bar action buttons.
+/// Note: Prefer TransportBarButton for proper focus handling.
 struct TransportBarButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {

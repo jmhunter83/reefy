@@ -12,8 +12,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct Audio: View {
 
-        /// Focus state passed from parent ActionButtons view
-        let isFocused: Bool
+        var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+        let buttonType: VideoPlayerActionButton
 
         @Environment(\.isInMenu)
         private var isInMenu
@@ -25,11 +25,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         private var selectedAudioStreamIndex: Int?
 
         private var systemImage: String {
-            if selectedAudioStreamIndex == nil {
-                "speaker.wave.2"
-            } else {
-                "speaker.wave.2.fill"
-            }
+            selectedAudioStreamIndex == nil ? "speaker.wave.2" : "speaker.wave.2.fill"
         }
 
         @ViewBuilder
@@ -50,17 +46,16 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         var body: some View {
             if let playbackItem = manager.playbackItem {
                 if isInMenu {
-                    // Inside overflow menu - use standard Menu
-                    Menu(
-                        L10n.audio,
-                        systemImage: systemImage
-                    ) {
+                    Menu(L10n.audio, systemImage: systemImage) {
                         content(playbackItem: playbackItem)
                     }
                     .assign(playbackItem.$selectedAudioStreamIndex, to: $selectedAudioStreamIndex)
                 } else {
-                    // In bar - use native focus wrapper
-                    TransportBarMenu(L10n.audio, isFocused: isFocused) {
+                    TransportBarMenu(
+                        L10n.audio,
+                        focusBinding: focusBinding,
+                        buttonType: buttonType
+                    ) {
                         Image(systemName: systemImage)
                     } content: {
                         Section(L10n.audio) {

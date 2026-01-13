@@ -12,8 +12,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct Subtitles: View {
 
-        /// Focus state passed from parent ActionButtons view
-        let isFocused: Bool
+        var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+        let buttonType: VideoPlayerActionButton
 
         @Environment(\.isInMenu)
         private var isInMenu
@@ -25,20 +25,19 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         private var selectedSubtitleStreamIndex: Int?
 
         private var systemImage: String {
-            if selectedSubtitleStreamIndex == nil {
-                "captions.bubble"
-            } else {
-                "captions.bubble.fill"
-            }
+            selectedSubtitleStreamIndex == nil ? "captions.bubble" : "captions.bubble.fill"
+        }
+
+        private var isSubtitlesOff: Bool {
+            selectedSubtitleStreamIndex == -1 || selectedSubtitleStreamIndex == nil
         }
 
         @ViewBuilder
         private func content(playbackItem: MediaPlayerItem) -> some View {
-            // "Off" option at the top with visual distinction
             Button {
                 playbackItem.selectedSubtitleStreamIndex = -1
             } label: {
-                if selectedSubtitleStreamIndex == -1 || selectedSubtitleStreamIndex == nil {
+                if isSubtitlesOff {
                     Label(L10n.none, systemImage: "checkmark")
                 } else {
                     Label(L10n.none, systemImage: "xmark.circle")
@@ -47,7 +46,6 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
             Divider()
 
-            // Subtitle streams with codec info
             ForEach(playbackItem.subtitleStreams, id: \.index) { stream in
                 Button {
                     playbackItem.selectedSubtitleStreamIndex = stream.index ?? -1
@@ -64,17 +62,16 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         var body: some View {
             if let playbackItem = manager.playbackItem {
                 if isInMenu {
-                    // Inside overflow menu - use standard Menu
-                    Menu(
-                        L10n.subtitles,
-                        systemImage: systemImage
-                    ) {
+                    Menu(L10n.subtitles, systemImage: systemImage) {
                         content(playbackItem: playbackItem)
                     }
                     .assign(playbackItem.$selectedSubtitleStreamIndex, to: $selectedSubtitleStreamIndex)
                 } else {
-                    // In bar - use native focus wrapper
-                    TransportBarMenu(L10n.subtitles, isFocused: isFocused) {
+                    TransportBarMenu(
+                        L10n.subtitles,
+                        focusBinding: focusBinding,
+                        buttonType: buttonType
+                    ) {
                         Image(systemName: systemImage)
                     } content: {
                         Section(L10n.subtitles) {

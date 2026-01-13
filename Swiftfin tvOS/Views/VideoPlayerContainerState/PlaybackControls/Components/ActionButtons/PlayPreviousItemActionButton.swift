@@ -12,8 +12,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct PlayPreviousItem: View {
 
-        /// Focus state passed from parent ActionButtons view
-        let isFocused: Bool
+        var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+        let buttonType: VideoPlayerActionButton
 
         @Environment(\.isInMenu)
         private var isInMenu
@@ -23,12 +23,17 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
         var body: some View {
             if let queue = manager.queue {
-                _PlayPreviousItem(queue: queue, isInMenu: isInMenu, isFocused: isFocused)
+                PlayPreviousItemContent(
+                    queue: queue,
+                    isInMenu: isInMenu,
+                    focusBinding: focusBinding,
+                    buttonType: buttonType
+                )
             }
         }
     }
 
-    private struct _PlayPreviousItem: View {
+    private struct PlayPreviousItemContent: View {
 
         @EnvironmentObject
         private var manager: MediaPlayerManager
@@ -37,24 +42,23 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         var queue: AnyMediaPlayerQueue
 
         let isInMenu: Bool
-        let isFocused: Bool
+        var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+        let buttonType: VideoPlayerActionButton
+
+        private func playPrevious() {
+            guard let previousItem = queue.previousItem else { return }
+            manager.playNewItem(provider: previousItem)
+        }
 
         var body: some View {
             if isInMenu {
-                // Inside overflow menu - use standard Button
-                Button(
-                    L10n.playPreviousItem,
-                    systemImage: VideoPlayerActionButton.playPreviousItem.systemImage
-                ) {
-                    guard let previousItem = queue.previousItem else { return }
-                    manager.playNewItem(provider: previousItem)
+                Button(L10n.playPreviousItem, systemImage: VideoPlayerActionButton.playPreviousItem.systemImage) {
+                    playPrevious()
                 }
                 .disabled(queue.previousItem == nil)
             } else {
-                // In bar - use native focus wrapper
-                TransportBarButton(isFocused: isFocused) {
-                    guard let previousItem = queue.previousItem else { return }
-                    manager.playNewItem(provider: previousItem)
+                TransportBarButton(focusBinding: focusBinding, buttonType: buttonType) {
+                    playPrevious()
                 } label: {
                     Image(systemName: VideoPlayerActionButton.playPreviousItem.systemImage)
                 }

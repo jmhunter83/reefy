@@ -13,8 +13,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct PlaybackQuality: View {
 
-        /// Focus state passed from parent ActionButtons view
-        let isFocused: Bool
+        var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+        let buttonType: VideoPlayerActionButton
 
         @Environment(\.isInMenu)
         private var isInMenu
@@ -22,17 +22,13 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         @Default(.VideoPlayer.Playback.appMaximumBitrate)
         private var currentBitrate
 
-        private func isCurrentBitrate(_ bitrate: PlaybackBitrate) -> Bool {
-            currentBitrate == bitrate
-        }
-
         @ViewBuilder
         private var content: some View {
             ForEach(PlaybackBitrate.allCases, id: \.self) { bitrate in
                 Button {
                     currentBitrate = bitrate
                 } label: {
-                    if isCurrentBitrate(bitrate) {
+                    if currentBitrate == bitrate {
                         Label(bitrate.displayTitle, systemImage: "checkmark")
                     } else {
                         Text(bitrate.displayTitle)
@@ -43,16 +39,15 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
         var body: some View {
             if isInMenu {
-                // Inside overflow menu - use standard Menu
-                Menu(
-                    L10n.playbackQuality,
-                    systemImage: "tv.circle"
-                ) {
+                Menu(L10n.playbackQuality, systemImage: "tv.circle") {
                     content
                 }
             } else {
-                // In bar - use native focus wrapper
-                TransportBarMenu(L10n.playbackQuality, isFocused: isFocused) {
+                TransportBarMenu(
+                    L10n.playbackQuality,
+                    focusBinding: focusBinding,
+                    buttonType: buttonType
+                ) {
                     Image(systemName: "tv.circle")
                 } content: {
                     Section(L10n.playbackQuality) {

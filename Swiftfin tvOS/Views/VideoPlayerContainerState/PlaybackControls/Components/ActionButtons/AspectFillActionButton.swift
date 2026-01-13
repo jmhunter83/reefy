@@ -12,8 +12,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct AspectFill: View {
 
-        /// Focus state passed from parent ActionButtons view
-        let isFocused: Bool
+        var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+        let buttonType: VideoPlayerActionButton
 
         @Environment(\.isInMenu)
         private var isInMenu
@@ -36,16 +36,11 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
         var body: some View {
             if isInMenu {
-                // Inside overflow menu - use standard Button
-                Button(
-                    L10n.aspectFill,
-                    systemImage: systemImage
-                ) {
+                Button(L10n.aspectFill, systemImage: systemImage) {
                     isAspectFilled.toggle()
                 }
             } else {
-                // In bar - use native focus wrapper
-                TransportBarButton(isFocused: isFocused) {
+                TransportBarButton(focusBinding: focusBinding, buttonType: buttonType) {
                     isAspectFilled.toggle()
                 } label: {
                     Image(systemName: systemImage)

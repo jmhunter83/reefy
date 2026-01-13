@@ -12,8 +12,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct Episodes: View {
 
-        /// Focus state passed from parent ActionButtons view
-        let isFocused: Bool
+        var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+        let buttonType: VideoPlayerActionButton
 
         @Environment(\.isInMenu)
         private var isInMenu
@@ -23,18 +23,12 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         @EnvironmentObject
         private var manager: MediaPlayerManager
 
-        /// Episodes supplement is the queue for series content
         private var episodesSupplement: (any MediaPlayerSupplement)? {
             manager.supplements.first { $0 is EpisodeMediaPlayerQueue }
         }
 
-        /// Only show for episode content
-        private var isEpisodeContent: Bool {
-            manager.item.type == .episode
-        }
-
         var body: some View {
-            if isEpisodeContent {
+            if manager.item.type == .episode {
                 if isInMenu {
                     Button {
                         if let supplement = episodesSupplement {
@@ -44,7 +38,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
                         Label(L10n.episodes, systemImage: "tv")
                     }
                 } else {
-                    TransportBarButton(isFocused: isFocused) {
+                    TransportBarButton(focusBinding: focusBinding, buttonType: buttonType) {
                         if let supplement = episodesSupplement {
                             containerState.select(supplement: supplement)
                         }

@@ -13,8 +13,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct AutoPlay: View {
 
-        /// Focus state passed from parent ActionButtons view
-        let isFocused: Bool
+        var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+        let buttonType: VideoPlayerActionButton
 
         @Default(.VideoPlayer.autoPlayEnabled)
         private var isAutoPlayEnabled
@@ -26,30 +26,20 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         private var manager: MediaPlayerManager
 
         private var systemImage: String {
-            if isAutoPlayEnabled {
-                "play.circle.fill"
-            } else {
-                "stop.circle"
-            }
+            isAutoPlayEnabled ? "play.circle.fill" : "stop.circle"
         }
 
         var body: some View {
             if isInMenu {
-                // Inside overflow menu - use standard Button
                 Button {
                     isAutoPlayEnabled.toggle()
                 } label: {
-                    Label(
-                        L10n.autoPlay,
-                        systemImage: systemImage
-                    )
-
+                    Label(L10n.autoPlay, systemImage: systemImage)
                     Text(isAutoPlayEnabled ? "On" : "Off")
                 }
                 .disabled(manager.queue == nil)
             } else {
-                // In bar - use native focus wrapper
-                TransportBarButton(isFocused: isFocused) {
+                TransportBarButton(focusBinding: focusBinding, buttonType: buttonType) {
                     isAutoPlayEnabled.toggle()
                 } label: {
                     Image(systemName: systemImage)

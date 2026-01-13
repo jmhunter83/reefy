@@ -12,8 +12,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
     struct PlaybackSpeed: View {
 
-        /// Focus state passed from parent ActionButtons view
-        let isFocused: Bool
+        var focusBinding: FocusState<VideoPlayerActionButton?>.Binding
+        let buttonType: VideoPlayerActionButton
 
         @Environment(\.isInMenu)
         private var isInMenu
@@ -44,16 +44,15 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
         var body: some View {
             if isInMenu {
-                // Inside overflow menu - use standard Menu
-                Menu(
-                    L10n.playbackSpeed,
-                    systemImage: "speedometer"
-                ) {
+                Menu(L10n.playbackSpeed, systemImage: "speedometer") {
                     content
                 }
             } else {
-                // In bar - use native focus wrapper
-                TransportBarMenu(L10n.playbackSpeed, isFocused: isFocused) {
+                TransportBarMenu(
+                    L10n.playbackSpeed,
+                    focusBinding: focusBinding,
+                    buttonType: buttonType
+                ) {
                     Image(systemName: "speedometer")
                 } content: {
                     Section(L10n.playbackSpeed) {

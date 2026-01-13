@@ -26,17 +26,19 @@ struct FocusGuideModifier: ViewModifier {
             Color(debug ? .red : .clear)
                 .frame(height: 1)
                 .if(focusConstructor.topTarget != nil, transform: { boundary in
-                    boundary.focusable()
+                    boundary
+                        .focusable()
+                        .focused($focusDirection, equals: .top)
                 })
-                .focused($focusDirection, equals: .top)
 
             HStack(spacing: 0) {
                 Color(debug ? .red : .clear)
                     .frame(width: 1)
                     .if(focusConstructor.leftTarget != nil, transform: { boundary in
-                        boundary.focusable()
+                        boundary
+                            .focusable()
+                            .focused($focusDirection, equals: .left)
                     })
-                    .focused($focusDirection, equals: .left)
 
                 content
                     .focused($focusDirection, equals: .content)
@@ -44,17 +46,19 @@ struct FocusGuideModifier: ViewModifier {
                 Color(debug ? .red : .clear)
                     .frame(width: 1)
                     .if(focusConstructor.rightTarget != nil, transform: { boundary in
-                        boundary.focusable()
+                        boundary
+                            .focusable()
+                            .focused($focusDirection, equals: .right)
                     })
-                    .focused($focusDirection, equals: .right)
             }
 
             Color(debug ? .red : .clear)
                 .frame(height: 1)
                 .if(focusConstructor.bottomTarget != nil, transform: { boundary in
-                    boundary.focusable()
+                    boundary
+                        .focusable()
+                        .focused($focusDirection, equals: .bottom)
                 })
-                .focused($focusDirection, equals: .bottom)
         }
         .onChange(of: focusDirection) { _, focusDirection in
             guard let focusDirection = focusDirection else { return }
@@ -147,7 +151,9 @@ class FocusGuide: ObservableObject {
     private(set) var lastFocusedTag: String?
 
     func transition(to tag: String?) {
+
         lastFocusedTag = focusedTag
+
         focusedTag = tag
     }
 }
