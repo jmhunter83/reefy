@@ -48,11 +48,13 @@ protocol VideoMediaPlayerProxy: MediaPlayerProxy {
     var videoPlayerBody: Self.VideoPlayerBody { get }
 }
 
+@MainActor
 protocol MediaPlayerOffsetConfigurable {
     func setAudioOffset(_ seconds: Duration)
     func setSubtitleOffset(_ seconds: Duration)
 }
 
+@MainActor
 protocol MediaPlayerSubtitleConfigurable {
     func setSubtitleColor(_ color: Color)
     func setSubtitleFontName(_ fontName: String)

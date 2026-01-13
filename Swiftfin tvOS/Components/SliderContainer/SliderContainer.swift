@@ -191,7 +191,7 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
 
         // Determine skip amount based on click count (default to 15s if no clicks)
         let skipIndex = max(0, clickCount - 1)
-        let skipSeconds = skipAmounts[min(skipIndex, skipAmounts.count - 1)]
+        _ = skipAmounts[min(skipIndex, skipAmounts.count - 1)]
 
         // Convert seconds to Value units (assuming total represents 100% progress)
         // The value is normalized 0-100, so we need to convert skip seconds to that scale

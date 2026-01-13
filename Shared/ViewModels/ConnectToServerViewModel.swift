@@ -60,7 +60,7 @@ final class ConnectToServerViewModel: ViewModel {
         super.init()
 
         // TODO: refactor, causing retain cycle
-        Task { [weak self] in
+        Task { @MainActor [weak self] in
             guard let self else { return }
 
             for await response in discovery.discoveredServers.values {
