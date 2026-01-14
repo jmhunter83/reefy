@@ -9,7 +9,7 @@
 
 </div>
 
-> **Note:** This is an independent project, not affiliated with or endorsed by [Jellyfin](https://jellyfin.org) or [Swiftfin](https://github.com/jellyfin/swiftfin). It is a fork of Swiftfin, developed separately with a focus on Apple TV.
+> **Note:** This project has been officially renamed to **Reefy** on GitHub. It is an independent project, not affiliated with or endorsed by [Jellyfin](https://jellyfin.org) or [Swiftfin](https://github.com/jellyfin/swiftfin). It is a fork of Swiftfin, developed separately with a focus on Apple TV.
 
 ---
 
