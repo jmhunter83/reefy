@@ -1,5 +1,5 @@
 //
-// Swiftfin is subject to terms of the Mozilla Public
+// Swiftfin is subject to the terms of the Mozilla Public
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, you can obtain one at https://mozilla.org/MPL/2.0/.
 //
@@ -19,29 +19,13 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         private var manager: MediaPlayerManager
 
         var body: some View {
-            let activeIntroSegment = manager.item.activeSegment(at: manager.seconds)
-
-            if isInMenu {
-                // Show skip button in menu overlay
-                Button(L10n.skipIntro, systemImage: VideoPlayerActionButton.skipIntro.systemImage) {
-                    performSkip()
-                }
-                .disabled(activeIntroSegment == nil)
-            } else {
-                // Show skip button in transport bar
-                Button(L10n.skipIntro, systemImage: VideoPlayerActionButton.skipIntro.systemImage) {
-                    performSkip()
-                }
-                .disabled(activeIntroSegment == nil)
-                .labelStyle(.iconOnly)
+            // Intro skipper is not yet implemented
+            // This button will be enabled once media segments API integration is complete
+            Button(L10n.skipIntro, systemImage: VideoPlayerActionButton.skipIntro.systemImage) {
+                // TODO: Implement intro skip functionality
             }
-        }
-
-        private func performSkip() {
-            guard let activeSegment = manager.item.activeSegment(at: manager.seconds) else { return }
-            
-            // Seek to the end of the intro segment
-            manager.send(.set(seconds: activeSegment.end))
+            .disabled(true) // Always disabled until feature is implemented
+            .labelStyle(.iconOnly)
         }
     }
 }

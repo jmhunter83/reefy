@@ -46,9 +46,6 @@ extension Container {
 import StatefulMacros
 
 @MainActor
-
-    @Injected(\.currentUserSession) private var userSession: UserSession!
-
 @Stateful
 final class MediaPlayerManager: ViewModel {
 
@@ -117,23 +114,6 @@ final class MediaPlayerManager: ViewModel {
                 )
 
                 Task { _ = await playbackItem.previewImageProvider?.image(for: seconds) }
-
-                // Fetch media segments for intro skipper functionality
-                if let itemId = playbackItem.baseItem.id {
-                    do {
-                        let segmentsResponse = try await userSession.client.getMediaSegments(for: itemId)
-                        playbackItem.baseItem.mediaSegments = segmentsResponse.items
-                        logger.info(
-                            "Loaded media segments",
-                            metadata: [
-                                "itemID": .stringConvertible(itemId),
-                                "segmentCount": .stringConvertible(segmentsResponse.items?.count ?? 0)
-                            ]
-                        )
-                    } catch {
-                        logger.error("Failed to load media segments: \(error.localizedDescription)")
-                    }
-                }
             }
         }
     }

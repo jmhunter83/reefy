@@ -20,6 +20,7 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
     case playbackQuality
     case playNextItem
     case playPreviousItem
+    case skipIntro
     case subtitles
 
     var displayTitle: String {
@@ -67,7 +68,7 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
         case .playbackQuality: "tv.circle.fill"
         case .playNextItem: "forward.end.circle.fill"
         case .playPreviousItem: "backward.end.circle.fill"
-        case .skipIntro: "forward.end.circle.fill"
+        case .skipIntro: "forward.fill"
         case .subtitles: "captions.bubble.fill"
         }
     }
