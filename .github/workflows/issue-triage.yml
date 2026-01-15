@@ -40,7 +40,7 @@ jobs:
             const typeLabels = ['type: crash', 'type: regression', 'type: performance'];
 
             const prompt = [
-              'You are a bug triage assistant for Reefy, a tvOS Jellyfin media player app.',
+              'You are a triage assistant for Reefy, a tvOS Jellyfin media player app.',
               '',
               'Analyze this GitHub issue and suggest appropriate labels.',
               '',
@@ -49,14 +49,24 @@ jobs:
               'ISSUE BODY:',
               body,
               '',
-              'Based on the issue content, respond with a JSON object containing:',
-              '1. "severity": one of [critical, high, medium, low]',
+              'FIRST, determine if this is a BUG or a FEATURE REQUEST:',
+              '- Feature requests ask for NEW functionality, improvements, or enhancements',
+              '- Bugs report BROKEN or incorrect behavior in existing functionality',
+              '',
+              'Respond with a JSON object containing:',
+              '',
+              '1. "issueType": one of [bug, feature_request]',
+              '   - bug: Something is broken or not working correctly',
+              '   - feature_request: Request for new functionality or enhancement',
+              '',
+              '2. "severity": one of [critical, high, medium, low, null]',
+              '   ONLY for bugs! Set to null for feature requests.',
               '   - critical: App crash, data loss, security issue',
               '   - high: Major feature broken, no workaround',
               '   - medium: Feature impaired, workaround exists',
               '   - low: Minor issue, cosmetic',
               '',
-              '2. "area": one of [playback, library, ui, auth, sync, settings, other]',
+              '3. "area": one of [playback, library, ui, auth, sync, settings, other]',
               '   - playback: Video/audio playback issues',
               '   - library: Media browsing, search, collections',
               '   - ui: User interface, layout, navigation, focus',
@@ -64,15 +74,15 @@ jobs:
               '   - sync: Downloads, offline content',
               '   - settings: Preferences, configuration',
               '',
-              '3. "type": one of [crash, regression, performance, null]',
+              '4. "type": one of [crash, regression, performance, null]',
+              '   ONLY for bugs! Set to null for feature requests.',
               '   - crash: App crashes or freezes',
               '   - regression: Previously worked, now broken',
               '   - performance: Slow, laggy, resource intensive',
-              '   - null: If none apply',
               '',
-              '4. "confidence": number 0-100 indicating how confident you are',
+              '5. "confidence": number 0-100 indicating how confident you are',
               '',
-              '5. "reasoning": brief explanation (1-2 sentences)',
+              '6. "reasoning": brief explanation (1-2 sentences)',
               '',
               'Respond ONLY with valid JSON, no other text.'
             ].join('\n');
@@ -109,14 +119,16 @@ jobs:
               if (analysis.confidence < 70) {
                 console.log(`Low confidence (${analysis.confidence}), skipping auto-label`);
                 // Add comment instead
+                const isFeatureRequest = analysis.issueType === 'feature_request';
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issue.number,
                   body: `🤖 **Auto-triage suggestion** (confidence: ${analysis.confidence}%)\n\n` +
-                        `- Severity: \`${analysis.severity}\`\n` +
+                        `- Type: \`${isFeatureRequest ? 'Feature Request' : 'Bug'}\`\n` +
+                        (isFeatureRequest ? '' : `- Severity: \`${analysis.severity}\`\n`) +
                         `- Area: \`${analysis.area}\`\n` +
-                        (analysis.type ? `- Type: \`${analysis.type}\`\n` : '') +
+                        (analysis.type && !isFeatureRequest ? `- Bug Type: \`${analysis.type}\`\n` : '') +
                         `\n${analysis.reasoning}\n\n` +
                         `*Low confidence - labels not auto-applied. Please review and apply manually.*`
                 });
@@ -126,16 +138,25 @@ jobs:
               // Build labels to add
               const labelsToAdd = [];
 
-              if (analysis.severity && severityLabels.includes(`severity: ${analysis.severity}`)) {
-                labelsToAdd.push(`severity: ${analysis.severity}`);
+              // Handle feature requests vs bugs differently
+              if (analysis.issueType === 'feature_request') {
+                labelsToAdd.push('enhancement');
+                // Don't add severity labels to feature requests
+              } else {
+                // It's a bug - add severity label
+                if (analysis.severity && severityLabels.includes(`severity: ${analysis.severity}`)) {
+                  labelsToAdd.push(`severity: ${analysis.severity}`);
+                }
+
+                // Add type label (crash, regression, performance) for bugs only
+                if (analysis.type && typeLabels.includes(`type: ${analysis.type}`)) {
+                  labelsToAdd.push(`type: ${analysis.type}`);
+                }
               }
 
+              // Area label applies to both bugs and feature requests
               if (analysis.area && analysis.area !== 'other' && areaLabels.includes(`area: ${analysis.area}`)) {
                 labelsToAdd.push(`area: ${analysis.area}`);
-              }
-
-              if (analysis.type && typeLabels.includes(`type: ${analysis.type}`)) {
-                labelsToAdd.push(`type: ${analysis.type}`);
               }
 
               if (labelsToAdd.length > 0) {
@@ -149,11 +170,12 @@ jobs:
                 console.log(`Applied labels: ${labelsToAdd.join(', ')}`);
 
                 // Add comment explaining the triage
+                const isFeatureRequest = analysis.issueType === 'feature_request';
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issue.number,
-                  body: `🤖 **Auto-triaged** (confidence: ${analysis.confidence}%)\n\n` +
+                  body: `🤖 **Auto-triaged** as ${isFeatureRequest ? 'Feature Request' : 'Bug'} (confidence: ${analysis.confidence}%)\n\n` +
                         `Applied labels: ${labelsToAdd.map(l => `\`${l}\``).join(', ')}\n\n` +
                         `${analysis.reasoning}`
                 });
