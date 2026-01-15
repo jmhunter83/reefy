@@ -519,3 +519,43 @@ extension BaseItemDto {
         return response.value
     }
 }
+
+// MARK: - Media Segments Support
+extension BaseItemDto {
+    
+    /// Media segments associated with this item (Intro/Outro/etc.)
+    /// Available in Jellyfin 10.10+ with Media Segment providers (e.g., Intro Skipper plugin)
+    /// This field will be populated when the item includes MediaSegments data
+    /// Currently requires separate API call to fetch segments via getMediaSegments()
+    private var _mediaSegments: [MediaSegmentDto]?
+    
+    public var mediaSegments: [MediaSegmentDto]? {
+        get { _mediaSegments }
+        set { _mediaSegments = value }
+    }
+    
+    /// Get intro segments for this item
+    public var introSegments: [MediaSegmentDto] {
+        return mediaSegments?.filter { $0.type == .intro } ?? []
+    }
+    
+    /// Get outro segments for this item  
+    public var outroSegments: [MediaSegmentDto] {
+        return mediaSegments?.filter { $0.type == .outro } ?? []
+    }
+    
+    /// Check if current playback time is within an intro segment
+    public func isInIntroSegment(at time: TimeInterval) -> Bool {
+        return introSegments.contains { $0.start <= time && $0.end >= time }
+    }
+    
+    /// Check if current playback time is within an outro segment
+    public func isInOutroSegment(at time: TimeInterval) -> Bool {
+        return outroSegments.contains { $0.start <= time && $0.end >= time }
+    }
+    
+    /// Get the active segment at the given time (if any)
+    public func activeSegment(at time: TimeInterval) -> MediaSegmentDto? {
+        return mediaSegments?.first { $0.start <= time && $0.end >= time }
+    }
+}

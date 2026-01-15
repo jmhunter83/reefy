@@ -44,6 +44,8 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
             return L10n.playNextItem
         case .playPreviousItem:
             return L10n.playPreviousItem
+        case .skipIntro:
+            return L10n.skipIntro
         case .subtitles:
             return L10n.subtitles
         }
@@ -65,6 +67,7 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
         case .playbackQuality: "tv.circle.fill"
         case .playNextItem: "forward.end.circle.fill"
         case .playPreviousItem: "backward.end.circle.fill"
+        case .skipIntro: "forward.end.circle.fill"
         case .subtitles: "captions.bubble.fill"
         }
     }
@@ -86,6 +89,7 @@ enum VideoPlayerActionButton: String, CaseIterable, Displayable, Equatable, Iden
         return [
             .playPreviousItem,
             .playNextItem,
+            .skipIntro,
             .subtitles,
             .audio,
             .info,
