@@ -236,3 +236,9 @@ struct VideoPlayerSettingsView: View {
         }
     }
 }
+
+#Preview {
+    NavigationStack {
+        VideoPlayerSettingsView()
+    }
+}
