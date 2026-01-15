@@ -14,8 +14,7 @@ private let focusLog = Logger(subsystem: "org.jellyfin.swiftfin", category: "Tra
 // MARK: - Shared Focus Styling
 
 /// View modifier that applies consistent tvOS transport bar focus styling.
-/// Used by both TransportBarButton and TransportBarMenu to avoid duplication.
-/// Uses fixed frame size to prevent layout shifts that cause focus flutter.
+/// Uses modern Liquid Glass design for tvOS 26+ with compact circular buttons.
 private struct TransportBarFocusStyle: ViewModifier {
 
     let isFocused: Bool
@@ -24,27 +23,15 @@ private struct TransportBarFocusStyle: ViewModifier {
         content
             .font(.title2)
             .fontWeight(.medium)
-            .foregroundStyle(isFocused ? .black : .white.opacity(0.9))
-            .frame(width: 56, height: 56)
+            .foregroundStyle(.white)
+            .frame(width: 48, height: 48)
             .background {
-                if isFocused {
-                    // Focused state: bright white with subtle glass effect
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            Capsule()
-                                .fill(.white)
-                                .opacity(0.9)
-                        )
-                } else {
-                    // Unfocused state: frosted glass with blur effect
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                        .blur(radius: 0.5)
-                        .opacity(0.7)
-                }
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .opacity(isFocused ? 1.0 : 0.7)
             }
-            .clipShape(Capsule())
+            .clipShape(Circle())
+            .applyGlassEffectIfAvailable()
     }
 }
 
@@ -63,29 +50,33 @@ private struct TransportBarFocusEffects: ViewModifier {
         let _ = focusLog.trace("   ⚡ TransportBarFocusEffects[\(debugLabel)] isFocused=\(isFocused)")
 
         return content
-            .scaleEffect(isFocused ? 1.1 : 1.0)
+            .scaleEffect(isFocused ? 1.05 : 1.0)
             .shadow(
-                color: isFocused ? .black.opacity(0.4) : .clear,
-                radius: isFocused ? 15 : 0,
+                color: isFocused ? .black.opacity(0.2) : .clear,
+                radius: isFocused ? 8 : 0,
                 x: 0,
-                y: isFocused ? 10 : 0
+                y: isFocused ? 6 : 0
             )
-            .overlay(
-                isFocused ?
-                    Capsule()
-                    .fill(.white.opacity(0.3))
-                    .blur(radius: 20)
-                    .offset(y: 5)
-                    .allowsHitTesting(false)
-                    : nil
-            )
-            .animation(.easeOut(duration: 0.15), value: isFocused)
+            .animation(.spring(duration: 0.2), value: isFocused)
+    }
+}
+
+// MARK: - View Extension for Glass Effect
+
+private extension View {
+    @ViewBuilder
+    func applyGlassEffectIfAvailable() -> some View {
+        if #available(tvOS 26.0, *) {
+            self.glassEffect(.regular.interactive())
+        } else {
+            self
+        }
     }
 }
 
 // MARK: - Transport Bar Button
 
-/// Button with native Apple TV focus behavior (lift and glow effect).
+/// Button with native Apple TV focus behavior using modern Liquid Glass design.
 struct TransportBarButton<Label: View>: View {
 
     @Environment(\.isFocused)
@@ -198,17 +189,11 @@ struct TransportBarButtonStyle: ButtonStyle {
             .padding(.horizontal, 20)
             .padding(.vertical, 14)
             .background {
-                if #available(tvOS 18.0, *) {
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                        .blur(radius: configuration.isPressed ? 0 : 0.5)
-                        .opacity(configuration.isPressed ? 1.0 : 0.8)
-                } else {
-                    Capsule()
-                        .fill(.white.opacity(configuration.isPressed ? 0.5 : 0.3))
-                }
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .opacity(configuration.isPressed ? 1.0 : 0.8)
             }
             .scaleEffect(configuration.isPressed ? 1.05 : 1.0)
-            .animation(.spring(response: 0.2), value: configuration.isPressed)
+            .animation(.spring(duration: 0.2), value: configuration.isPressed)
     }
 }

@@ -100,7 +100,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
         var body: some View {
             let buttons = allActionButtons
 
-            HStack(spacing: 24) {
+            HStack(spacing: 16) {
                 ForEach(buttons, id: \.self) { button in
                     view(for: button)
                         .focused($focusedButton, equals: button)
