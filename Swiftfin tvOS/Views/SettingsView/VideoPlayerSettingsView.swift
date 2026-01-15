@@ -39,6 +39,11 @@ struct VideoPlayerSettingsView: View {
     @Default(.VideoPlayer.Overlay.trailingTimestampType)
     private var trailingTimestampType
 
+    // MARK: - Audio
+
+    @Default(.VideoPlayer.Audio.outputMode)
+    private var audioOutputMode
+
     // MARK: - Subtitle
 
     @Default(.VideoPlayer.Subtitle.subtitleFontName)
@@ -118,6 +123,18 @@ struct VideoPlayerSettingsView: View {
                     L10n.trailingValue,
                     selection: $trailingTimestampType
                 )
+            }
+
+            // SECTION: Audio Output
+            Section {
+                ListRowMenu(
+                    L10n.audioOutputMode,
+                    selection: $audioOutputMode
+                )
+            } header: {
+                Text(L10n.audio)
+            } footer: {
+                Text(audioOutputMode.description)
             }
 
             // SECTION: Subtitles

@@ -240,6 +240,8 @@ extension Defaults.Keys {
         enum Audio {
             /// Preferred audio language code (ISO 639-2, e.g., "eng", "spa", "jpn")
             static let preferredLanguage: Key<String> = UserKey("preferredAudioLanguage", default: "eng")
+            /// Audio output mode for handling surround sound on stereo devices
+            static let outputMode: Key<AudioOutputMode> = UserKey("audioOutputMode", default: .auto)
         }
 
         enum Transition {

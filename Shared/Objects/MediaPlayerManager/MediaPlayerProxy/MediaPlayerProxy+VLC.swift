@@ -150,13 +150,30 @@ extension VLCMediaPlayerProxy {
                 .compactMap(\.asVLCPlaybackChild)
 
             // Increase buffer size to reduce audio hiccups during track changes
-            configuration.options = [
+            var options: [String: Any] = [
                 "network-caching": 5000, // 5 seconds network buffer (default 1000ms)
                 "file-caching": 5000, // 5 seconds file buffer
                 "live-caching": 5000, // 5 seconds live stream buffer
                 "clock-jitter": 0, // Disable clock jitter compensation
                 "clock-synchro": 0, // Disable clock sync (reduces latency sensitivity)
             ]
+
+            // Apply audio output mode settings
+            switch Defaults[.VideoPlayer.Audio.outputMode] {
+            case .auto:
+                // Disable passthrough so VLC can properly downmix surround to stereo
+                // This fixes center channel only going to left speaker on stereo setups
+                options["spdif"] = 0
+            case .stereo:
+                // Force stereo output with explicit 2-channel mode
+                options["spdif"] = 0
+                options["stereo-mode"] = 1 // Force stereo downmix
+            case .passthrough:
+                // Enable SPDIF passthrough for receivers that can decode surround
+                options["spdif"] = 1
+            }
+
+            configuration.options = options
 
             return configuration
         }

@@ -154,6 +154,8 @@ internal enum L10n {
   internal static let audioCodecNotSupported = L10n.tr("Localizable", "audioCodecNotSupported", fallback: "The audio codec is not supported")
   /// The audio track is external and requires transcoding
   internal static let audioIsExternal = L10n.tr("Localizable", "audioIsExternal", fallback: "The audio track is external and requires transcoding")
+  /// Audio Output
+  internal static let audioOutputMode = L10n.tr("Localizable", "audioOutputMode", fallback: "Audio Output")
   /// The audio profile is not supported
   internal static let audioProfileNotSupported = L10n.tr("Localizable", "audioProfileNotSupported", fallback: "The audio profile is not supported")
   /// The audio sample rate is not supported
@@ -1046,6 +1048,8 @@ internal enum L10n {
   internal static let parentalRatings = L10n.tr("Localizable", "parentalRatings", fallback: "Parental ratings")
   /// Parent index
   internal static let parentIndexNumber = L10n.tr("Localizable", "parentIndexNumber", fallback: "Parent index")
+  /// Passthrough
+  internal static let passthrough = L10n.tr("Localizable", "passthrough", fallback: "Passthrough")
   /// Password
   internal static let password = L10n.tr("Localizable", "password", fallback: "Password")
   /// User password has been changed.
@@ -1428,6 +1432,8 @@ internal enum L10n {
   internal static let startTime = L10n.tr("Localizable", "startTime", fallback: "Start time")
   /// Status
   internal static let status = L10n.tr("Localizable", "status", fallback: "Status")
+  /// Stereo
+  internal static let stereo = L10n.tr("Localizable", "stereo", fallback: "Stereo")
   /// Stop
   internal static let stop = L10n.tr("Localizable", "stop", fallback: "Stop")
   /// Story arc
