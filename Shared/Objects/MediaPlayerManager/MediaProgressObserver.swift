@@ -27,7 +27,7 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
 
     private let timer = PokeIntervalTimer()
     private var hasSentStart = false
-    private var item: MediaPlayerItem?
+    private weak var item: MediaPlayerItem?
     private var lastPlaybackRequestStatus: MediaPlayerManager.PlaybackRequestStatus = .playing
 
     init(item: MediaPlayerItem) {
