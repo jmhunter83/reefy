@@ -13,8 +13,6 @@ import Foundation
 import JellyfinAPI
 import VLCUI
 
-// TODO: proper error catching
-
 typealias MediaPlayerManagerPublisher = LegacyEventPublisher<MediaPlayerManager?>
 
 extension Scope {
@@ -52,7 +50,7 @@ final class MediaPlayerManager: ViewModel {
     @CasePathable
     enum Action {
         case ended
-        case error
+        case error(Error)
         case playNewItem(provider: MediaPlayerItemProvider)
         case setPlaybackRequestStatus(status: PlaybackRequestStatus)
         case setRate(rate: Float)
@@ -120,6 +118,8 @@ final class MediaPlayerManager: ViewModel {
 
     @Published
     private(set) var item: BaseItemDto
+    @Published
+    private(set) var playbackError: Error? = nil
     @Published
     private(set) var playbackRequestStatus: PlaybackRequestStatus = .playing
     @Published
@@ -238,6 +238,9 @@ final class MediaPlayerManager: ViewModel {
 
     @Function(\Action.Cases.error)
     private func onError(_ error: Error) async throws {
+        // Expose error to UI before stopping
+        self.playbackError = error
+
         if let playbackItem {
             logger.error(
                 "Error while playing item",

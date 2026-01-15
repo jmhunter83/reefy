@@ -51,27 +51,25 @@ final class ConnectToServerViewModel: ViewModel {
     var localServers: OrderedSet<ServerState> = []
 
     private let discovery = ServerDiscovery()
+    private var discoveryTask: Task<Void, Never>?
 
     deinit {
+        discoveryTask?.cancel()
         discovery.close()
     }
 
     override init() {
         super.init()
 
-        // TODO: refactor, causing retain cycle
-        Task { @MainActor [weak self] in
+        discoveryTask = Task { @MainActor [weak self] in
             guard let self else { return }
 
-            for await response in discovery.discoveredServers.values {
-                await MainActor.run {
-                    if let serverState = response.asServerState {
-                        let _ = self.localServers.append(serverState)
-                    }
+            for await response in self.discovery.discoveredServers.values {
+                if let serverState = response.asServerState {
+                    self.localServers.append(serverState)
                 }
             }
         }
-        .store(in: &cancellables)
     }
 
     @Function(\Action.Cases.connect)
