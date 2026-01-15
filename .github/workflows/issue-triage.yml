@@ -39,41 +39,43 @@ jobs:
             const areaLabels = ['area: playback', 'area: library', 'area: ui', 'area: auth', 'area: sync', 'area: settings'];
             const typeLabels = ['type: crash', 'type: regression', 'type: performance'];
 
-            const prompt = `You are a bug triage assistant for Reefy, a tvOS Jellyfin media player app.
-
-Analyze this GitHub issue and suggest appropriate labels.
-
-ISSUE TITLE: ${title}
-
-ISSUE BODY:
-${body}
-
-Based on the issue content, respond with a JSON object containing:
-1. "severity": one of [critical, high, medium, low]
-   - critical: App crash, data loss, security issue
-   - high: Major feature broken, no workaround
-   - medium: Feature impaired, workaround exists
-   - low: Minor issue, cosmetic
-
-2. "area": one of [playback, library, ui, auth, sync, settings, other]
-   - playback: Video/audio playback issues
-   - library: Media browsing, search, collections
-   - ui: User interface, layout, navigation, focus
-   - auth: Authentication, server connection
-   - sync: Downloads, offline content
-   - settings: Preferences, configuration
-
-3. "type": one of [crash, regression, performance, null]
-   - crash: App crashes or freezes
-   - regression: Previously worked, now broken
-   - performance: Slow, laggy, resource intensive
-   - null: If none apply
-
-4. "confidence": number 0-100 indicating how confident you are
-
-5. "reasoning": brief explanation (1-2 sentences)
-
-Respond ONLY with valid JSON, no other text.`;
+            const prompt = [
+              'You are a bug triage assistant for Reefy, a tvOS Jellyfin media player app.',
+              '',
+              'Analyze this GitHub issue and suggest appropriate labels.',
+              '',
+              'ISSUE TITLE: ' + title,
+              '',
+              'ISSUE BODY:',
+              body,
+              '',
+              'Based on the issue content, respond with a JSON object containing:',
+              '1. "severity": one of [critical, high, medium, low]',
+              '   - critical: App crash, data loss, security issue',
+              '   - high: Major feature broken, no workaround',
+              '   - medium: Feature impaired, workaround exists',
+              '   - low: Minor issue, cosmetic',
+              '',
+              '2. "area": one of [playback, library, ui, auth, sync, settings, other]',
+              '   - playback: Video/audio playback issues',
+              '   - library: Media browsing, search, collections',
+              '   - ui: User interface, layout, navigation, focus',
+              '   - auth: Authentication, server connection',
+              '   - sync: Downloads, offline content',
+              '   - settings: Preferences, configuration',
+              '',
+              '3. "type": one of [crash, regression, performance, null]',
+              '   - crash: App crashes or freezes',
+              '   - regression: Previously worked, now broken',
+              '   - performance: Slow, laggy, resource intensive',
+              '   - null: If none apply',
+              '',
+              '4. "confidence": number 0-100 indicating how confident you are',
+              '',
+              '5. "reasoning": brief explanation (1-2 sentences)',
+              '',
+              'Respond ONLY with valid JSON, no other text.'
+            ].join('\n');
 
             try {
               const response = await fetch('https://api.anthropic.com/v1/messages', {
