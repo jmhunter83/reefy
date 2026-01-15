@@ -7,7 +7,10 @@
 //
 
 import Defaults
+import os.log
 import SwiftUI
+
+private let focusLog = Logger(subsystem: "org.jellyfin.swiftfin", category: "ActionButtonsFocus")
 
 extension VideoPlayer.PlaybackControls.NavigationBar {
 
@@ -106,23 +109,13 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             .labelStyle(.iconOnly)
             .defaultFocus($focusedButton, defaultFocusButton(from: buttons))
             .onChange(of: focusedButton) { oldValue, newValue in
+                // Machine-friendly log: event|old|new|buttonCount
+                focusLog.debug("FOCUS_CHANGE|\(oldValue?.rawValue ?? "nil")|\(newValue?.rawValue ?? "nil")|\(buttons.count)")
+
                 if newValue != nil {
                     containerState.timer.poke()
                 }
                 containerState.isActionButtonsFocused = (newValue != nil)
-
-                guard let oldValue, let newValue else { return }
-
-                let oldIndex = buttons.firstIndex(of: oldValue)
-                let newIndex = buttons.firstIndex(of: newValue)
-
-                if let oldIdx = oldIndex, let newIdx = newIndex {
-                    if oldIdx == 0 && newIdx == buttons.count - 1 {
-                        focusedButton = buttons.first
-                    } else if oldIdx == buttons.count - 1 && newIdx == 0 {
-                        focusedButton = buttons.last
-                    }
-                }
             }
         }
     }

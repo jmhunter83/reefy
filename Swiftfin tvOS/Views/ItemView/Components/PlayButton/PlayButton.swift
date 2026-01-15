@@ -80,18 +80,19 @@ extension ItemView {
         // MARK: - Body
 
         var body: some View {
-            HStack(spacing: 50) {
+            HStack(spacing: 30) {
                 playButton
 
                 if multipleVersions {
                     VersionMenu(viewModel: viewModel, mediaSources: mediaSources)
-                        .frame(width: 100, height: 100)
+                        .frame(minWidth: 90, maxWidth: .infinity)
                 }
 
                 if hasProgress {
                     startFromBeginningButton
                 }
             }
+            .frame(height: 100)
             .fontWeight(.semibold)
         }
 
@@ -142,16 +143,13 @@ extension ItemView {
             Button {
                 play(fromBeginning: true)
             } label: {
-                Image(systemName: "gobackward")
-                    .font(.title2)
-                    .frame(width: 50, height: 50)
+                Label(L10n.playFromBeginning, systemImage: "gobackward")
             }
-            .buttonStyle(
-                .tintedMaterial(
-                    tint: .secondary,
-                    foregroundColor: .white
-                )
-            )
+            .buttonStyle(.tintedMaterial(tint: .secondary, foregroundColor: .white))
+            .labelStyle(.iconOnly)
+            .font(.title3)
+            .fontWeight(.semibold)
+            .frame(minWidth: 90, maxWidth: .infinity)
             .enabled(isEnabled)
         }
 

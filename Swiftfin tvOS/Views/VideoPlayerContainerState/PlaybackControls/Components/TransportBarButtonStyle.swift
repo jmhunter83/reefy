@@ -6,12 +6,16 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import os.log
 import SwiftUI
+
+private let focusLog = Logger(subsystem: "org.jellyfin.swiftfin", category: "TransportBarFocus")
 
 // MARK: - Shared Focus Styling
 
 /// View modifier that applies consistent tvOS transport bar focus styling.
 /// Used by both TransportBarButton and TransportBarMenu to avoid duplication.
+/// Uses fixed frame size to prevent layout shifts that cause focus flutter.
 private struct TransportBarFocusStyle: ViewModifier {
 
     let isFocused: Bool
@@ -21,13 +25,23 @@ private struct TransportBarFocusStyle: ViewModifier {
             .font(.title2)
             .fontWeight(.medium)
             .foregroundStyle(isFocused ? .black : .white.opacity(0.9))
-            .padding(.horizontal, isFocused ? 24 : 8)
-            .padding(.vertical, isFocused ? 16 : 8)
+            .frame(width: 56, height: 56)
             .background {
                 if isFocused {
-                    Capsule().fill(Color.white)
+                    // Focused state: bright white with subtle glass effect
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Capsule()
+                                .fill(.white)
+                                .opacity(0.9)
+                        )
                 } else {
-                    Capsule().fill(.ultraThinMaterial.opacity(0.3))
+                    // Unfocused state: frosted glass with blur effect
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .blur(radius: 0.5)
+                        .opacity(0.7)
                 }
             }
             .clipShape(Capsule())
@@ -38,15 +52,32 @@ private struct TransportBarFocusStyle: ViewModifier {
 private struct TransportBarFocusEffects: ViewModifier {
 
     let isFocused: Bool
+    let debugLabel: String
+
+    init(isFocused: Bool, debugLabel: String = "unknown") {
+        self.isFocused = isFocused
+        self.debugLabel = debugLabel
+    }
 
     func body(content: Content) -> some View {
-        content
+        let _ = focusLog.trace("   ⚡ TransportBarFocusEffects[\(debugLabel)] isFocused=\(isFocused)")
+
+        return content
             .scaleEffect(isFocused ? 1.1 : 1.0)
             .shadow(
                 color: isFocused ? .black.opacity(0.4) : .clear,
                 radius: isFocused ? 15 : 0,
                 x: 0,
                 y: isFocused ? 10 : 0
+            )
+            .overlay(
+                isFocused ?
+                    Capsule()
+                    .fill(.white.opacity(0.3))
+                    .blur(radius: 20)
+                    .offset(y: 5)
+                    .allowsHitTesting(false)
+                    : nil
             )
             .animation(.easeOut(duration: 0.15), value: isFocused)
     }
@@ -96,6 +127,8 @@ struct TransportBarMenu<Label: View, Content: View>: View {
     private var wasFocused = false
     @State
     private var menuOpenPokeTask: Task<Void, Never>?
+    @State
+    private var lastFocusTime: UInt64 = 0
 
     let title: String
     let label: () -> Label
@@ -119,8 +152,13 @@ struct TransportBarMenu<Label: View, Content: View>: View {
                 .modifier(TransportBarFocusStyle(isFocused: isFocused))
         }
         .buttonStyle(.plain)
-        .modifier(TransportBarFocusEffects(isFocused: isFocused))
-        .onChange(of: isFocused) { _, newValue in
+        .modifier(TransportBarFocusEffects(isFocused: isFocused, debugLabel: title))
+        .onChange(of: isFocused) { oldValue, newValue in
+            let now = DispatchTime.now().uptimeNanoseconds
+            let deltaUs = lastFocusTime > 0 ? (now - lastFocusTime) / 1000 : 0
+            lastFocusTime = now
+
+            focusLog.debug("🎭 '\(title)': \(oldValue) → \(newValue) [+\(deltaUs)µs]")
             handleFocusChange(newValue)
         }
         .onDisappear {
@@ -163,6 +201,7 @@ struct TransportBarButtonStyle: ButtonStyle {
                 if #available(tvOS 18.0, *) {
                     Capsule()
                         .fill(.ultraThinMaterial)
+                        .blur(radius: configuration.isPressed ? 0 : 0.5)
                         .opacity(configuration.isPressed ? 1.0 : 0.8)
                 } else {
                     Capsule()
