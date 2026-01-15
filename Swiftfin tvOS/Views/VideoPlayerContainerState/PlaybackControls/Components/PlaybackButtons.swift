@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - Center Playback Buttons
 
 /// Large centered play/pause and jump buttons for tvOS video player.
-/// Modeled after native Apple TV apps (Netflix, Disney+, Apple TV+).
+/// Uses modern Liquid Glass design for tvOS 26+ with compact, refined buttons.
 extension VideoPlayer.PlaybackControls {
 
     struct PlaybackButtons: View {
@@ -60,21 +60,21 @@ extension VideoPlayer.PlaybackControls {
                         Image(systemName: "play.fill")
                     }
                 }
-                .font(.system(size: 56, weight: .bold))
-                .frame(width: 120, height: 120)
+                .font(.system(size: 52, weight: .bold))
+                .frame(width: 110, height: 110)
                 .background {
                     playbackButtonBackground(isFocused: focusedButton == .playPause)
                 }
             }
             .buttonStyle(.plain)
             .focused($focusedButton, equals: .playPause)
-            .scaleEffect(focusedButton == .playPause ? 1.15 : 1.0)
+            .scaleEffect(focusedButton == .playPause ? 1.08 : 1.0)
             .shadow(
-                color: focusedButton == .playPause ? .black.opacity(0.4) : .clear,
-                radius: focusedButton == .playPause ? 25 : 0,
-                y: focusedButton == .playPause ? 20 : 0
+                color: focusedButton == .playPause ? .black.opacity(0.2) : .clear,
+                radius: focusedButton == .playPause ? 12 : 0,
+                y: focusedButton == .playPause ? 8 : 0
             )
-            .animation(.linear(duration: 0.15), value: focusedButton)
+            .animation(.spring(duration: 0.2), value: focusedButton)
         }
 
         // MARK: - Jump Backward Button
@@ -85,21 +85,21 @@ extension VideoPlayer.PlaybackControls {
                 manager.proxy?.jumpBackward(jumpBackwardInterval.rawValue)
             } label: {
                 Image(systemName: jumpBackwardInterval.secondarySystemImage)
-                    .font(.system(size: 36, weight: .semibold))
-                    .frame(width: 80, height: 80)
+                    .font(.system(size: 32, weight: .semibold))
+                    .frame(width: 72, height: 72)
                     .background {
                         playbackButtonBackground(isFocused: focusedButton == .jumpBackward)
                     }
             }
             .buttonStyle(.plain)
             .focused($focusedButton, equals: .jumpBackward)
-            .scaleEffect(focusedButton == .jumpBackward ? 1.1 : 1.0)
+            .scaleEffect(focusedButton == .jumpBackward ? 1.05 : 1.0)
             .shadow(
-                color: focusedButton == .jumpBackward ? .black.opacity(0.3) : .clear,
-                radius: focusedButton == .jumpBackward ? 20 : 0,
-                y: focusedButton == .jumpBackward ? 15 : 0
+                color: focusedButton == .jumpBackward ? .black.opacity(0.2) : .clear,
+                radius: focusedButton == .jumpBackward ? 10 : 0,
+                y: focusedButton == .jumpBackward ? 6 : 0
             )
-            .animation(.linear(duration: 0.15), value: focusedButton)
+            .animation(.spring(duration: 0.2), value: focusedButton)
         }
 
         // MARK: - Jump Forward Button
@@ -110,21 +110,21 @@ extension VideoPlayer.PlaybackControls {
                 manager.proxy?.jumpForward(jumpForwardInterval.rawValue)
             } label: {
                 Image(systemName: jumpForwardInterval.systemImage)
-                    .font(.system(size: 36, weight: .semibold))
-                    .frame(width: 80, height: 80)
+                    .font(.system(size: 32, weight: .semibold))
+                    .frame(width: 72, height: 72)
                     .background {
                         playbackButtonBackground(isFocused: focusedButton == .jumpForward)
                     }
             }
             .buttonStyle(.plain)
             .focused($focusedButton, equals: .jumpForward)
-            .scaleEffect(focusedButton == .jumpForward ? 1.1 : 1.0)
+            .scaleEffect(focusedButton == .jumpForward ? 1.05 : 1.0)
             .shadow(
-                color: focusedButton == .jumpForward ? .black.opacity(0.3) : .clear,
-                radius: focusedButton == .jumpForward ? 20 : 0,
-                y: focusedButton == .jumpForward ? 15 : 0
+                color: focusedButton == .jumpForward ? .black.opacity(0.2) : .clear,
+                radius: focusedButton == .jumpForward ? 10 : 0,
+                y: focusedButton == .jumpForward ? 6 : 0
             )
-            .animation(.linear(duration: 0.15), value: focusedButton)
+            .animation(.spring(duration: 0.2), value: focusedButton)
         }
 
         // MARK: - Button Background
