@@ -32,7 +32,7 @@ body:
       label: Description of the bug
       description: Please provide a detailed description of the bug you encountered, in a readable and comprehensible way.
       placeholder: |
-        After updating to version 1.3.1, the playback controls disappear when playing certain video files. The issue seems to occur specifically with files that have multiple audio tracks. I have tested this on both my iPhone and iPad with the same results.
+        After updating to Build 75, the playback controls disappear when playing certain video files. The issue seems to occur specifically with files that have multiple audio tracks. I have tested this on my Apple TV 4K (3rd gen) running tvOS 18.2.
     validations:
       required: true
 
@@ -45,7 +45,7 @@ body:
         1. Open Reefy and navigate to your library
         2. Select a video file with multiple audio tracks
         3. Start playback
-        4. Attempt to access playback controls by tapping the screen
+        4. Swipe down on Siri Remote to access playback controls
         5. Observe that controls do not appear
     validations:
       required: true
@@ -80,23 +80,15 @@ body:
       required: true
 
   - type: dropdown
-    id: platform
+    id: reefy-version
     attributes:
-      label: Platform
-      description: Select the platform(s) where this bug occurs
-      multiple: true
+      label: Reefy version
+      description: The version/build of Reefy you are using
       options:
-        - iOS
-        - tvOS
-    validations:
-      required: true
-
-  - type: input
-    id: app-version
-    attributes:
-      label: Application version
-      description: The version of the installed Reefy app.
-      placeholder: 1.3.1, 1.0.1
+        - 1.0.0 (Build 75)
+        - 1.0.0 (Build 74)
+        - 1.0.0 (Build 73)
+        - Other (specify in description)
     validations:
       required: true
 
@@ -106,25 +98,53 @@ body:
       label: Where did you install the app from?
       description: Choose the appropriate app store or installation method.
       options:
-        - App Store
         - TestFlight
-        - GitHub
+        - GitHub (self-built)
 
-  - type: input
-    id: device-info
+  - type: dropdown
+    id: apple-tv-model
     attributes:
-      label: Device information
-      description: Device model
-      placeholder: iPhone 18 Pro, 12.9-in. iPad Pro (6th gen), Apple TV 4K (2nd gen)
+      label: Apple TV model
+      description: Which Apple TV are you using?
+      options:
+        - Apple TV 4K (3rd generation, 2022) - A2737/A2843
+        - Apple TV 4K (2nd generation, 2021) - A2169
+        - Apple TV 4K (1st generation, 2017) - A1842
+        - Apple TV HD (4th generation, 2015) - A1625
+        - Other (specify in description)
     validations:
       required: true
 
-  - type: input
-    id: os-version
+  - type: dropdown
+    id: tvos-version
     attributes:
-      label: OS version
-      description: Version of the operating system
-      placeholder: iOS 18.1, iPadOS 18.1, tvOS 18.1
+      label: tvOS version
+      description: Which tvOS version is your Apple TV running?
+      options:
+        - tvOS 18.3
+        - tvOS 18.2
+        - tvOS 18.1
+        - tvOS 18.0
+        - tvOS 17.x
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: controller-type
+    attributes:
+      label: Controller/Remote
+      description: What are you using to control your Apple TV?
+      options:
+        - Siri Remote (3rd gen, 2022) - USB-C
+        - Siri Remote (2nd gen, 2021) - Lightning
+        - Siri Remote (1st gen) - Touch surface
+        - Apple TV Remote (silver, pre-Siri)
+        - iPhone/iPad Remote app
+        - PlayStation controller (DualSense/DualShock)
+        - Xbox controller
+        - Other game controller
+        - Other (specify in description)
     validations:
       required: true
 
