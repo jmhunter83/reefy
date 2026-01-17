@@ -60,18 +60,37 @@ jobs:
               labelsToAdd.push('severity: medium');
             }
 
-            // Area detection
-            if (content.includes('playback') || content.includes('video') || content.includes('audio') || content.includes('player')) {
-              labelsToAdd.push('area: playback');
-            } else if (content.includes('library') || content.includes('browse') || content.includes('search') || content.includes('up next')) {
-              labelsToAdd.push('area: library');
-            } else if (content.includes('focus') || content.includes('navigation') || content.includes('ui') || content.includes('layout')) {
+            // Area detection - using separate if blocks to allow multiple areas
+            // Check UI first - focus/navigation keywords indicate UI even if "player" is mentioned
+            const isUIIssue = content.includes('focus') || content.includes('navigation') ||
+                              content.includes('ui') || content.includes('layout') ||
+                              content.includes('button') || content.includes('scroll') ||
+                              content.includes('remote') || content.includes('escapes') ||
+                              content.includes('controls');
+
+            if (isUIIssue) {
               labelsToAdd.push('area: ui');
-            } else if (content.includes('login') || content.includes('server') || content.includes('connect') || content.includes('auth')) {
+            }
+
+            // Playback - only if it's about actual video/audio stream, not player UI
+            const isPlaybackIssue = content.includes('codec') || content.includes('buffer') ||
+                                    content.includes('transcode') || content.includes('subtitle') ||
+                                    content.includes('audio sync') || content.includes('playback') ||
+                                    ((content.includes('video') || content.includes('audio')) && !isUIIssue);
+            if (isPlaybackIssue) {
+              labelsToAdd.push('area: playback');
+            }
+
+            if (content.includes('library') || content.includes('browse') || content.includes('search') || content.includes('up next')) {
+              labelsToAdd.push('area: library');
+            }
+            if (content.includes('login') || content.includes('server') || content.includes('connect') || content.includes('auth')) {
               labelsToAdd.push('area: auth');
-            } else if (content.includes('download') || content.includes('offline') || content.includes('sync')) {
+            }
+            if (content.includes('download') || content.includes('offline') || content.includes('sync')) {
               labelsToAdd.push('area: sync');
-            } else if (content.includes('settings') || content.includes('preference')) {
+            }
+            if (content.includes('settings') || content.includes('preference')) {
               labelsToAdd.push('area: settings');
             }
 
