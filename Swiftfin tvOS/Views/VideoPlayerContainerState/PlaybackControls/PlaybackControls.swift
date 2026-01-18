@@ -193,7 +193,7 @@ extension VideoPlayer {
             }
             .onReceive(onPressEvent) { press in
                 switch press {
-                case (.playPause, _):
+                case (.playPause, .began):
                     // Show overlay and toggle play/pause
                     if !containerState.isPresentingOverlay {
                         withAnimation(.linear(duration: 0.25)) {
