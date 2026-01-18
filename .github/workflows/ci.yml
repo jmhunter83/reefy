@@ -42,11 +42,11 @@ jobs:
         run: carthage update --use-xcframeworks --cache-builds
 
       - name: Build
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 3
-          retry_on: error
-          timeout_minutes: 60
-          command: yes | sudo fastlane buildLane \
-            scheme:"\"Swiftfin tvOS\"" \
-            xcodeVersion:${{ env.XCODE_VERSION }}
+        run: |
+          xcodebuild build \
+            -project Swiftfin.xcodeproj \
+            -scheme "Swiftfin tvOS" \
+            -destination "platform=tvOS Simulator,name=${{ env.TVOS_SIMULATOR }}" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty && exit ${PIPESTATUS[0]}
