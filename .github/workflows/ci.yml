@@ -43,6 +43,6 @@ jobs:
           xcodebuild build \
             -project Swiftfin.xcodeproj \
             -scheme "Swiftfin tvOS" \
-            -destination "platform=tvOS Simulator,name=Apple TV" \
+            -destination "generic/platform=tvOS Simulator" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
