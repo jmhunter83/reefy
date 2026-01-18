@@ -21,6 +21,7 @@ jobs:
       XCODE_VERSION: "16.4"
       TVOS_VERSION: "18"
       TVOS_SIMULATOR: "Apple TV 4K"
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
 
     steps:    
       - name: Checkout
