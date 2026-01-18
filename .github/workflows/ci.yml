@@ -45,5 +45,4 @@ jobs:
             -scheme "Swiftfin tvOS" \
             -destination "platform=tvOS Simulator,name=Apple TV" \
             CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            | xcpretty && exit ${PIPESTATUS[0]}
+            CODE_SIGNING_REQUIRED=NO
