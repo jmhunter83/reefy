@@ -64,6 +64,7 @@ jobs:
             const severityLabels = ['severity: critical', 'severity: high', 'severity: medium', 'severity: low'];
             const areaLabels = ['area: playback', 'area: library', 'area: ui', 'area: auth', 'area: sync', 'area: settings'];
             const typeLabels = ['type: crash', 'type: regression', 'type: performance'];
+            const externalLabel = 'wontfix-external';
 
             const prompt = [
               'You are a triage assistant for Reefy, a tvOS Jellyfin media player app.',
@@ -112,6 +113,19 @@ jobs:
               '5. "confidence": number 0-100 indicating how confident you are',
               '',
               '6. "reasoning": brief explanation (1-2 sentences)',
+              '',
+              '7. "external": boolean (true if this issue is caused by:',
+              '   - VLC codec/playback behavior or VLCKit limitations',
+              '   - Native AVKit player limitations',
+              '   - Jellyfin server/API behavior',
+              '   - Third-party plugins like intro-skipper)',
+              '',
+              'IMPORTANT: If the issue mentions "VLC", "native player", "server", or plugin names,',
+              'consider if the root cause is external to Reefy codebase.',
+              '',
+              '8. "existingFeature": boolean (set to false ONLY if reporting functionality that NEVER',
+              '   existed in Reefy - these are feature requests, not regressions. Set to true or null',
+              '   if the feature exists or you are unsure)',
               '',
               'Respond ONLY with valid JSON, no other text.'
             ].join('\n');
@@ -162,6 +176,24 @@ jobs:
                 correctLabels.push(`area: ${analysis.area}`);
               }
 
+              // Handle external issues (VLC, AVKit, Jellyfin server, plugins)
+              if (analysis.external === true) {
+                correctLabels.push(externalLabel);
+              }
+
+              // Prevent false regression labels on features that never existed
+              if (analysis.existingFeature === false) {
+                const regressionIndex = correctLabels.indexOf('type: regression');
+                if (regressionIndex > -1) {
+                  correctLabels.splice(regressionIndex, 1);
+                  console.log('Removed regression label - feature never existed');
+                }
+                // Ensure enhancement label is present for feature requests misreported as bugs
+                if (!correctLabels.includes('enhancement') && !isFeatureRequest) {
+                  correctLabels.push('enhancement');
+                }
+              }
+
               // REVIEW MODE: Check if user's labels need correction
               if (isReviewMode) {
                 // Only correct if confidence >= 80 (higher bar for corrections)
@@ -172,7 +204,8 @@ jobs:
 
                 // Find labels to remove and add
                 const userTriageLabels = existingLabels.filter(l =>
-                  l.startsWith('severity:') || l.startsWith('area:') || l.startsWith('type:')
+                  l.startsWith('severity:') || l.startsWith('area:') || l.startsWith('type:') ||
+                  l === externalLabel
                 );
                 const labelsToRemove = userTriageLabels.filter(l => !correctLabels.includes(l));
                 const labelsToAdd = correctLabels.filter(l => !existingLabels.includes(l));
