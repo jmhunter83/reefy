@@ -27,22 +27,22 @@ struct SplitLoginWindowView<Leading: View, Trailing: View>: View {
     // MARK: - Body
 
     var body: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 22) {
+        HStack(alignment: .center, spacing: 60) {
+            VStack(alignment: .leading, spacing: 24) {
                 leadingContentView
             }
-            .frame(maxWidth: .infinity)
-            .edgePadding(.vertical)
+            .frame(minWidth: 500, maxWidth: 600, minHeight: 300)
+            .padding(.vertical, 60)
 
             Divider()
-                .padding(.vertical, 100)
 
-            VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: 24) {
                 trailingContentView
             }
-            .frame(maxWidth: .infinity)
-            .edgePadding(.vertical)
+            .frame(minWidth: 450, maxWidth: .infinity, minHeight: 300)
+            .padding(.vertical, 60)
         }
+        .padding(.horizontal, 80)
         .navigationBarBranding(isLoading: isLoading)
         .background {
             if let backgroundImageSource {

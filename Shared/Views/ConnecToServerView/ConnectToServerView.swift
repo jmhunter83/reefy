@@ -54,6 +54,9 @@ struct ConnectToServerView: View {
                 .textInputAutocapitalization(.never)
                 .keyboardType(.URL)
                 .focused($isURLFocused)
+            #if os(tvOS)
+                .frame(minHeight: 60)
+            #endif
         }
 
         if viewModel.state == .connecting {
@@ -61,14 +64,14 @@ struct ConnectToServerView: View {
                 viewModel.cancel()
             }
             .buttonStyle(.primary)
-            .frame(maxHeight: 75)
+            .frame(height: 64)
         } else {
             Button(L10n.connect) {
                 isURLFocused = false
                 viewModel.connect(url: url)
             }
             .buttonStyle(.primary)
-            .frame(maxHeight: 75)
+            .frame(height: 64)
             .disabled(url.isEmpty)
             .foregroundStyle(
                 accentColor.overlayColor,

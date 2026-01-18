@@ -127,6 +127,9 @@ struct UserSignInView: View {
                 .onSubmit {
                     focusedTextField = .password
                 }
+            #if os(tvOS)
+                .frame(minHeight: 60)
+            #endif
 
             SecureField(
                 L10n.password,
@@ -144,6 +147,9 @@ struct UserSignInView: View {
             .autocorrectionDisabled()
             .textInputAutocapitalization(.never)
             .focused($focusedTextField, equals: .password)
+            #if os(tvOS)
+                .frame(minHeight: 60)
+            #endif
         } header: {
             Text(L10n.signInToServer(viewModel.server.name))
         } footer: {
@@ -164,7 +170,7 @@ struct UserSignInView: View {
                 viewModel.cancel()
             }
             .buttonStyle(.primary)
-            .frame(maxHeight: 75)
+            .frame(height: 64)
         } else {
             Button(L10n.signIn) {
                 viewModel.signIn(
@@ -173,7 +179,7 @@ struct UserSignInView: View {
                 )
             }
             .buttonStyle(.primary)
-            .frame(maxHeight: 75)
+            .frame(height: 64)
             .disabled(username.isEmpty)
             .foregroundStyle(
                 Color.jellyfinPurple.overlayColor,
@@ -189,7 +195,7 @@ struct UserSignInView: View {
                     action: runQuickConnect
                 )
                 .buttonStyle(.primary)
-                .frame(maxHeight: 75)
+                .frame(height: 64)
                 .disabled(viewModel.state == .signingIn)
                 .foregroundStyle(
                     Color.jellyfinPurple.overlayColor,

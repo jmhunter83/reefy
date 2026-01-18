@@ -10,12 +10,11 @@ import SwiftUI
 
 extension EdgeInsets {
 
-    // TODO: finalize tvOS
     /// The padding for Views against contextual edges,
     /// typically the edges of the View's scene
     static let edgePadding: CGFloat = {
         #if os(tvOS)
-        44
+        60
         #else
         if UIDevice.isPad {
             24
