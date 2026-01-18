@@ -15,7 +15,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>71</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Reefy</string>
 	<key>LSApplicationQueriesSchemes</key>
@@ -24,8 +24,6 @@
 		<string>vimeo</string>
 		<string>com.apple.tv</string>
 	</array>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -33,6 +31,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Reefy needs local network access to discover and connect to your Jellyfin media server.</string>
 	<key>UIDesignRequiresCompatibility</key>
 	<true/>
 	<key>UILaunchScreen</key>
