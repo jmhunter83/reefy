@@ -13,11 +13,7 @@ extension VideoPlayer.PlaybackControls {
     struct PlaybackProgress: View {
 
         @EnvironmentObject
-        private var containerState: VideoPlayerContainerState
-        @EnvironmentObject
         private var manager: MediaPlayerManager
-        @EnvironmentObject
-        private var scrubbedSecondsBox: PublishedBox<Duration>
 
         private var progress: Double {
             guard let runtime = manager.item.runtime, runtime > .zero else { return 0 }

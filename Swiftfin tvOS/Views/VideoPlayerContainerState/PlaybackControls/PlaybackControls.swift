@@ -33,11 +33,6 @@ extension VideoPlayer {
         @Router
         private var router
 
-        @State
-        private var contentSize: CGSize = .zero
-        @State
-        private var effectiveSafeArea: EdgeInsets = .zero
-
         // MARK: - Multi-Click Skip State
 
         /// Skip amounts: [15s, 2min, 15min]
@@ -294,7 +289,7 @@ extension VideoPlayer {
                 manager.proxy?.jumpForward(skipAmount)
                 containerState.skipIndicatorText = "+\(formatDuration(skipAmount.seconds))"
 
-                forwardResetTask = Task {
+                forwardResetTask = Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(600))
                     forwardClickCount = 0
                 }
@@ -307,7 +302,7 @@ extension VideoPlayer {
                 manager.proxy?.jumpBackward(skipAmount)
                 containerState.skipIndicatorText = "−\(formatDuration(skipAmount.seconds))"
 
-                backwardResetTask = Task {
+                backwardResetTask = Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(600))
                     backwardClickCount = 0
                 }
@@ -315,7 +310,7 @@ extension VideoPlayer {
 
             // Auto-hide skip indicator after delay
             skipIndicatorResetTask?.cancel()
-            skipIndicatorResetTask = Task {
+            skipIndicatorResetTask = Task { @MainActor in
                 try? await Task.sleep(for: .seconds(1))
                 containerState.skipIndicatorText = nil
             }
