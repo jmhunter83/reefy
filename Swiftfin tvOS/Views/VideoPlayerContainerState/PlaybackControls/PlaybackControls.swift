@@ -20,11 +20,6 @@ extension VideoPlayer {
         @Environment(\.safeAreaInsets)
         private var safeAreaInsets
 
-        @Default(.VideoPlayer.jumpBackwardInterval)
-        private var jumpBackwardInterval
-        @Default(.VideoPlayer.jumpForwardInterval)
-        private var jumpForwardInterval
-
         @EnvironmentObject
         private var containerState: VideoPlayerContainerState
         @EnvironmentObject
