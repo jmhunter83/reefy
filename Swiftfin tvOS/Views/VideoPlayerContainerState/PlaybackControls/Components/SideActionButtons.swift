@@ -14,7 +14,7 @@ import VLCUI
 extension VideoPlayer.PlaybackControls {
 
     /// Right-side vertical stack containing Audio and Subtitles buttons.
-    /// Positioned above the transport bar with glass backdrop.
+    /// Positioned at 25% from bottom, above the transport bar.
     struct SideActionButtons: View {
 
         @EnvironmentObject
@@ -33,19 +33,14 @@ extension VideoPlayer.PlaybackControls {
         }
 
         var body: some View {
-            // Outer positioning layer (invisible)
-            ZStack(alignment: .topTrailing) {
-                Color.clear // Takes up space without blocking video
-
+            GeometryReader { geometry in
                 // Inner button stack with glass backdrop (sized to content only)
                 VStack(spacing: 16) {
                     // Audio picker (top)
-                    if let playbackItem = manager.playbackItem,
-                       playbackItem.audioStreams.count > 1
-                    {
+                    if let playbackItem = manager.playbackItem {
                         InlineStreamPicker(
                             title: L10n.audio,
-                            systemImage: "speaker.wave.2",
+                            systemImage: audioIcon,
                             streams: playbackItem.audioStreams,
                             selectedIndex: playbackItem.selectedAudioStreamIndex,
                             onSelect: { stream in
@@ -76,8 +71,11 @@ extension VideoPlayer.PlaybackControls {
                 .background { TransportBarBackground() }
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .shadow(color: .black.opacity(0.4), radius: 16)
-                .padding(.trailing, 60)
-                .padding(.top, 400)
+                // Position at 25% from bottom (75% from top), right edge
+                .position(
+                    x: geometry.size.width - 150,
+                    y: geometry.size.height * 0.75
+                )
             }
             .focusGuide(focusGuide, tag: "sideButtons", bottom: "transportBar")
             .isVisible(isScrubbing || isPresentingOverlay)
@@ -89,6 +87,10 @@ extension VideoPlayer.PlaybackControls {
 
         private var isPresentingOverlay: Bool {
             containerState.isPresentingOverlay
+        }
+
+        private var audioIcon: String {
+            "speaker.wave.2"
         }
 
         private var subtitleIcon: String {
