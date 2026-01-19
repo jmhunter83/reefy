@@ -37,13 +37,13 @@ extension VideoPlayer.PlaybackControls {
             GeometryReader { geometry in
                 VStack(spacing: 24) {
                     if let playbackItem = manager.playbackItem {
-                        AudioButton(playbackItem: playbackItem)
-                            .focused($focusedButton, equals: .audio)
-
                         if !playbackItem.subtitleStreams.isEmpty {
                             SubtitlesButton(playbackItem: playbackItem)
                                 .focused($focusedButton, equals: .subtitles)
                         }
+
+                        AudioButton(playbackItem: playbackItem)
+                            .focused($focusedButton, equals: .audio)
                     }
                 }
                 .padding(.vertical, 20)
@@ -53,7 +53,7 @@ extension VideoPlayer.PlaybackControls {
                 .shadow(color: .black.opacity(0.4), radius: 16)
                 .position(
                     x: geometry.size.width - Self.sideButtonsRightOffset,
-                    y: geometry.size.height * 0.75
+                    y: geometry.size.height * 0.65
                 )
             }
             .focusGuide(focusGuide, tag: "sideButtons", bottom: "transportBar")
