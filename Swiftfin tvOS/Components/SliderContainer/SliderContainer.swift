@@ -6,7 +6,6 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Engine
 import SwiftUI
 
 struct SliderContainer<Value: BinaryFloatingPoint>: UIViewControllerRepresentable {
@@ -14,17 +13,20 @@ struct SliderContainer<Value: BinaryFloatingPoint>: UIViewControllerRepresentabl
     private var value: Binding<Value>
     private let total: Value
     private let onEditingChanged: (Bool) -> Void
+    private let onFocusChanged: (Bool) -> Void
     private let view: AnyView
 
     init(
         value: Binding<Value>,
         total: Value,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
+        onFocusChanged: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder view: @escaping () -> some SliderContentView
     ) {
         self.value = value
         self.total = total
         self.onEditingChanged = onEditingChanged
+        self.onFocusChanged = onFocusChanged
         self.view = AnyView(view())
     }
 
@@ -32,11 +34,13 @@ struct SliderContainer<Value: BinaryFloatingPoint>: UIViewControllerRepresentabl
         value: Binding<Value>,
         total: Value,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
+        onFocusChanged: @escaping (Bool) -> Void = { _ in },
         view: AnyView
     ) {
         self.value = value
         self.total = total
         self.onEditingChanged = onEditingChanged
+        self.onFocusChanged = onFocusChanged
         self.view = view
     }
 
@@ -45,6 +49,7 @@ struct SliderContainer<Value: BinaryFloatingPoint>: UIViewControllerRepresentabl
             value: value,
             total: total,
             onEditingChanged: onEditingChanged,
+            onFocusChanged: onFocusChanged,
             view: view
         )
     }
@@ -64,6 +69,7 @@ final class UISliderContainerViewController<Value: BinaryFloatingPoint>: UIViewC
 
     let containerState: SliderContainerState<Value>
     private let onEditingChanged: (Bool) -> Void
+    private let onFocusChanged: (Bool) -> Void
     private let total: Value
     private let valueBinding: Binding<Value>
     private let contentView: AnyView
@@ -73,17 +79,18 @@ final class UISliderContainerViewController<Value: BinaryFloatingPoint>: UIViewC
             containerState: containerState,
             total: total,
             valueBinding: valueBinding,
-            onEditingChanged: onEditingChanged
+            onEditingChanged: onEditingChanged,
+            onFocusChanged: onFocusChanged
         )
         control.translatesAutoresizingMaskIntoConstraints = false
         return control
     }()
 
-    private lazy var progressHostingController: HostingController<AnyView> = {
-        let controller = HostingController(
-            content: contentView.environmentObject(containerState).eraseToAnyView()
+    private lazy var progressHostingController: UIHostingController<AnyView> = {
+        let controller = UIHostingController(
+            rootView: contentView.environmentObject(containerState).eraseToAnyView()
         )
-        controller.disablesSafeArea = true
+        controller.disableSafeArea()
         controller.view.backgroundColor = .clear
         controller.view.translatesAutoresizingMaskIntoConstraints = false
         return controller
@@ -93,9 +100,11 @@ final class UISliderContainerViewController<Value: BinaryFloatingPoint>: UIViewC
         value: Binding<Value>,
         total: Value,
         onEditingChanged: @escaping (Bool) -> Void,
+        onFocusChanged: @escaping (Bool) -> Void,
         view: AnyView
     ) {
         self.onEditingChanged = onEditingChanged
+        self.onFocusChanged = onFocusChanged
         self.total = total
         self.valueBinding = value
         self.contentView = view
@@ -118,25 +127,30 @@ final class UISliderContainerViewController<Value: BinaryFloatingPoint>: UIViewC
 
         view.backgroundColor = .clear
 
-        // Add the slider control as the main view
+        // Add hosting controller FIRST with proper containment (behind sliderControl for z-order)
+        // The hosting controller's view must be a direct child of self.view to match
+        // the view controller containment hierarchy and avoid _UIReplicantView warnings.
+        addChild(progressHostingController)
+        view.addSubview(progressHostingController.view)
+        progressHostingController.didMove(toParent: self)
+
+        // Disable user interaction on hosting controller so focus stays on sliderControl
+        progressHostingController.view.isUserInteractionEnabled = false
+
+        NSLayoutConstraint.activate([
+            progressHostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            progressHostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            progressHostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            progressHostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+
+        // Add the slider control ON TOP for focus/gesture handling
         view.addSubview(sliderControl)
         NSLayoutConstraint.activate([
             sliderControl.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             sliderControl.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             sliderControl.topAnchor.constraint(equalTo: view.topAnchor),
             sliderControl.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
-
-        // Add hosting controller with proper containment
-        addChild(progressHostingController)
-        sliderControl.addSubview(progressHostingController.view)
-        progressHostingController.didMove(toParent: self)
-
-        NSLayoutConstraint.activate([
-            progressHostingController.view.leadingAnchor.constraint(equalTo: sliderControl.leadingAnchor),
-            progressHostingController.view.trailingAnchor.constraint(equalTo: sliderControl.trailingAnchor),
-            progressHostingController.view.topAnchor.constraint(equalTo: sliderControl.topAnchor),
-            progressHostingController.view.bottomAnchor.constraint(equalTo: sliderControl.bottomAnchor),
         ])
     }
 }
@@ -146,6 +160,7 @@ final class UISliderContainerViewController<Value: BinaryFloatingPoint>: UIViewC
 final class UISliderControl<Value: BinaryFloatingPoint>: UIControl {
 
     private let onEditingChanged: (Bool) -> Void
+    private let onFocusChanged: (Bool) -> Void
     private let total: Value
     private let valueBinding: Binding<Value>
     let containerState: SliderContainerState<Value>
@@ -174,10 +189,12 @@ final class UISliderControl<Value: BinaryFloatingPoint>: UIControl {
         containerState: SliderContainerState<Value>,
         total: Value,
         valueBinding: Binding<Value>,
-        onEditingChanged: @escaping (Bool) -> Void
+        onEditingChanged: @escaping (Bool) -> Void,
+        onFocusChanged: @escaping (Bool) -> Void
     ) {
         self.containerState = containerState
         self.onEditingChanged = onEditingChanged
+        self.onFocusChanged = onFocusChanged
         self.total = total
         self.valueBinding = valueBinding
         super.init(frame: .zero)
@@ -205,10 +222,16 @@ final class UISliderControl<Value: BinaryFloatingPoint>: UIControl {
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         let wasFocused = containerState.isFocused
-        containerState.isFocused = (context.nextFocusedView == self)
+        let nowFocused = (context.nextFocusedView == self)
+        containerState.isFocused = nowFocused
+
+        // Notify SwiftUI of focus change (for visual effects in parent views)
+        if wasFocused != nowFocused {
+            onFocusChanged(nowFocused)
+        }
 
         // Exit scrub mode if we lose focus
-        if wasFocused && !containerState.isFocused && isInScrubMode {
+        if wasFocused && !nowFocused && isInScrubMode {
             cancelScrubMode()
         }
     }

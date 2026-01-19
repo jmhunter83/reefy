@@ -15,18 +15,21 @@ struct CapsuleSlider<Value: BinaryFloatingPoint>: View {
 
     private let total: Value
     private var onEditingChanged: (Bool) -> Void
+    private var onFocusChanged: (Bool) -> Void
 
     init(value: Binding<Value>, total: Value) {
         self._value = value
         self.total = total
         self.onEditingChanged = { _ in }
+        self.onFocusChanged = { _ in }
     }
 
     var body: some View {
         SliderContainer(
             value: $value,
             total: total,
-            onEditingChanged: onEditingChanged
+            onEditingChanged: onEditingChanged,
+            onFocusChanged: onFocusChanged
         ) {
             CapsuleSliderContent()
         }
@@ -37,6 +40,10 @@ extension CapsuleSlider {
 
     func onEditingChanged(_ action: @escaping (Bool) -> Void) -> Self {
         copy(modifying: \.onEditingChanged, with: action)
+    }
+
+    func onFocusChanged(_ action: @escaping (Bool) -> Void) -> Self {
+        copy(modifying: \.onFocusChanged, with: action)
     }
 }
 
