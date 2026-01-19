@@ -6,7 +6,6 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Defaults
 import JellyfinAPI
 import SwiftUI
 import VLCUI
@@ -16,6 +15,8 @@ extension VideoPlayer.PlaybackControls {
     /// Right-side vertical stack containing Audio and Subtitles buttons.
     /// Positioned at 25% from bottom, above the transport bar.
     struct SideActionButtons: View {
+
+        private static let sideButtonsRightOffset: CGFloat = 150
 
         @EnvironmentObject
         private var containerState: VideoPlayerContainerState
@@ -34,36 +35,15 @@ extension VideoPlayer.PlaybackControls {
 
         var body: some View {
             GeometryReader { geometry in
-                // Inner button stack with glass backdrop (sized to content only)
-                VStack(spacing: 16) {
-                    // Audio picker (top)
+                VStack(spacing: 24) {
                     if let playbackItem = manager.playbackItem {
-                        InlineStreamPicker(
-                            title: L10n.audio,
-                            systemImage: audioIcon,
-                            streams: playbackItem.audioStreams,
-                            selectedIndex: playbackItem.selectedAudioStreamIndex,
-                            onSelect: { stream in
-                                playbackItem.selectedAudioStreamIndex = stream.index ?? -1
-                            }
-                        )
-                        .focused($focusedButton, equals: .audio)
-                    }
+                        AudioButton(playbackItem: playbackItem)
+                            .focused($focusedButton, equals: .audio)
 
-                    // Subtitles picker (bottom)
-                    if let playbackItem = manager.playbackItem,
-                       !playbackItem.subtitleStreams.isEmpty
-                    {
-                        InlineStreamPicker(
-                            title: L10n.subtitles,
-                            systemImage: subtitleIcon,
-                            streams: playbackItem.subtitleStreams,
-                            selectedIndex: playbackItem.selectedSubtitleStreamIndex,
-                            onSelect: { stream in
-                                playbackItem.selectedSubtitleStreamIndex = stream.index ?? -1
-                            }
-                        )
-                        .focused($focusedButton, equals: .subtitles)
+                        if !playbackItem.subtitleStreams.isEmpty {
+                            SubtitlesButton(playbackItem: playbackItem)
+                                .focused($focusedButton, equals: .subtitles)
+                        }
                     }
                 }
                 .padding(.vertical, 20)
@@ -71,9 +51,8 @@ extension VideoPlayer.PlaybackControls {
                 .background { TransportBarBackground() }
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .shadow(color: .black.opacity(0.4), radius: 16)
-                // Position at 25% from bottom (75% from top), right edge
                 .position(
-                    x: geometry.size.width - 150,
+                    x: geometry.size.width - Self.sideButtonsRightOffset,
                     y: geometry.size.height * 0.75
                 )
             }
@@ -88,18 +67,104 @@ extension VideoPlayer.PlaybackControls {
         private var isPresentingOverlay: Bool {
             containerState.isPresentingOverlay
         }
+    }
 
-        private var audioIcon: String {
+    struct AudioButton: View {
+
+        @EnvironmentObject
+        private var manager: MediaPlayerManager
+
+        @State
+        private var selectedAudioStreamIndex: Int?
+
+        let playbackItem: MediaPlayerItem
+
+        private var systemImage: String {
             "speaker.wave.2"
         }
 
-        private var subtitleIcon: String {
-            if let index = manager.playbackItem?.selectedSubtitleStreamIndex,
-               index != -1
-            {
+        @ViewBuilder
+        private var content: some View {
+            ForEach(playbackItem.audioStreams, id: \.index) { stream in
+                Button {
+                    playbackItem.selectedAudioStreamIndex = stream.index ?? -1
+                } label: {
+                    if selectedAudioStreamIndex == stream.index {
+                        Label(stream.formattedAudioTitle, systemImage: "checkmark")
+                    } else {
+                        Text(stream.formattedAudioTitle)
+                    }
+                }
+            }
+        }
+
+        var body: some View {
+            TransportBarMenu(L10n.audio) {
+                Image(systemName: systemImage)
+                    .font(.title3)
+            } content: {
+                Section(L10n.audio) {
+                    content
+                }
+            }
+            .assign(playbackItem.$selectedAudioStreamIndex, to: $selectedAudioStreamIndex)
+        }
+    }
+
+    struct SubtitlesButton: View {
+
+        @EnvironmentObject
+        private var manager: MediaPlayerManager
+
+        @State
+        private var selectedSubtitleStreamIndex: Int?
+
+        let playbackItem: MediaPlayerItem
+
+        private var systemImage: String {
+            if let index = playbackItem.selectedSubtitleStreamIndex, index != -1 {
                 return "captions.bubble.fill"
             }
             return "captions.bubble"
+        }
+
+        @ViewBuilder
+        private var content: some View {
+            Button {
+                playbackItem.selectedSubtitleStreamIndex = -1
+            } label: {
+                if selectedSubtitleStreamIndex == -1 || selectedSubtitleStreamIndex == nil {
+                    Label(L10n.none, systemImage: "checkmark")
+                } else {
+                    Label(L10n.none, systemImage: "xmark.circle")
+                }
+            }
+
+            Divider()
+
+            ForEach(playbackItem.subtitleStreams, id: \.index) { stream in
+                Button {
+                    playbackItem.selectedSubtitleStreamIndex = stream.index ?? -1
+                } label: {
+                    if selectedSubtitleStreamIndex == stream.index {
+                        Label(stream.formattedSubtitleTitle, systemImage: "checkmark")
+                    } else {
+                        Text(stream.formattedSubtitleTitle)
+                    }
+                }
+            }
+        }
+
+        var body: some View {
+            TransportBarMenu(L10n.subtitles) {
+                Image(systemName: systemImage)
+                    .font(.title3)
+            } content: {
+                Section(L10n.subtitles) {
+                    content
+                }
+            }
+            .assign(playbackItem.$selectedSubtitleStreamIndex, to: $selectedSubtitleStreamIndex)
         }
     }
 }
