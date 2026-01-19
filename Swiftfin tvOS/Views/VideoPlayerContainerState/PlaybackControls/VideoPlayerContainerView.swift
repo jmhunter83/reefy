@@ -7,7 +7,6 @@
 //
 
 import Combine
-import Engine
 import SwiftUI
 
 extension VideoPlayer {
@@ -63,22 +62,21 @@ extension VideoPlayer {
             }
         }
 
-        private lazy var playerViewController: HostingController<AnyView> = {
-            let controller = HostingController(
-                content: PlayerContainerView(player: player)
+        private lazy var playerViewController: UIHostingController<AnyView> = {
+            let controller = UIHostingController(
+                rootView: PlayerContainerView(player: player)
                     .environmentObject(containerState)
                     .environmentObject(manager)
                     .eraseToAnyView()
             )
-            controller.disablesSafeArea = true
-            controller.automaticallyAllowUIKitAnimationsForNextUpdate = true
+            controller.disableSafeArea()
             controller.view.translatesAutoresizingMaskIntoConstraints = false
             return controller
         }()
 
-        private lazy var playbackControlsViewController: HostingController<AnyView> = {
-            let controller = HostingController(
-                content: playbackControls
+        private lazy var playbackControlsViewController: UIHostingController<AnyView> = {
+            let controller = UIHostingController(
+                rootView: playbackControls
                     .environment(\.onPressEventPublisher, onPressEvent)
                     .environmentObject(containerState)
                     .environmentObject(containerState.scrubbedSeconds)
@@ -86,21 +84,19 @@ extension VideoPlayer {
                     .environmentObject(manager)
                     .eraseToAnyView()
             )
-            controller.disablesSafeArea = true
-            controller.automaticallyAllowUIKitAnimationsForNextUpdate = true
+            controller.disableSafeArea()
             controller.view.translatesAutoresizingMaskIntoConstraints = false
             return controller
         }()
 
-        private lazy var supplementContainerViewController: HostingController<AnyView> = {
+        private lazy var supplementContainerViewController: UIHostingController<AnyView> = {
             let content = SupplementContainerView()
                 .environmentObject(containerState)
                 .environmentObject(focusGuide)
                 .environmentObject(manager)
                 .eraseToAnyView()
-            let controller = HostingController(content: content)
-            controller.disablesSafeArea = true
-            controller.automaticallyAllowUIKitAnimationsForNextUpdate = true
+            let controller = UIHostingController(rootView: content)
+            controller.disableSafeArea()
             controller.view.translatesAutoresizingMaskIntoConstraints = false
             return controller
         }()

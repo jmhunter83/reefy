@@ -30,8 +30,9 @@ extension VideoPlayer.PlaybackControls {
         @EnvironmentObject
         private var scrubbedSecondsBox: PublishedBox<Duration>
 
-        @FocusState
-        private var isFocused: Bool
+        /// Tracks slider focus state via callback (not SwiftUI @FocusState to avoid competing with UIKit focus)
+        @State
+        private var isSliderFocused: Bool = false
 
         @State
         private var sliderSize = CGSize.zero
@@ -188,6 +189,9 @@ extension VideoPlayer.PlaybackControls {
             .onEditingChanged { isEditing in
                 isScrubbing = isEditing
             }
+            .onFocusChanged { focused in
+                isSliderFocused = focused
+            }
             .if(chapterSlider) { view in
                 view.ifLet(manager.item.fullChapterInfo) { view, chapters in
                     if chapters.count > 1, let runtime = manager.item.runtime {
@@ -224,10 +228,9 @@ extension VideoPlayer.PlaybackControls {
                     SplitTimeStamp()
                 }
             }
-            .focused($isFocused)
-            .scaleEffect(isFocused ? 1.0 : 0.95)
-            .animation(.easeInOut(duration: 0.3), value: isFocused)
-            .foregroundStyle(isFocused ? Color.white : Color.white.opacity(0.8))
+            .scaleEffect(isSliderFocused ? 1.0 : 0.95)
+            .animation(.easeInOut(duration: 0.3), value: isSliderFocused)
+            .foregroundStyle(isSliderFocused ? Color.white : Color.white.opacity(0.8))
             .onChange(of: scrubbedSeconds) { _, newSeconds in
                 guard isScrubbing else { return }
                 previewImageTask?.cancel()
