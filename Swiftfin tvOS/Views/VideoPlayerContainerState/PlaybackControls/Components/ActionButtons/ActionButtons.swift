@@ -26,6 +26,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
         private var containerState: VideoPlayerContainerState
         @EnvironmentObject
         private var manager: MediaPlayerManager
+        @EnvironmentObject
+        private var focusGuide: FocusGuide
 
         @FocusState
         private var focusedButton: VideoPlayerActionButton?
@@ -115,7 +117,16 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
                 }
             }
             .labelStyle(.iconOnly)
-            .defaultFocus($focusedButton, defaultFocusButton(from: buttons))
+            .focusGuide(
+                focusGuide,
+                tag: "actionButtons",
+                onContentFocus: {
+                    // Only set focus when NOT scrubbing to prevent focus theft during timeline scrubbing
+                    guard !containerState.isScrubbing else { return }
+                    focusedButton = defaultFocusButton(from: buttons)
+                },
+                bottom: "playbackProgress"
+            )
             .onChange(of: focusedButton) { oldValue, newValue in
                 // Machine-friendly log: event|old|new|buttonCount
                 focusLog.debug("FOCUS_CHANGE|\(oldValue?.rawValue ?? "nil")|\(newValue?.rawValue ?? "nil")|\(buttons.count)")
