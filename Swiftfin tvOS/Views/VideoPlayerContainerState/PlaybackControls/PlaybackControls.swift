@@ -43,16 +43,32 @@ extension VideoPlayer {
         @State
         private var effectiveSafeArea: EdgeInsets = .zero
 
+        // MARK: - Multi-Click Skip State
+
+        /// Skip amounts: [15s, 2min, 15min]
+        private let skipAmounts: [Duration] = [
+            .seconds(15),
+            .seconds(120),
+            .seconds(900),
+        ]
+
+        @State
+        private var forwardClickCount: Int = 0
+        @State
+        private var backwardClickCount: Int = 0
+        @State
+        private var forwardResetTask: Task<Void, Never>?
+        @State
+        private var backwardResetTask: Task<Void, Never>?
+        @State
+        private var skipIndicatorResetTask: Task<Void, Never>?
+
         private var isPresentingOverlay: Bool {
             containerState.isPresentingOverlay
         }
 
         private var isPresentingSupplement: Bool {
             containerState.isPresentingSupplement
-        }
-
-        private var isScrubbing: Bool {
-            containerState.isScrubbing
         }
 
         @ViewBuilder
@@ -111,28 +127,45 @@ extension VideoPlayer {
             }
         }
 
-        // Center playback buttons removed - using remote control for play/pause and skip
+        @ViewBuilder
+        private var transportBarContent: some View {
+            HStack(spacing: 20) {
+                // Previous episode button
+                NavigationBar.ActionButtons.PlayPreviousItem()
+
+                Spacer()
+
+                // Progress display
+                PlaybackProgress()
+
+                Spacer()
+
+                // Next episode button
+                NavigationBar.ActionButtons.PlayNextItem()
+
+                // Episodes button
+                NavigationBar.ActionButtons.Episodes()
+            }
+            .focusGuide(focusGuide, tag: "transportBar", top: "sideButtons")
+        }
 
         @ViewBuilder
         private var transportBar: some View {
             if !isPresentingSupplement {
-                VStack(spacing: 16) {
-                    // Action buttons row - right aligned, small icons
-                    HStack {
-                        Spacer()
+                VStack(spacing: 8) {
+                    transportBarContent
+                        .padding(.horizontal, 60)
+                        .padding(.vertical, 30)
+                        .background {
+                            TransportBarBackground()
+                        }
 
-                        NavigationBar.ActionButtons()
-                    }
-                    .focusGuide(focusGuide, tag: "actionButtons", bottom: "playbackProgress")
-
-                    // Progress bar with time labels
-                    PlaybackProgress()
-                        .focusGuide(focusGuide, tag: "playbackProgress", top: "actionButtons")
-                }
-                .padding(.horizontal, 60)
-                .padding(.vertical, 30)
-                .background {
-                    TransportBarBackground()
+                    // Skip explainer label
+                    Text("← → Skip: 1×=15s  2×=2min  3×=15min")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.6))
+                        .padding(.horizontal, 60)
+                        .padding(.bottom, 20)
                 }
             }
         }
@@ -160,10 +193,13 @@ extension VideoPlayer {
                     skipIndicator
                         .animation(.easeOut(duration: 0.2), value: containerState.skipIndicatorText)
 
-                    // Transport bar in bottom 15%
+                    // Side action buttons (right edge, vertically stacked)
+                    SideActionButtons()
+
+                    // Transport bar in bottom 10%
                     VStack {
                         Spacer()
-                            .frame(minHeight: geometry.size.height * 0.85)
+                            .frame(minHeight: geometry.size.height * 0.90)
 
                         transportBar
                             .padding(.horizontal, 40)
@@ -179,16 +215,16 @@ extension VideoPlayer {
             .onDisappear {
                 // Clean up any active scrubbing timers when view disappears
                 containerState.cleanupScrubbing()
+                forwardResetTask?.cancel()
+                backwardResetTask?.cancel()
+                skipIndicatorResetTask?.cancel()
             }
             .onChange(of: isPresentingOverlay) { _, isPresenting in
                 if isPresenting {
-                    // Focus action buttons when overlay appears
+                    // Focus transport bar when overlay appears
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        focusGuide.transition(to: "actionButtons")
+                        focusGuide.transition(to: "transportBar")
                     }
-                } else {
-                    // Reset focus tracking when overlay hides
-                    containerState.isActionButtonsFocused = false
                 }
             }
             .onReceive(onPressEvent) { press in
@@ -205,34 +241,12 @@ extension VideoPlayer {
                     manager.togglePlayPause()
 
                 case (.leftArrow, .began):
-                    // Skip backward press began (only when not scrubbing and action buttons not focused)
-                    if !isScrubbing && !containerState.isActionButtonsFocused {
-                        containerState.handleArrowPressBegan(
-                            direction: .backward,
-                            skipAmount: jumpBackwardInterval.rawValue
-                        )
-                    }
-
-                case (.leftArrow, .ended), (.leftArrow, .cancelled):
-                    // Skip backward press ended
-                    if containerState.isScrubbing(direction: .backward) {
-                        containerState.handleArrowPressEnded()
-                    }
+                    // Skip backward with multi-click
+                    handleSkip(direction: .backward)
 
                 case (.rightArrow, .began):
-                    // Skip forward press began (only when not scrubbing and action buttons not focused)
-                    if !isScrubbing && !containerState.isActionButtonsFocused {
-                        containerState.handleArrowPressBegan(
-                            direction: .forward,
-                            skipAmount: jumpForwardInterval.rawValue
-                        )
-                    }
-
-                case (.rightArrow, .ended), (.rightArrow, .cancelled):
-                    // Skip forward press ended
-                    if containerState.isScrubbing(direction: .forward) {
-                        containerState.handleArrowPressEnded()
-                    }
+                    // Skip forward with multi-click
+                    handleSkip(direction: .forward)
 
                 case (.menu, _):
                     if isPresentingSupplement {
@@ -259,6 +273,73 @@ extension VideoPlayer {
                     }
                 }
             }
+        }
+
+        private var isScrubbing: Bool {
+            containerState.isScrubbing
+        }
+
+        // MARK: - Multi-Click Skip Logic
+
+        private func handleSkip(direction: SkipDirection) {
+            // Show overlay if not visible
+            if !containerState.isPresentingOverlay {
+                withAnimation(.linear(duration: 0.25)) {
+                    containerState.isPresentingOverlay = true
+                }
+            }
+            containerState.timer.poke()
+
+            switch direction {
+            case .forward:
+                forwardResetTask?.cancel()
+                forwardClickCount = min(forwardClickCount + 1, skipAmounts.count)
+
+                let skipAmount = skipAmounts[forwardClickCount - 1]
+                manager.proxy?.jumpForward(skipAmount)
+                containerState.skipIndicatorText = "+\(formatDuration(skipAmount.seconds))"
+
+                forwardResetTask = Task {
+                    try? await Task.sleep(for: .milliseconds(600))
+                    forwardClickCount = 0
+                }
+
+            case .backward:
+                backwardResetTask?.cancel()
+                backwardClickCount = min(backwardClickCount + 1, skipAmounts.count)
+
+                let skipAmount = skipAmounts[backwardClickCount - 1]
+                manager.proxy?.jumpBackward(skipAmount)
+                containerState.skipIndicatorText = "−\(formatDuration(skipAmount.seconds))"
+
+                backwardResetTask = Task {
+                    try? await Task.sleep(for: .milliseconds(600))
+                    backwardClickCount = 0
+                }
+            }
+
+            // Auto-hide skip indicator after delay
+            skipIndicatorResetTask?.cancel()
+            skipIndicatorResetTask = Task {
+                try? await Task.sleep(for: .seconds(1))
+                containerState.skipIndicatorText = nil
+            }
+        }
+
+        private func formatDuration(_ seconds: Double) -> String {
+            let totalSeconds = Int(seconds)
+            let minutes = totalSeconds / 60
+            let secs = totalSeconds % 60
+            if minutes > 0 {
+                return String(format: "%d:%02d", minutes, secs)
+            } else {
+                return ":\(String(format: "%02d", secs))"
+            }
+        }
+
+        private enum SkipDirection {
+            case forward
+            case backward
         }
     }
 }
