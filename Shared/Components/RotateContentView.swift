@@ -7,59 +7,40 @@
 //
 
 import SwiftUI
+import UIKit
 
-struct RotateContentView: UIViewRepresentable {
+struct RotateContentView: UIViewControllerRepresentable {
 
     @ObservedObject
     var proxy: Proxy
 
-    func makeUIView(context: Context) -> UIRotateContentView {
-        UIRotateContentView(initialView: nil, proxy: proxy)
+    func makeUIViewController(context: Context) -> UIRotateContentViewController {
+        UIRotateContentViewController(proxy: proxy)
     }
 
-    func updateUIView(_ uiView: UIRotateContentView, context: Context) {}
+    func updateUIViewController(_ uiViewController: UIRotateContentViewController, context: Context) {}
 
     class Proxy: ObservableObject {
 
-        weak var rotateContentView: UIRotateContentView?
+        weak var viewController: UIRotateContentViewController?
 
         func update(_ content: () -> any View) {
-
-            let newHostingController = UIHostingController(rootView: AnyView(content()), ignoreSafeArea: true)
-            newHostingController.view.translatesAutoresizingMaskIntoConstraints = false
-            newHostingController.view.backgroundColor = .clear
-
-            rotateContentView?.update(with: newHostingController.view)
+            viewController?.updateContent(content())
         }
     }
 }
 
-class UIRotateContentView: UIView {
+/// A view controller that manages rotating content with proper hosting controller containment.
+/// This fixes tvOS focus replication warnings by using UIViewControllerRepresentable pattern.
+class UIRotateContentViewController: UIViewController {
 
-    private(set) var currentView: UIView?
     var proxy: RotateContentView.Proxy
+    private var currentHostingController: UIHostingController<AnyView>?
 
-    init(initialView: UIView?, proxy: RotateContentView.Proxy) {
+    init(proxy: RotateContentView.Proxy) {
         self.proxy = proxy
-
-        super.init(frame: .zero)
-
-        proxy.rotateContentView = self
-
-        guard let initialView else { return }
-
-        initialView.translatesAutoresizingMaskIntoConstraints = false
-        initialView.alpha = 0
-
-        addSubview(initialView)
-        NSLayoutConstraint.activate([
-            initialView.topAnchor.constraint(equalTo: topAnchor),
-            initialView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            initialView.leftAnchor.constraint(equalTo: leftAnchor),
-            initialView.rightAnchor.constraint(equalTo: rightAnchor),
-        ])
-
-        self.currentView = initialView
+        super.init(nibName: nil, bundle: nil)
+        proxy.viewController = self
     }
 
     @available(*, unavailable)
@@ -67,39 +48,44 @@ class UIRotateContentView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func update(with newView: UIView?) {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .clear
+    }
 
-        guard let newView else {
+    func updateContent(_ newContent: any View) {
+        let newHostingController = UIHostingController(rootView: AnyView(newContent), ignoreSafeArea: true)
+        newHostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        newHostingController.view.backgroundColor = .clear
+
+        // Remove old hosting controller with proper containment
+        if let oldController = currentHostingController {
+            oldController.willMove(toParent: nil)
             UIView.animate(withDuration: 0.3) {
-                self.currentView?.alpha = 0
+                oldController.view.alpha = 0
             } completion: { _ in
-                self.currentView?.removeFromSuperview()
-                self.currentView = newView
+                oldController.view.removeFromSuperview()
+                oldController.removeFromParent()
             }
-            return
         }
 
-        newView.translatesAutoresizingMaskIntoConstraints = false
-        newView.alpha = 0
+        // Add new hosting controller with proper containment
+        newHostingController.view.alpha = 0
+        addChild(newHostingController)
+        view.addSubview(newHostingController.view)
+        newHostingController.didMove(toParent: self)
 
-        addSubview(newView)
         NSLayoutConstraint.activate([
-            newView.topAnchor.constraint(equalTo: topAnchor),
-            newView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            newView.leftAnchor.constraint(equalTo: leftAnchor),
-            newView.rightAnchor.constraint(equalTo: rightAnchor),
+            newHostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            newHostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            newHostingController.view.leftAnchor.constraint(equalTo: view.leftAnchor),
+            newHostingController.view.rightAnchor.constraint(equalTo: view.rightAnchor),
         ])
 
         UIView.animate(withDuration: 0.3) {
-            newView.alpha = 1
-            self.currentView?.alpha = 0
-        } completion: { _ in
-            self.currentView?.removeFromSuperview()
-            self.currentView = newView
+            newHostingController.view.alpha = 1
         }
-    }
 
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        currentView?.hitTest(point, with: event)
+        currentHostingController = newHostingController
     }
 }

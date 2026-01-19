@@ -6,9 +6,10 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import Engine
 import SwiftUI
 
-struct SliderContainer<Value: BinaryFloatingPoint>: UIViewRepresentable {
+struct SliderContainer<Value: BinaryFloatingPoint>: UIViewControllerRepresentable {
 
     private var value: Binding<Value>
     private let total: Value
@@ -39,8 +40,8 @@ struct SliderContainer<Value: BinaryFloatingPoint>: UIViewRepresentable {
         self.view = view
     }
 
-    func makeUIView(context: Context) -> UISliderContainer<Value> {
-        UISliderContainer(
+    func makeUIViewController(context: Context) -> UISliderContainerViewController<Value> {
+        UISliderContainerViewController(
             value: value,
             total: total,
             onEditingChanged: onEditingChanged,
@@ -48,22 +49,106 @@ struct SliderContainer<Value: BinaryFloatingPoint>: UIViewRepresentable {
         )
     }
 
-    func updateUIView(_ uiView: UISliderContainer<Value>, context: Context) {
+    func updateUIViewController(_ uiViewController: UISliderContainerViewController<Value>, context: Context) {
         // Don't update value while user is actively scrubbing to prevent jumps
-        guard !uiView.containerState.isEditing else { return }
+        guard !uiViewController.containerState.isEditing else { return }
         DispatchQueue.main.async {
-            uiView.containerState.value = value.wrappedValue
+            uiViewController.containerState.value = value.wrappedValue
         }
     }
 }
 
-/// A slider container that displays progress, handles focus, and supports swipe-to-scrub.
-/// Click-first paradigm: click to enter scrub mode, swipe to scrub, click to commit.
-final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
+/// A view controller that manages a slider container with proper hosting controller containment.
+/// This fixes tvOS focus replication warnings by using UIViewControllerRepresentable pattern.
+final class UISliderContainerViewController<Value: BinaryFloatingPoint>: UIViewController {
+
+    let containerState: SliderContainerState<Value>
+    private let onEditingChanged: (Bool) -> Void
+    private let total: Value
+    private let valueBinding: Binding<Value>
+    private let contentView: AnyView
+
+    private lazy var sliderControl: UISliderControl<Value> = {
+        let control = UISliderControl(
+            containerState: containerState,
+            total: total,
+            valueBinding: valueBinding,
+            onEditingChanged: onEditingChanged
+        )
+        control.translatesAutoresizingMaskIntoConstraints = false
+        return control
+    }()
+
+    private lazy var progressHostingController: HostingController<AnyView> = {
+        let controller = HostingController(
+            content: contentView.environmentObject(containerState).eraseToAnyView()
+        )
+        controller.disablesSafeArea = true
+        controller.view.backgroundColor = .clear
+        controller.view.translatesAutoresizingMaskIntoConstraints = false
+        return controller
+    }()
+
+    init(
+        value: Binding<Value>,
+        total: Value,
+        onEditingChanged: @escaping (Bool) -> Void,
+        view: AnyView
+    ) {
+        self.onEditingChanged = onEditingChanged
+        self.total = total
+        self.valueBinding = value
+        self.contentView = view
+        self.containerState = SliderContainerState(
+            isEditing: false,
+            isFocused: false,
+            value: value.wrappedValue,
+            total: total
+        )
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.backgroundColor = .clear
+
+        // Add the slider control as the main view
+        view.addSubview(sliderControl)
+        NSLayoutConstraint.activate([
+            sliderControl.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            sliderControl.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            sliderControl.topAnchor.constraint(equalTo: view.topAnchor),
+            sliderControl.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+
+        // Add hosting controller with proper containment
+        addChild(progressHostingController)
+        sliderControl.addSubview(progressHostingController.view)
+        progressHostingController.didMove(toParent: self)
+
+        NSLayoutConstraint.activate([
+            progressHostingController.view.leadingAnchor.constraint(equalTo: sliderControl.leadingAnchor),
+            progressHostingController.view.trailingAnchor.constraint(equalTo: sliderControl.trailingAnchor),
+            progressHostingController.view.topAnchor.constraint(equalTo: sliderControl.topAnchor),
+            progressHostingController.view.bottomAnchor.constraint(equalTo: sliderControl.bottomAnchor),
+        ])
+    }
+}
+
+/// A focusable UIControl that handles slider input gestures.
+/// Separated from the view controller to maintain proper UIControl focus behavior.
+final class UISliderControl<Value: BinaryFloatingPoint>: UIControl {
 
     private let onEditingChanged: (Bool) -> Void
     private let total: Value
     private let valueBinding: Binding<Value>
+    let containerState: SliderContainerState<Value>
 
     // MARK: - Scrub Mode State
 
@@ -85,53 +170,24 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
         return max(5.0, min(15.0, totalSeconds / 600))
     }
 
-    private lazy var progressHostingController: UIHostingController<AnyView> = {
-        let hostingController = UIHostingController(rootView: AnyView(view.environmentObject(containerState)))
-        hostingController.view.backgroundColor = .clear
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        return hostingController
-    }()
-
-    private var progressHostingView: UIView { progressHostingController.view }
-
-    let containerState: SliderContainerState<Value>
-    let view: AnyView
-
     init(
-        value: Binding<Value>,
+        containerState: SliderContainerState<Value>,
         total: Value,
-        onEditingChanged: @escaping (Bool) -> Void,
-        view: AnyView
+        valueBinding: Binding<Value>,
+        onEditingChanged: @escaping (Bool) -> Void
     ) {
+        self.containerState = containerState
         self.onEditingChanged = onEditingChanged
         self.total = total
-        self.valueBinding = value
-        self.containerState = .init(
-            isEditing: false,
-            isFocused: false,
-            value: value.wrappedValue,
-            total: total
-        )
-        self.view = view
+        self.valueBinding = valueBinding
         super.init(frame: .zero)
 
-        setupViews()
         setupGestures()
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setupViews() {
-        addSubview(progressHostingView)
-        NSLayoutConstraint.activate([
-            progressHostingView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            progressHostingView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            progressHostingView.topAnchor.constraint(equalTo: topAnchor),
-            progressHostingView.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
     }
 
     private func setupGestures() {

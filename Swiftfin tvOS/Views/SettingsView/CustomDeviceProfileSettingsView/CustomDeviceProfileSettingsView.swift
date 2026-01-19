@@ -74,6 +74,8 @@ struct CustomDeviceProfileSettingsView: View {
                             } label: {
                                 Label(L10n.delete, systemImage: "trash")
                             }
+                        } preview: {
+                            SimplifiedProfilePreview(profile: profile)
                         }
                     }
                     .onDelete(perform: removeProfile)

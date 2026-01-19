@@ -10,6 +10,25 @@ import Foundation
 import SwiftUI
 
 extension CustomDeviceProfileSettingsView {
+
+    /// A simplified preview for context menus to avoid constraint conflicts.
+    /// Full button content (~100pt) doesn't fit well in 44pt context menu cells.
+    struct SimplifiedProfilePreview: View {
+        let profile: CustomDeviceProfile
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L10n.profile)
+                    .font(.headline)
+
+                Text("\(profile.audio.count) \(L10n.audio), \(profile.video.count) \(L10n.video)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+        }
+    }
+
     struct CustomProfileButton: View {
         let profile: CustomDeviceProfile
         var onSelect: () -> Void
