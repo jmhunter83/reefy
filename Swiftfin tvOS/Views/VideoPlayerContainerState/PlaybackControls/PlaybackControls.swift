@@ -132,9 +132,6 @@ extension VideoPlayer {
 
                 // Next episode button
                 NavigationBar.ActionButtons.PlayNextItem()
-
-                // Episodes button
-                NavigationBar.ActionButtons.Episodes()
             }
             .focusGuide(focusGuide, tag: "transportBar", top: "sideButtons")
         }
@@ -211,9 +208,8 @@ extension VideoPlayer {
             }
             .onChange(of: isPresentingOverlay) { _, isPresenting in
                 if isPresenting {
-                    // Focus transport bar when overlay appears
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        focusGuide.transition(to: "transportBar")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        focusGuide.transition(to: "sideButtons")
                     }
                 }
             }
@@ -239,14 +235,18 @@ extension VideoPlayer {
                     handleSkip(direction: .forward)
 
                 case (.menu, _):
+                    print("🎮 Menu press: isPresentingSupplement=\(isPresentingSupplement), isPresentingOverlay=\(isPresentingOverlay)")
                     if isPresentingSupplement {
+                        print("🎮 Menu: Dismissing supplement")
                         containerState.selectedSupplement = nil
                     } else if isPresentingOverlay {
+                        print("🎮 Menu: Hiding overlay")
                         // First menu press hides overlay
                         withAnimation(.linear(duration: 0.25)) {
                             containerState.isPresentingOverlay = false
                         }
                     } else {
+                        print("🎮 Menu: Exiting playback")
                         // Overlay hidden - exit playback
                         manager.proxy?.stop()
                         router.dismiss()
