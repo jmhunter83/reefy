@@ -66,7 +66,7 @@ extension NavigationRoute {
     static func userSignIn(server: ServerState) -> NavigationRoute {
         NavigationRoute(
             id: "userSignIn",
-            style: .sheet
+            style: .fullscreen
         ) {
             WithUserAuthentication {
                 WithQuickConnect {

@@ -31,7 +31,7 @@ struct SplitLoginWindowView<Leading: View, Trailing: View>: View {
             VStack(alignment: .leading, spacing: 24) {
                 leadingContentView
             }
-            .frame(minWidth: 500, maxWidth: 600, minHeight: 300)
+            .frame(minWidth: 500, maxWidth: .infinity, minHeight: 300)
             .padding(.vertical, 60)
 
             Divider()
