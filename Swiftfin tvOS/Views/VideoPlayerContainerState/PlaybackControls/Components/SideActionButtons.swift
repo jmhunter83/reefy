@@ -31,21 +31,28 @@ extension VideoPlayer.PlaybackControls {
         enum SideButton: Hashable {
             case audio
             case subtitles
+            case episodes
         }
 
         var body: some View {
             GeometryReader { geometry in
                 VStack(spacing: 24) {
                     if let playbackItem = manager.playbackItem {
+                        AudioButton(playbackItem: playbackItem)
+                            .focused($focusedButton, equals: .audio)
+
                         if !playbackItem.subtitleStreams.isEmpty {
                             SubtitlesButton(playbackItem: playbackItem)
                                 .focused($focusedButton, equals: .subtitles)
                         }
 
-                        AudioButton(playbackItem: playbackItem)
-                            .focused($focusedButton, equals: .audio)
+                        if manager.item.type == .episode {
+                            EpisodesButton()
+                                .focused($focusedButton, equals: .episodes)
+                        }
                     }
                 }
+                .focusSection()
                 .padding(.vertical, 20)
                 .padding(.horizontal, 24)
                 .background { TransportBarBackground() }
@@ -53,10 +60,25 @@ extension VideoPlayer.PlaybackControls {
                 .shadow(color: .black.opacity(0.4), radius: 16)
                 .position(
                     x: geometry.size.width - Self.sideButtonsRightOffset,
-                    y: geometry.size.height * 0.65
+                    y: geometry.size.height * 0.60
                 )
             }
-            .focusGuide(focusGuide, tag: "sideButtons", bottom: "transportBar")
+            .focusGuide(
+                focusGuide,
+                tag: "sideButtons",
+                onContentFocus: {
+                    if manager.item.type == .episode {
+                        focusedButton = .episodes
+                    } else if let playbackItem = manager.playbackItem,
+                              !playbackItem.subtitleStreams.isEmpty
+                    {
+                        focusedButton = .subtitles
+                    } else {
+                        focusedButton = .audio
+                    }
+                },
+                bottom: "transportBar"
+            )
             .isVisible(isScrubbing || isPresentingOverlay)
         }
 
@@ -99,9 +121,8 @@ extension VideoPlayer.PlaybackControls {
         }
 
         var body: some View {
-            TransportBarMenu(L10n.audio) {
+            SidePanelMenu(L10n.audio) {
                 Image(systemName: systemImage)
-                    .font(.title3)
             } content: {
                 Section(L10n.audio) {
                     content
@@ -156,9 +177,8 @@ extension VideoPlayer.PlaybackControls {
         }
 
         var body: some View {
-            TransportBarMenu(L10n.subtitles) {
+            SidePanelMenu(L10n.subtitles) {
                 Image(systemName: systemImage)
-                    .font(.title3)
             } content: {
                 Section(L10n.subtitles) {
                     content
@@ -166,5 +186,39 @@ extension VideoPlayer.PlaybackControls {
             }
             .assign(playbackItem.$selectedSubtitleStreamIndex, to: $selectedSubtitleStreamIndex)
         }
+    }
+
+    struct EpisodesButton: View {
+
+        @EnvironmentObject
+        private var containerState: VideoPlayerContainerState
+
+        @EnvironmentObject
+        private var manager: MediaPlayerManager
+
+        private var episodesSupplement: (any MediaPlayerSupplement)? {
+            manager.supplements.first { $0.id == "EpisodeMediaPlayerQueue" }
+        }
+
+        var body: some View {
+            Button {
+                if let supplement = episodesSupplement {
+                    containerState.select(supplement: supplement)
+                }
+            } label: {
+                Image(systemName: "tv")
+                    .font(.title2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.white)
+                    .frame(width: 48, height: 48)
+            }
+            .buttonStyle(.plain)
+            .focused($isFocused)
+            .scaleEffect(isFocused ? 1.15 : 1.0)
+            .animation(.spring(duration: 0.2), value: isFocused)
+        }
+
+        @FocusState
+        private var isFocused: Bool
     }
 }

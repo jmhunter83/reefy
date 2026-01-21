@@ -299,27 +299,9 @@ class VideoPlayerContainerState: ObservableObject {
     // MARK: - Private Helpers
 
     private func updatePlaybackControlsVisibility() {
-        guard overlayState == .visible else {
-            isPresentingPlaybackControls = false
-            return
-        }
-
-        if overlayState == .visible && supplementState == .closed {
-            isPresentingPlaybackControls = true
-            return
-        }
-
-        if isCompact {
-            if supplementState == .open {
-                if !isPresentingPlaybackControls {
-                    isPresentingPlaybackControls = true
-                }
-            } else {
-                isPresentingPlaybackControls = false
-            }
-        } else {
-            isPresentingPlaybackControls = false
-        }
+        // Show playback controls when overlay is visible, regardless of supplement state
+        // The transport bar positioning is handled by the container view constraints
+        isPresentingPlaybackControls = overlayState == .visible
     }
 
     // MARK: - Hold-to-Scrub Functions
