@@ -159,11 +159,15 @@ extension VideoPlayer {
         func presentSupplementContainer(
             _ didPresent: Bool
         ) {
+            let oldConstant = supplementBottomAnchor.constant
             if didPresent {
                 self.supplementBottomAnchor.constant = -(500 + EdgeInsets.edgePadding * 2)
             } else {
                 self.supplementBottomAnchor.constant = -(100 + EdgeInsets.edgePadding)
             }
+
+            let newConstant = supplementBottomAnchor.constant
+            print("🎯 Supplement positioning: \(didPresent ? "PRESENTING" : "DISMISSING") - constant: \(oldConstant) -> \(newConstant)")
 
             containerState.isPresentingPlaybackControls = !didPresent
             containerState.supplementOffset = supplementBottomAnchor.constant
@@ -176,6 +180,8 @@ extension VideoPlayer {
                 options: .allowUserInteraction
             ) {
                 self.view.layoutIfNeeded()
+            } completion: { _ in
+                print("✅ Supplement animation completed: final constant = \(self.supplementBottomAnchor.constant)")
             }
         }
 

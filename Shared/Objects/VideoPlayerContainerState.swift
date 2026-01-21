@@ -95,6 +95,7 @@ class VideoPlayerContainerState: ObservableObject {
     var isPresentingOverlay: Bool {
         get { overlayState == .visible }
         set {
+            print("👁️ Overlay visibility: \(isPresentingOverlay) -> \(newValue)")
             if isGestureLocked {
                 // When locked, ignore attempts to show overlay
                 overlayState = .locked
@@ -288,9 +289,11 @@ class VideoPlayerContainerState: ObservableObject {
         isGuestSupplement = isGuest
 
         if supplement?.id == selectedSupplement?.id {
+            print("🔄 Dismissing supplement: \(selectedSupplement?.displayTitle ?? "none")")
             selectedSupplement = nil
             containerView?.presentSupplementContainer(false)
         } else {
+            print("📱 Selecting supplement: \(supplement?.displayTitle ?? "none") (was: \(selectedSupplement?.displayTitle ?? "none"))")
             selectedSupplement = supplement
             containerView?.presentSupplementContainer(supplement != nil)
         }
@@ -301,7 +304,11 @@ class VideoPlayerContainerState: ObservableObject {
     private func updatePlaybackControlsVisibility() {
         // Show playback controls when overlay is visible, regardless of supplement state
         // The transport bar positioning is handled by the container view constraints
+        let oldValue = isPresentingPlaybackControls
         isPresentingPlaybackControls = overlayState == .visible
+        if oldValue != isPresentingPlaybackControls {
+            print("🎮 Playback controls visibility: \(oldValue) -> \(isPresentingPlaybackControls) (overlay: \(overlayState), supplement: \(supplementState))")
+        }
     }
 
     // MARK: - Hold-to-Scrub Functions
