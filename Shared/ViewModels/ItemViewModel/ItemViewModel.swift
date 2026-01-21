@@ -308,8 +308,8 @@ class ItemViewModel: ViewModel, Stateful {
     }
 
     private func getSimilarItems() async -> [BaseItemDto] {
-
         guard let itemID = item.id else { return [] }
+        guard let userSession = currentSession else { return [] }
 
         var parameters = Paths.GetSimilarItemsParameters()
         parameters.fields = .MinimumFields
@@ -321,48 +321,73 @@ class ItemViewModel: ViewModel, Stateful {
             parameters: parameters
         )
 
-        let response = try? await userSession.client.send(request)
-
-        return response?.value.items ?? []
+        do {
+            let response = try await userSession.client.send(request)
+            return response.value.items ?? []
+        } catch {
+            logger.warning("Failed to fetch similar items for \(item.id): \(error.localizedDescription)")
+            return []
+        }
+    }
     }
 
     private func getSpecialFeatures() async -> [BaseItemDto] {
-
         guard let itemID = item.id else { return [] }
+        guard let userSession = currentSession else { return [] }
 
         let request = Paths.getSpecialFeatures(
             itemID: itemID,
             userID: userSession.user.id
         )
-        let response = try? await userSession.client.send(request)
 
-        return (response?.value ?? [])
-            .filter { $0.extraType?.isVideo ?? false }
+        do {
+            let response = try await userSession.client.send(request)
+            return (response.value ?? [])
+                .filter { $0.extraType?.isVideo ?? false }
+        } catch {
+            logger.warning("Failed to fetch special features for \(item.id): \(error.localizedDescription)")
+            return []
+        }
+    }
     }
 
     private func getLocalTrailers() async throws -> [BaseItemDto] {
+        guard let userSession = currentSession else { return [] }
 
         let request = try Paths.getLocalTrailers(itemID: itemID, userID: userSession.user.id)
-        let response = try? await userSession.client.send(request)
 
-        return response?.value ?? []
+        do {
+            let response = try await userSession.client.send(request)
+            return response.value ?? []
+        } catch {
+            logger.warning("Failed to fetch local trailers for \(itemID): \(error.localizedDescription)")
+            return []
+        }
+    }
     }
 
     private func getAdditionalParts() async throws -> [BaseItemDto] {
-
         guard let partCount = item.partCount,
               partCount > 1,
               let itemID = item.id else { return [] }
+        guard let userSession = currentSession else { return [] }
 
         let request = Paths.getAdditionalPart(itemID: itemID)
-        let response = try? await userSession.client.send(request)
 
-        return response?.value.items ?? []
+        do {
+            let response = try await userSession.client.send(request)
+            return response.value.items ?? []
+        } catch {
+            logger.warning("Failed to fetch additional parts for \(itemID): \(error.localizedDescription)")
+            return []
+        }
+    }
     }
 
     private func setIsPlayed(_ isPlayed: Bool) async throws {
 
         guard let itemID = item.id else { return }
+        guard let userSession = currentSession else { return }
 
         let request: Request<UserItemDataDto>
 
@@ -385,6 +410,7 @@ class ItemViewModel: ViewModel, Stateful {
     private func setIsFavorite(_ isFavorite: Bool) async throws {
 
         guard let itemID = item.id else { return }
+        guard let userSession = currentSession else { return }
 
         let request: Request<UserItemDataDto>
 

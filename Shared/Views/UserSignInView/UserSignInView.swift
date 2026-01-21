@@ -78,6 +78,16 @@ struct UserSignInView: View {
 
             router.dismiss()
             Defaults[.lastSignedInUserID] = .signedIn(userID: user.id)
+
+            // Store password for token refresh before creating session
+            if let password = viewModel.password {
+                Container.shared.keychainService().set(
+                    password,
+                    forKey: "\(user.id)-refreshPassword",
+                    withAccess: .accessibleWhenUnlockedThisDeviceOnly
+                )
+            }
+
             Container.shared.currentUserSession.reset()
             Notifications[.didSignIn].post()
         }

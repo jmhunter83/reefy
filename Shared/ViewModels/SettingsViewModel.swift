@@ -87,6 +87,22 @@ final class SettingsViewModel: ViewModel {
     }
 
     func signOut() {
+        // Clear stored refresh password
+        if let userId = userSession?.user.id {
+            Container.shared.keychainService().delete("\(userId)-refreshPassword")
+        }
+
+        // Attempt server-side logout first (fire and forget)
+        Task {
+            do {
+                try await userSession?.client.send(Paths.reportSessionEnded)
+                logger.info("Server session ended successfully")
+            } catch {
+                // Log but don't block logout - user should still be signed out locally
+                logger.warning("Failed to end server session: \(error.localizedDescription)")
+            }
+        }
+
         Defaults[.lastSignedInUserID] = .signedOut
         Container.shared.currentUserSession.reset()
         Notifications[.didSignOut].post()

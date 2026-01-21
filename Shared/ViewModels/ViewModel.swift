@@ -22,13 +22,30 @@ class ViewModel: ObservableObject {
 
     let logger = Logger.swiftfin()
 
-    /// The current *signed in* user session
+    /// The current *signed in* user session (nil if signed out)
     @Injected(\.currentUserSession)
-    var userSession: UserSession!
+    var userSession: UserSession?
 
     var cancellables = Set<AnyCancellable>()
 
     private var userSessionResolverCancellable: AnyCancellable?
+
+    /// Convenience accessor that logs and returns nil if no session
+    var currentSession: UserSession? {
+        guard let session = userSession else {
+            logger.debug("Attempted to access userSession while signed out")
+            return nil
+        }
+        return session
+    }
+
+    /// Throws if no active session (for operations requiring auth)
+    func requireSession() throws -> UserSession {
+        guard let session = userSession else {
+            throw ErrorMessage(L10n.unauthorizedUser)
+        }
+        return session
+    }
 
     init() {
         userSessionResolverCancellable = Notifications[.didChangeCurrentServerURL]
