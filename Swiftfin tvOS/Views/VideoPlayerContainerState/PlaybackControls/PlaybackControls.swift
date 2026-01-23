@@ -253,7 +253,7 @@ extension VideoPlayer {
                         }
                     } else {
                         print("🎮 Menu: Exiting playback")
-                         // Overlay hidden - exit playback
+                        // Overlay hidden - exit playback
                         manager.proxy?.stop()
                         router.dismiss()
                     }
