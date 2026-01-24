@@ -11,16 +11,16 @@ import Foundation
 import KeychainSwift
 import Logging
 
-/// Handles OAuth 2.0 Device Flow authentication for YouTube Music
+/// Handles OAuth authentication for YouTube Music via Reefy Auth Bridge
 ///
-/// Device Flow is used because tvOS has no browser. The flow works like this:
-/// 1. App requests a device code from Google
-/// 2. User sees a code on screen (e.g., "ABCD-EFGH")
-/// 3. User visits google.com/device on their phone/computer
-/// 4. User enters the code to authorize
-/// 5. App polls Google until authorization completes
+/// Since tvOS has no browser, we use a Cloudflare-hosted OAuth bridge:
+/// 1. App requests a code from our bridge
+/// 2. User sees a code on screen (e.g., "ABC123")
+/// 3. User visits reefy-auth.pages.dev on their phone
+/// 4. User enters code and completes Google OAuth on phone
+/// 5. App polls our bridge until tokens are ready
 ///
-/// Reference: https://developers.google.com/identity/protocols/oauth2/limited-input-device
+/// Reference: https://github.com/jmhunter/reefy-auth
 final class YTMusicAuth: ObservableObject {
 
     // MARK: - Types
@@ -28,27 +28,31 @@ final class YTMusicAuth: ObservableObject {
     /// Current state of the authentication flow
     enum AuthState: Equatable {
         case idle
-        case awaitingUserAction(DeviceCodeResponse)
+        case awaitingUserAction(BridgeCodeResponse)
         case polling
         case authenticated
         case failed(YTMusicError)
     }
 
-    /// Response from the device code request
-    struct DeviceCodeResponse: Equatable, Codable {
-        let deviceCode: String
-        let userCode: String
+    /// Response from the bridge code request
+    struct BridgeCodeResponse: Equatable, Codable {
+        let code: String
         let verificationUrl: String
         let expiresIn: Int
-        let interval: Int
 
         enum CodingKeys: String, CodingKey {
-            case deviceCode = "device_code"
-            case userCode = "user_code"
-            case verificationUrl = "verification_url"
-            case expiresIn = "expires_in"
-            case interval
+            case code
+            case verificationUrl = "verificationUrl"
+            case expiresIn
         }
+    }
+
+    /// Response when polling the bridge
+    struct BridgePollResponse: Codable {
+        let status: String // "pending", "completed", "expired", "not_found"
+        let accessToken: String?
+        let refreshToken: String?
+        let expiresIn: Int?
     }
 
     /// OAuth token response
@@ -65,17 +69,6 @@ final class YTMusicAuth: ObservableObject {
             case expiresIn = "expires_in"
             case tokenType = "token_type"
             case scope
-        }
-    }
-
-    /// Error response from OAuth endpoints
-    private struct OAuthErrorResponse: Codable {
-        let error: String
-        let errorDescription: String?
-
-        enum CodingKeys: String, CodingKey {
-            case error
-            case errorDescription = "error_description"
         }
     }
 
@@ -115,17 +108,27 @@ final class YTMusicAuth: ObservableObject {
 
     // MARK: - OAuth Configuration
 
-    // Note: These are placeholder values. In production, you would:
-    // 1. Create a project in Google Cloud Console
-    // 2. Enable YouTube Data API v3
-    // 3. Create OAuth 2.0 credentials for "TV and Limited Input devices"
-    // 4. Store these securely (not in code)
-    private enum OAuth {
+    /// Reefy Auth Bridge endpoints - handles the web OAuth flow for tvOS
+    private enum Bridge {
+        static let baseURL = URL(string: "https://reefy-auth.pages.dev")!
+        static let initiateURL = baseURL.appendingPathComponent("api/initiate")
+
+        static func pollURL(code: String) -> URL {
+            baseURL.appendingPathComponent("api/poll/\(code)")
+        }
+    }
+
+    /// Direct Google endpoints - only used for token refresh
+    private enum Google {
+        // Note: Client credentials are stored on the bridge server, not in the app.
+        // The bridge handles the full OAuth exchange securely.
+        // We only need the token URL for refreshing tokens with the refresh_token.
+        static let tokenURL = URL(string: "https://oauth2.googleapis.com/token")!
+
+        // These are still needed for token refresh requests
+        // In production, consider fetching these from a secure config endpoint
         static let clientID = "YOUR_CLIENT_ID.apps.googleusercontent.com"
         static let clientSecret = "YOUR_CLIENT_SECRET"
-        static let scope = "https://www.googleapis.com/auth/youtube"
-        static let deviceCodeURL = URL(string: "https://oauth2.googleapis.com/device/code")!
-        static let tokenURL = URL(string: "https://oauth2.googleapis.com/token")!
     }
 
     // MARK: - Keychain Keys
@@ -150,26 +153,26 @@ final class YTMusicAuth: ObservableObject {
 
     // MARK: - Public Methods
 
-    /// Start the device flow authentication process
+    /// Start the authentication process via Reefy Auth Bridge
     ///
-    /// This will request a device code and update `state` to `.awaitingUserAction`
+    /// This will request a code from our bridge and update `state` to `.awaitingUserAction`
     /// with the code and verification URL to show the user.
     @MainActor
     func startAuthentication() async throws {
         state = .idle
 
-        let deviceCode = try await requestDeviceCode()
-        state = .awaitingUserAction(deviceCode)
+        let bridgeCode = try await requestBridgeCode()
+        state = .awaitingUserAction(bridgeCode)
     }
 
     /// Begin polling for authorization after user sees the code
     ///
-    /// Call this after presenting the device code to the user.
-    /// The flow will automatically complete when the user authorizes.
+    /// Call this after presenting the code to the user.
+    /// The flow will automatically complete when the user completes OAuth on their phone.
     @MainActor
     func startPolling() async {
-        guard case let .awaitingUserAction(deviceCode) = state else {
-            logger.warning("startPolling called without device code")
+        guard case let .awaitingUserAction(bridgeCode) = state else {
+            logger.warning("startPolling called without bridge code")
             return
         }
 
@@ -177,7 +180,7 @@ final class YTMusicAuth: ObservableObject {
         pollingTask?.cancel()
 
         pollingTask = Task { [weak self] in
-            await self?.pollForToken(deviceCode: deviceCode)
+            await self?.pollBridgeForToken(code: bridgeCode.code, expiresIn: bridgeCode.expiresIn)
         }
     }
 
@@ -232,17 +235,11 @@ final class YTMusicAuth: ObservableObject {
 
     // MARK: - Private Methods
 
-    /// Request a device code from Google
-    private func requestDeviceCode() async throws -> DeviceCodeResponse {
-        var request = URLRequest(url: OAuth.deviceCodeURL)
+    /// Request a code from the Reefy Auth Bridge
+    private func requestBridgeCode() async throws -> BridgeCodeResponse {
+        var request = URLRequest(url: Bridge.initiateURL)
         request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-
-        let body = [
-            "client_id": OAuth.clientID,
-            "scope": OAuth.scope,
-        ]
-        request.httpBody = body.urlEncodedString.data(using: .utf8)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let (data, response) = try await URLSession.shared.data(for: request)
 
@@ -255,13 +252,13 @@ final class YTMusicAuth: ObservableObject {
         }
 
         let decoder = JSONDecoder()
-        return try decoder.decode(DeviceCodeResponse.self, from: data)
+        return try decoder.decode(BridgeCodeResponse.self, from: data)
     }
 
-    /// Poll for token until user authorizes or times out
-    private func pollForToken(deviceCode: DeviceCodeResponse) async {
-        let deadline = Date().addingTimeInterval(TimeInterval(deviceCode.expiresIn))
-        let interval = TimeInterval(deviceCode.interval)
+    /// Poll the bridge for tokens until user completes OAuth or code expires
+    private func pollBridgeForToken(code: String, expiresIn: Int) async {
+        let deadline = Date().addingTimeInterval(TimeInterval(expiresIn))
+        let interval: TimeInterval = 3 // Poll every 3 seconds
 
         while Date() < deadline {
             guard !Task.isCancelled else {
@@ -269,33 +266,49 @@ final class YTMusicAuth: ObservableObject {
                 return
             }
 
-            // Wait the required interval
+            // Wait before polling
             try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
 
             do {
-                let token = try await requestToken(deviceCode: deviceCode.deviceCode)
+                let pollResponse = try await pollBridge(code: code)
 
-                await MainActor.run {
-                    storeToken(token)
-                    state = .authenticated
-                }
-                return
-            } catch let error as YTMusicError {
-                switch error {
-                case .authCancelled:
-                    // User denied - stop polling
-                    await MainActor.run { state = .failed(.authDenied) }
+                switch pollResponse.status {
+                case "completed":
+                    // Tokens are ready
+                    guard let accessToken = pollResponse.accessToken else {
+                        logger.error("Bridge returned completed but no access token")
+                        await MainActor.run { state = .failed(.unknown(message: "No access token in response")) }
+                        return
+                    }
+
+                    let token = TokenResponse(
+                        accessToken: accessToken,
+                        refreshToken: pollResponse.refreshToken,
+                        expiresIn: pollResponse.expiresIn ?? 3600,
+                        tokenType: "Bearer",
+                        scope: nil
+                    )
+
+                    await MainActor.run {
+                        storeToken(token)
+                        state = .authenticated
+                    }
                     return
-                case .authCodeExpired:
-                    // Code expired - stop polling
+
+                case "expired", "not_found":
                     await MainActor.run { state = .failed(.authCodeExpired) }
                     return
+
+                case "pending":
+                    // Continue polling
+                    continue
+
                 default:
-                    // Other errors (like "authorization_pending") - continue polling
+                    logger.warning("Unknown bridge status: \(pollResponse.status)")
                     continue
                 }
             } catch {
-                logger.error("Unexpected error during polling: \(error)")
+                logger.error("Error polling bridge: \(error)")
                 continue
             }
         }
@@ -304,19 +317,10 @@ final class YTMusicAuth: ObservableObject {
         await MainActor.run { state = .failed(.authCodeExpired) }
     }
 
-    /// Request access token using device code
-    private func requestToken(deviceCode: String) async throws -> TokenResponse {
-        var request = URLRequest(url: OAuth.tokenURL)
-        request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-
-        let body = [
-            "client_id": OAuth.clientID,
-            "client_secret": OAuth.clientSecret,
-            "device_code": deviceCode,
-            "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
-        ]
-        request.httpBody = body.urlEncodedString.data(using: .utf8)
+    /// Poll the bridge for token status
+    private func pollBridge(code: String) async throws -> BridgePollResponse {
+        var request = URLRequest(url: Bridge.pollURL(code: code))
+        request.httpMethod = "GET"
 
         let (data, response) = try await URLSession.shared.data(for: request)
 
@@ -324,43 +328,30 @@ final class YTMusicAuth: ObservableObject {
             throw YTMusicError.invalidResponse
         }
 
-        if httpResponse.statusCode != 200 {
-            // Check for known error responses
-            if let errorResponse = try? JSONDecoder().decode(OAuthErrorResponse.self, from: data) {
-                switch errorResponse.error {
-                case "authorization_pending":
-                    // User hasn't authorized yet - this is expected during polling
-                    throw YTMusicError.unknown(message: "authorization_pending")
-                case "slow_down":
-                    // Need to slow down polling - handled by interval
-                    throw YTMusicError.unknown(message: "slow_down")
-                case "access_denied":
-                    throw YTMusicError.authDenied
-                case "expired_token":
-                    throw YTMusicError.authCodeExpired
-                default:
-                    throw YTMusicError.httpError(
-                        statusCode: httpResponse.statusCode,
-                        message: errorResponse.errorDescription
-                    )
-                }
-            }
+        // 404 means code not found
+        if httpResponse.statusCode == 404 {
+            return BridgePollResponse(status: "not_found", accessToken: nil, refreshToken: nil, expiresIn: nil)
+        }
 
+        if httpResponse.statusCode != 200 {
             throw YTMusicError.httpError(statusCode: httpResponse.statusCode, message: nil)
         }
 
-        return try JSONDecoder().decode(TokenResponse.self, from: data)
+        return try JSONDecoder().decode(BridgePollResponse.self, from: data)
     }
 
     /// Refresh access token using refresh token
+    ///
+    /// Note: Token refresh still goes directly to Google since we have the refresh_token.
+    /// Only the initial OAuth flow goes through our bridge.
     private func requestTokenRefresh(refreshToken: String) async throws -> TokenResponse {
-        var request = URLRequest(url: OAuth.tokenURL)
+        var request = URLRequest(url: Google.tokenURL)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 
         let body = [
-            "client_id": OAuth.clientID,
-            "client_secret": OAuth.clientSecret,
+            "client_id": Google.clientID,
+            "client_secret": Google.clientSecret,
             "refresh_token": refreshToken,
             "grant_type": "refresh_token",
         ]
