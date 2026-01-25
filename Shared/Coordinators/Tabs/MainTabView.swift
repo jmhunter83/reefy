@@ -36,8 +36,9 @@ struct MainTabView: View {
             systemName: "film",
             filters: .init(itemTypes: [.movie])
         )
+        TabItem.music
+        TabItem.live
         TabItem.search
-        TabItem.media
         TabItem.settings
     }
     #endif

@@ -92,4 +92,18 @@ extension TabItem {
     ) {
         SettingsView()
     }
+
+    static let music = TabItem.library(
+        title: L10n.music,
+        systemName: "music.note",
+        filters: .init(itemTypes: [.musicAlbum])
+    )
+
+    static let live = TabItem(
+        id: "live",
+        title: L10n.liveTV,
+        systemImage: "tv"
+    ) {
+        LiveTabView()
+    }
 }

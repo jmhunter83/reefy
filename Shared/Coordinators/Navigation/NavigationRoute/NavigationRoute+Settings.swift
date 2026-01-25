@@ -162,6 +162,14 @@ extension NavigationRoute {
         ConsoleView()
     }
 
+    #if os(tvOS)
+    static let media = NavigationRoute(
+        id: "media"
+    ) {
+        MediaView()
+    }
+    #endif
+
     #if os(iOS)
     static let nativePlayerSettings = NavigationRoute(
         id: "nativePlayerSettings"

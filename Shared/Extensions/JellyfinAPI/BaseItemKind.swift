@@ -21,6 +21,7 @@ extension BaseItemKind: SupportedCaseIterable {
         [
             .boxSet,
             .movie,
+            .musicAlbum,
             .musicVideo,
             .series,
             .video,
