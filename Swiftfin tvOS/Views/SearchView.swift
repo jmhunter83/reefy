@@ -122,6 +122,15 @@ struct SearchView: View {
                     )
                 }
 
+                if let albums = viewModel.items[.musicAlbum], albums.isNotEmpty {
+                    itemsSection(
+                        title: L10n.albums,
+                        type: .musicAlbum,
+                        items: albums,
+                        posterType: .square
+                    )
+                }
+
                 if let people = viewModel.items[.person], people.isNotEmpty {
                     itemsSection(
                         title: L10n.people,

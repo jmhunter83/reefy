@@ -108,6 +108,7 @@ final class SearchViewModel: ViewModel {
                 .boxSet,
                 .episode,
                 .movie,
+                .musicAlbum,
                 .musicArtist,
                 .musicVideo,
                 .liveTvProgram,
