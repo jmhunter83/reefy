@@ -300,7 +300,8 @@ class ItemViewModel: ViewModel, Stateful {
     }
 
     private func getFullItem() async throws -> BaseItemDto {
-        try await item.getFullItem(userSession: userSession!)
+        let session = try requireSession()
+        return try await item.getFullItem(userSession: session)
     }
 
     private func getSimilarItems() async -> [BaseItemDto] {

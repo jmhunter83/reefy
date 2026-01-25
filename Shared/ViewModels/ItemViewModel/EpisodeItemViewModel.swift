@@ -55,11 +55,12 @@ final class EpisodeItemViewModel: ItemViewModel {
         parameters.ids = [seriesID]
         parameters.limit = 1
 
+        let session = try requireSession()
         let request = Paths.getItemsByUserID(
-            userID: userSession!.user.id,
+            userID: session.user.id,
             parameters: parameters
         )
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
         guard let seriesItem = response.value.items?.first else { throw ErrorMessage("Expected series item missing") }
 
