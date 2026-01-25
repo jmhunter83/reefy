@@ -18,7 +18,7 @@ final class YTMusicClient {
 
     // MARK: - Properties
 
-    private let auth: YTMusicAuth
+    let auth: YTMusicAuth
     private let session: URLSession
     private let logger = Logger.swiftfin()
 

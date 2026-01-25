@@ -163,11 +163,11 @@ class DownloadTask: NSObject, ObservableObject {
 
         switch type {
         case .movie, .series:
-            guard let url = item.imageSource(imageType, maxWidth: maxWidth).url else { return }
+            guard let url = item.imageSource(imageType, maxWidth: CGFloat(maxWidth)).url else { return }
             imageURL = url
         case .episode where imageType == .backdrop:
             // Episodes use primary image for backdrop display
-            guard let url = item.imageSource(.primary, maxWidth: maxWidth).url else { return }
+            guard let url = item.imageSource(.primary, maxWidth: CGFloat(maxWidth)).url else { return }
             imageURL = url
         default:
             return

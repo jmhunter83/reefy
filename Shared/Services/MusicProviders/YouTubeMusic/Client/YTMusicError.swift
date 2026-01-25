@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors specific to YouTube Music API operations
-enum YTMusicError: LocalizedError, Hashable {
+public enum YTMusicError: LocalizedError, Hashable {
 
     // MARK: - Authentication Errors
 
@@ -63,7 +63,7 @@ enum YTMusicError: LocalizedError, Hashable {
 
     // MARK: - LocalizedError
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .authCancelled:
             return "Authentication was cancelled"
@@ -97,7 +97,7 @@ enum YTMusicError: LocalizedError, Hashable {
     }
 
     /// Whether this error is recoverable (user can retry)
-    var isRecoverable: Bool {
+    public var isRecoverable: Bool {
         switch self {
         case .timeout, .noConnection, .rateLimited:
             return true
@@ -109,7 +109,7 @@ enum YTMusicError: LocalizedError, Hashable {
     }
 
     /// Whether this error requires re-authentication
-    var requiresReauth: Bool {
+    public var requiresReauth: Bool {
         switch self {
         case .authTokenRefreshFailed, .notAuthenticated, .authDenied:
             return true

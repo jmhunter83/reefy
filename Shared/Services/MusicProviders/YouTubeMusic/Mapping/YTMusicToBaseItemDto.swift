@@ -39,17 +39,14 @@ extension YTMusicArtist {
             dto.taglines = [subscribers]
         }
 
-        // Set external URLs for YouTube Music
-        dto.externalUrls = [
-            "youtube_music": "https://music.youtube.com/channel/\(id)",
+        // Store YouTube Music URLs and thumbnails in providerIDs
+        var providerIDs: [String: String] = [
+            "YTMusic": "https://music.youtube.com/channel/\(id)",
         ]
-
-        // Handle thumbnails - store URL in providerIds for custom image loading
         if let thumbnailURL = thumbnailURL {
-            dto.providerIDs = [
-                "YTMusicThumb": thumbnailURL.absoluteString,
-            ]
+            providerIDs["YTMusicThumb"] = thumbnailURL.absoluteString
         }
+        dto.providerIDs = providerIDs
 
         return dto
     }
@@ -96,27 +93,24 @@ extension YTMusicAlbum {
             dto.tags = ["Explicit"]
         }
 
-        // Store playback IDs
-        var externalUrls: [String: String] = [
-            "youtube_music": "https://music.youtube.com/browse/\(id)",
+        // Store playback IDs and thumbnails in providerIDs
+        var providerIDs: [String: String] = [
+            "YTMusic": "https://music.youtube.com/browse/\(id)",
         ]
 
         if let playlistId = playlistId {
-            externalUrls["playlistId"] = playlistId
+            providerIDs["YTMusic_playlistId"] = playlistId
         }
 
         if let audioPlaylistId = audioPlaylistId {
-            externalUrls["audioPlaylistId"] = audioPlaylistId
+            providerIDs["YTMusic_audioPlaylistId"] = audioPlaylistId
         }
 
-        dto.externalUrls = externalUrls
-
-        // Handle thumbnails
         if let thumbnailURL = thumbnailURL {
-            dto.providerIDs = [
-                "YTMusicThumb": thumbnailURL.absoluteString,
-            ]
+            providerIDs["YTMusicThumb"] = thumbnailURL.absoluteString
         }
+
+        dto.providerIDs = providerIDs
 
         return dto
     }
@@ -137,7 +131,7 @@ extension YTMusicTrack {
         // Set duration in ticks (1 tick = 100 nanoseconds = 0.0000001 seconds)
         // So seconds * 10,000,000 = ticks
         if let seconds = durationSeconds {
-            dto.runTimeTicks = Int64(seconds) * 10_000_000
+            dto.runTimeTicks = seconds * 10_000_000
         }
 
         // Set artists
@@ -162,24 +156,21 @@ extension YTMusicTrack {
             dto.tags = ["Explicit"]
         }
 
-        // Store playback info
-        var externalUrls: [String: String] = [
-            "videoId": videoId,
-            "youtube_music": "https://music.youtube.com/watch?v=\(videoId)",
+        // Store playback info and thumbnails in providerIDs
+        var providerIDs: [String: String] = [
+            "YTMusic_videoId": videoId,
+            "YTMusic": "https://music.youtube.com/watch?v=\(videoId)",
         ]
 
         if let setVideoId = setVideoId {
-            externalUrls["setVideoId"] = setVideoId
+            providerIDs["YTMusic_setVideoId"] = setVideoId
         }
 
-        dto.externalUrls = externalUrls
-
-        // Handle thumbnails
         if let thumbnailURL = thumbnailURL {
-            dto.providerIDs = [
-                "YTMusicThumb": thumbnailURL.absoluteString,
-            ]
+            providerIDs["YTMusicThumb"] = thumbnailURL.absoluteString
         }
+
+        dto.providerIDs = providerIDs
 
         return dto
     }
@@ -214,17 +205,14 @@ extension YTMusicPlaylist {
             dto.albumArtists = [NameGuidPair(id: author.id, name: author.name)]
         }
 
-        // Set external URLs
-        dto.externalUrls = [
-            "youtube_music": "https://music.youtube.com/playlist?list=\(id)",
+        // Store URLs and thumbnails in providerIDs
+        var providerIDs: [String: String] = [
+            "YTMusic": "https://music.youtube.com/playlist?list=\(id)",
         ]
-
-        // Handle thumbnails
         if let thumbnailURL = thumbnailURL {
-            dto.providerIDs = [
-                "YTMusicThumb": thumbnailURL.absoluteString,
-            ]
+            providerIDs["YTMusicThumb"] = thumbnailURL.absoluteString
         }
+        dto.providerIDs = providerIDs
 
         return dto
     }
@@ -266,7 +254,7 @@ extension BaseItemDto {
 
     /// Check if this item came from YouTube Music
     var isFromYouTubeMusic: Bool {
-        externalUrls?["youtube_music"] != nil
+        providerIDs?["YTMusic"] != nil
     }
 
     /// Get the YouTube Music thumbnail URL if available
@@ -277,7 +265,7 @@ extension BaseItemDto {
 
     /// Get the YouTube video ID for playback (for tracks)
     var ytMusicVideoId: String? {
-        externalUrls?["videoId"]
+        providerIDs?["YTMusic_videoId"]
     }
 
     /// Get the YouTube Music browse ID (for artists/albums)

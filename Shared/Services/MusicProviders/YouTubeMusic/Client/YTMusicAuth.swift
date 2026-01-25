@@ -21,12 +21,12 @@ import Logging
 /// 5. App polls our bridge until tokens are ready
 ///
 /// Reference: https://github.com/jmhunter/reefy-auth
-final class YTMusicAuth: ObservableObject {
+public final class YTMusicAuth: ObservableObject {
 
     // MARK: - Types
 
     /// Current state of the authentication flow
-    enum AuthState: Equatable {
+    public enum AuthState: Equatable {
         case idle
         case awaitingUserAction(BridgeCodeResponse)
         case polling
@@ -35,14 +35,14 @@ final class YTMusicAuth: ObservableObject {
     }
 
     /// Response from the bridge code request
-    struct BridgeCodeResponse: Equatable, Codable {
+    public struct BridgeCodeResponse: Equatable, Codable {
         let code: String
         let verificationUrl: String
         let expiresIn: Int
 
         enum CodingKeys: String, CodingKey {
             case code
-            case verificationUrl = "verificationUrl"
+            case verificationUrl
             case expiresIn
         }
     }
@@ -74,7 +74,8 @@ final class YTMusicAuth: ObservableObject {
 
     // MARK: - Properties
 
-    @Published private(set) var state: AuthState = .idle
+    @Published
+    public private(set) var state: AuthState = .idle
 
     private let keychain: KeychainSwift
     private let logger = Logger.swiftfin()
@@ -86,7 +87,7 @@ final class YTMusicAuth: ObservableObject {
     }
 
     /// Whether the user is currently authenticated
-    var isAuthenticated: Bool {
+    public var isAuthenticated: Bool {
         accessToken != nil
     }
 
@@ -141,7 +142,7 @@ final class YTMusicAuth: ObservableObject {
 
     // MARK: - Initialization
 
-    init(keychain: KeychainSwift = KeychainSwift()) {
+    public init(keychain: KeychainSwift = KeychainSwift()) {
         self.keychain = keychain
         keychain.accessGroup = nil // Use app's default keychain
 
@@ -158,7 +159,7 @@ final class YTMusicAuth: ObservableObject {
     /// This will request a code from our bridge and update `state` to `.awaitingUserAction`
     /// with the code and verification URL to show the user.
     @MainActor
-    func startAuthentication() async throws {
+    public func startAuthentication() async throws {
         state = .idle
 
         let bridgeCode = try await requestBridgeCode()
@@ -170,7 +171,7 @@ final class YTMusicAuth: ObservableObject {
     /// Call this after presenting the code to the user.
     /// The flow will automatically complete when the user completes OAuth on their phone.
     @MainActor
-    func startPolling() async {
+    public func startPolling() async {
         guard case let .awaitingUserAction(bridgeCode) = state else {
             logger.warning("startPolling called without bridge code")
             return
@@ -186,7 +187,7 @@ final class YTMusicAuth: ObservableObject {
 
     /// Cancel the current authentication flow
     @MainActor
-    func cancelAuthentication() {
+    public func cancelAuthentication() {
         pollingTask?.cancel()
         pollingTask = nil
         state = .idle
@@ -206,7 +207,7 @@ final class YTMusicAuth: ObservableObject {
 
     /// Sign out and clear stored credentials
     @MainActor
-    func signOut() {
+    public func signOut() {
         pollingTask?.cancel()
         pollingTask = nil
 
@@ -218,7 +219,7 @@ final class YTMusicAuth: ObservableObject {
     }
 
     /// Get a valid access token, refreshing if necessary
-    func getValidAccessToken() async throws -> String {
+    public func getValidAccessToken() async throws -> String {
         if let token = accessToken, !isTokenExpired {
             return token
         }

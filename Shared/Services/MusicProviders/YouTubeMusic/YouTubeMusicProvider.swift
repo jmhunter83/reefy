@@ -50,7 +50,8 @@ public final class YouTubeMusicProvider: MusicProvider, ObservableObject {
 
     // MARK: - Published State
 
-    @Published public private(set) var authState: YTMusicAuth.AuthState = .idle
+    @Published
+    public private(set) var authState: YTMusicAuth.AuthState = .idle
 
     // MARK: - Private Properties
 
@@ -90,9 +91,9 @@ public final class YouTubeMusicProvider: MusicProvider, ObservableObject {
     // MARK: - Authentication
 
     /// Start the OAuth device flow authentication
-    /// - Returns: Device code response with user code and verification URL
+    /// - Returns: Bridge code response with user code and verification URL
     @MainActor
-    public func startAuthentication() async throws -> YTMusicAuth.DeviceCodeResponse {
+    public func startAuthentication() async throws -> YTMusicAuth.BridgeCodeResponse {
         try await auth.startAuthentication()
 
         guard case let .awaitingUserAction(deviceCode) = auth.state else {
