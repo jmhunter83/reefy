@@ -247,10 +247,6 @@ extension Defaults.Keys {
         enum Transition {
             static let pauseOnBackground: Key<Bool> = UserKey("playInBackground", default: true)
         }
-
-        /// Threshold (0.0-1.0) at which playback is auto-marked as "played"
-        /// Default 0.95 means episode marks complete when 95% watched
-        static let autoMarkPlayedThreshold: Key<Double> = UserKey("autoMarkPlayedThreshold", default: 0.95)
     }
 
     // Experimental settings

@@ -27,7 +27,6 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
 
     private let timer = PokeIntervalTimer()
     private var hasSentStart = false
-    private var hasMarkedAsPlayed = false
     private weak var item: MediaPlayerItem?
     private var lastPlaybackRequestStatus: MediaPlayerManager.PlaybackRequestStatus = .playing
 
@@ -77,13 +76,10 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
         timer.poke()
 
         if let item, newItem !== item {
-            // Check completion threshold before sending stop report (covers autoplay scenarios)
-            checkAndMarkCompleted(for: item, seconds: manager?.seconds)
             sendStopReport(for: item, seconds: manager?.seconds)
 
             self.item = newItem
             self.hasSentStart = false
-            self.hasMarkedAsPlayed = false
             sendReport()
         }
     }
@@ -136,8 +132,6 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
     }
 
     private func sendStopReport(for item: MediaPlayerItem, seconds: Duration?) {
-        // Check completion threshold when stop is triggered (covers manual stop)
-        checkAndMarkCompleted(for: item, seconds: seconds)
 
         #if DEBUG
         guard Defaults[.sendProgressReports] else { return }
@@ -155,43 +149,6 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
                 _ = try await userSession!.client.send(request)
             } catch {
                 logger.error("Failed to send playback stop report: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    // MARK: - Auto-Mark Played
-
-    /// Check if playback has reached the threshold for auto-marking as played
-    private func checkAndMarkCompleted(for item: MediaPlayerItem, seconds: Duration?) {
-        guard !hasMarkedAsPlayed,
-              let seconds,
-              let runtime = item.baseItem.runtime,
-              runtime > .zero else { return }
-
-        let playedFraction = seconds.seconds / runtime.seconds
-        let threshold = Defaults[.VideoPlayer.autoMarkPlayedThreshold]
-
-        if playedFraction >= threshold {
-            hasMarkedAsPlayed = true
-            markItemAsPlayed(item)
-        }
-    }
-
-    /// Mark item as played via Jellyfin API
-    private func markItemAsPlayed(_ item: MediaPlayerItem) {
-        guard let itemID = item.baseItem.id else { return }
-
-        Task {
-            do {
-                let request = Paths.markPlayedItem(
-                    itemID: itemID,
-                    userID: userSession!.user.id
-                )
-                _ = try await userSession!.client.send(request)
-                Notifications[.itemShouldRefreshMetadata].post(itemID)
-                logger.info("Auto-marked item as played: \(item.baseItem.displayTitle)")
-            } catch {
-                logger.warning("Failed to auto-mark item as played: \(error.localizedDescription)")
             }
         }
     }
