@@ -36,6 +36,24 @@ This project focuses purely on the tvOS experience — no iOS, just Apple TV.
 
 ---
 
+## Coming Soon
+
+### Audio Normalization (ReplayGain)
+
+Volume normalization for music playback is in development. No more adjusting volume when switching between quiet and loud tracks — Reefy will automatically balance audio levels using ReplayGain metadata from your Jellyfin server.
+
+**Features:**
+- Track and Album normalization modes
+- Adjustable pre-amp (+/- 12 dB)
+- Clipping prevention
+- Works with Jellyfin's Audio Normalization scheduled task
+
+*Requires Jellyfin Server 10.9+ with Audio Normalization task enabled.*
+
+See [Audio Normalization Documentation](Documentation/features/audio-normalization.md) for setup details.
+
+---
+
 ## Get Reefy
 
 ### App Store (Recommended)
