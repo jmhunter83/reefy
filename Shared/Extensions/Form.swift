@@ -73,13 +73,14 @@ private struct PlatformForm<Image: View, Content: View>: PlatformView {
     }
 
     var tvOSView: some View {
-        HStack {
+        HStack(spacing: 0) {
             descriptionView
                 .frame(maxWidth: .infinity)
 
             Form {
                 content
             }
+            .frame(maxWidth: .infinity)
             .padding(.top)
             .backport
             .scrollClipDisabled()
