@@ -100,9 +100,20 @@ struct VideoPlayerViewShim: View {
 
     let manager: MediaPlayerManager
 
+    private var isAudioItem: Bool {
+        manager.item.type == .audio
+    }
+
     var body: some View {
         Group {
-            if Defaults[.VideoPlayer.videoPlayerType] == .swiftfin {
+            if isAudioItem {
+                #if os(tvOS)
+                MusicPlayer()
+                #else
+                // iOS: Use video player for now (TODO: iOS music player)
+                VideoPlayer()
+                #endif
+            } else if Defaults[.VideoPlayer.videoPlayerType] == .swiftfin {
                 VideoPlayer()
             } else {
                 NativeVideoPlayer()
