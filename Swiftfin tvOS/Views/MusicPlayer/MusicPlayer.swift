@@ -6,6 +6,7 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import Combine
 import Factory
 import SwiftUI
 import VLCUI
@@ -175,18 +176,17 @@ final class MusicPlayerContainerState: ObservableObject {
     var shouldDismiss: Bool = false
 
     /// Timer for auto-hiding controls
-    lazy var timer: Debouncer = {
-        let timer = Debouncer(duration: 5)
-        timer.callback = { [weak self] in
+    let timer: PokeIntervalTimer = .init(defaultInterval: 5)
+
+    private var timerCancellable: AnyCancellable?
+
+    init() {
+        timerCancellable = timer.sink { [weak self] in
             guard let self else { return }
             withAnimation(.easeInOut(duration: 0.3)) {
                 self.isPresentingControls = false
             }
         }
-        return timer
-    }()
-
-    init() {
         timer.poke()
     }
 
