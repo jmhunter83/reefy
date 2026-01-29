@@ -6,7 +6,6 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Defaults
 import Factory
 import JellyfinAPI
 import PreferencesView
@@ -89,10 +88,6 @@ extension NavigationRoute {
     }
 }
 
-// TODO: shim until native vs swiftfin player is replace with vlc vs av layers
-//       - when removed, ensure same behavior with safe area
-//       - may just need to make a VC wrapper to capture them
-
 struct VideoPlayerViewShim: View {
 
     @State
@@ -113,10 +108,8 @@ struct VideoPlayerViewShim: View {
                 // iOS: Use video player for now (TODO: iOS music player)
                 VideoPlayer()
                 #endif
-            } else if Defaults[.VideoPlayer.videoPlayerType] == .swiftfin {
-                VideoPlayer()
             } else {
-                NativeVideoPlayer()
+                VideoPlayer()
             }
         }
         .colorScheme(.dark) // use over `preferredColorScheme(.dark)` to not have destination change

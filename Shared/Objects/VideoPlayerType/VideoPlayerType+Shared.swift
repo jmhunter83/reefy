@@ -13,14 +13,8 @@ extension VideoPlayerType {
 
     // MARK: - Codec Profiles
 
-    @ArrayBuilder<CodecProfile>
     var codecProfiles: [CodecProfile] {
-        switch self {
-        case .native:
-            Self._nativeCodecProfiles
-        case .swiftfin:
-            Self._swiftfinCodecProfiles
-        }
+        Self._swiftfinCodecProfiles
     }
 
     // MARK: - Shared Codec Profile Conditions
