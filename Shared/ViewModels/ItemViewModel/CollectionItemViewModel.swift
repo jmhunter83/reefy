@@ -80,6 +80,9 @@ final class CollectionItemViewModel: ItemViewModel {
     }
 
     var allTracks: [BaseItemDto] {
-        sections[.audio]?.elements ?? []
+        if let audioSection = sections[.audio] {
+            return Array(audioSection.elements)
+        }
+        return []
     }
 }

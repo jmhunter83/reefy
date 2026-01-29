@@ -74,7 +74,11 @@ class MusicPlaylistQueue: ViewModel, MediaPlayerQueue {
     }
 
     var videoPlayerBody: some PlatformView {
-        EmptyView() // Music player doesn't need an overlay like episodes
+        InlinePlatformView {
+            EmptyView()
+        } tvOSView: {
+            EmptyView()
+        }
     }
 
     private func rebuildQueue() {
