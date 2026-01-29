@@ -3,7 +3,7 @@
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, you can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Copyright (c) 2026 Jellyfin, Swiftfin & Reefy Contributors
+// Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
 import JellyfinAPI
@@ -66,27 +66,9 @@ extension VideoPlayer {
         /// Unified transport bar content with integrated action buttons
         /// Layout: [ActionButtons] | [PlaybackButtons] | [SkipIntro] with progress bar below
         private var transportBarContent: some View {
-            VStack(spacing: 8) {
-                // Main controls row
-                HStack(spacing: 0) {
-                    // Left side: Action buttons (Subtitles, Audio, Speed, etc.)
-                    NavigationBar.ActionButtons()
-                        .focusGuide(focusGuide, tag: "actionButtons", bottom: "transportBar")
-                        .scaleEffect(0.9) // Slightly smaller buttons
-
-                    Spacer()
-
-                    // Center: Playback buttons (Jump Back, Play/Pause, Jump Forward)
-                    PlaybackButtons()
-                        .scaleEffect(0.9)
-
-                    Spacer()
-
-                    // Right side: Skip Intro button (when available)
-                    SkipIntroTransportButton()
-                        .scaleEffect(0.9)
-                }
-                .padding(.horizontal, 16)
+            VStack(spacing: 20) {
+                // Center: Playback buttons (Jump Back, Play/Pause, Jump Forward)
+                PlaybackButtons()
 
                 // Timeline row
                 HStack(spacing: 12) {
@@ -113,9 +95,9 @@ extension VideoPlayer {
         private var transportBar: some View {
             if !isPresentingSupplement {
                 transportBarContent
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 16)
-                    .frame(maxWidth: 900) // Tighter width constraint
+                    .padding(.vertical, 24)
+                    .padding(.horizontal, 24)
+                    .frame(maxWidth: 900)
                     .background {
                         TransportBarBackground()
                     }
@@ -154,11 +136,45 @@ extension VideoPlayer {
                     skipIndicator
                         .animation(.easeOut(duration: 0.2), value: containerState.skipIndicatorText)
 
-                    // Bottom: Unified transport pill - centered
+                    // Skip Intro button (floating pill)
                     VStack {
                         Spacer()
+                        HStack {
+                            Spacer()
+                            SkipIntroTransportButton()
+                        }
+                        .padding(.bottom, 260) // Above utility row
+                        .padding(.trailing, 60)
+                    }
+                    .opacity(isScrubbing || isPresentingOverlay ? 1 : 0)
+
+                    // Bottom: Controls Section
+                    VStack(spacing: 32) {
+                        Spacer()
+
+                        // Utility Buttons Row (Subtitles, Audio, etc.)
+                        NavigationBar.ActionButtons()
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .background {
+                                if #available(tvOS 26.0, *) {
+                                    Capsule()
+                                        .fill(.clear)
+                                        .glassEffect(.regular)
+                                } else {
+                                    Capsule()
+                                        .fill(.ultraThinMaterial)
+                                        .overlay {
+                                            Capsule()
+                                                .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+                                        }
+                                }
+                            }
+                            .focusGuide(focusGuide, tag: "actionButtons", bottom: "transportBar")
+
+                        // Main Transport Bar
                         transportBar
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 60)
                     }
                     .opacity(isScrubbing || isPresentingOverlay ? 1 : 0)
                     .disabled(!(isScrubbing || isPresentingOverlay))
