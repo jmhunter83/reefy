@@ -6,7 +6,7 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import JellyfinAPI
+import Defaults
 import PreferencesView
 import SwiftUI
 import VLCUI
@@ -61,46 +61,98 @@ extension VideoPlayer {
             containerState.isPresentingSupplement
         }
 
-        // MARK: - Unified Transport Pill Content
+        @ViewBuilder
+        private var titleOverlay: some View {
+            if !isPresentingSupplement {
+                VStack(alignment: .leading, spacing: 8) {
+                    if manager.item.type == .episode {
+                        // Episode: Show S#E# • Series Name • Episode Title • Year
+                        if let seasonEpisodeLabel = manager.item.seasonEpisodeLabel {
+                            Text(seasonEpisodeLabel)
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white.opacity(0.9))
+                                .shadow(color: .black.opacity(0.5), radius: 8)
+                        }
 
-        /// Unified transport bar content with integrated action buttons
-        /// Layout: [ActionButtons] | [PlaybackButtons] | [SkipIntro] with progress bar below
-        private var transportBarContent: some View {
-            VStack(spacing: 20) {
-                // Center: Playback buttons (Jump Back, Play/Pause, Jump Forward)
-                PlaybackButtons()
+                        if let seriesName = manager.item.seriesName {
+                            Text(seriesName)
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.white)
+                                .shadow(color: .black.opacity(0.5), radius: 8)
+                        }
 
-                // Timeline row
-                HStack(spacing: 12) {
-                    // Current position
-                    SplitTimestamp(mode: .current)
-                        .font(.callout.monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.8))
+                        Text(manager.item.displayTitle)
+                            .font(.title3)
+                            .foregroundStyle(.white.opacity(0.8))
+                            .shadow(color: .black.opacity(0.5), radius: 8)
 
-                    // Progress bar
-                    PlaybackProgress()
-                        .frame(height: 8) // Thinner progress bar
+                        if let year = manager.item.premiereDateYear {
+                            Text(year)
+                                .font(.callout)
+                                .foregroundStyle(.white.opacity(0.7))
+                                .shadow(color: .black.opacity(0.5), radius: 8)
+                        }
+                    } else {
+                        // Non-episode: Show Title • Year
+                        Text(manager.item.displayTitle)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.5), radius: 8)
 
-                    // Total/Remaining time
-                    SplitTimestamp(mode: .total)
-                        .font(.callout.monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.8))
+                        if let year = manager.item.premiereDateYear {
+                            Text(year)
+                                .font(.title3)
+                                .foregroundStyle(.white.opacity(0.8))
+                                .shadow(color: .black.opacity(0.5), radius: 8)
+                        }
+                    }
                 }
-                .padding(.horizontal, 20)
-                .focusGuide(focusGuide, tag: "transportBar", top: "actionButtons")
+                .padding(.leading, 80)
+                .padding(.top, 60)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .isVisible(isScrubbing || isPresentingOverlay)
             }
+        }
+
+        private var transportBarContent: some View {
+            HStack(spacing: 20) {
+                // Previous episode button
+                NavigationBar.ActionButtons.PlayPreviousItem()
+
+                Spacer()
+
+                // Progress display
+                PlaybackProgress()
+
+                Spacer()
+
+                // Next episode button
+                NavigationBar.ActionButtons.PlayNextItem()
+            }
+            .focusGuide(focusGuide, tag: "transportBar", top: "sideButtons")
         }
 
         @ViewBuilder
         private var transportBar: some View {
             if !isPresentingSupplement {
-                transportBarContent
-                    .padding(.vertical, 24)
-                    .padding(.horizontal, 24)
-                    .frame(maxWidth: 900)
-                    .background {
-                        TransportBarBackground()
-                    }
+                VStack(spacing: 8) {
+                    transportBarContent
+                        .padding(.horizontal, 60)
+                        .padding(.vertical, 30)
+                        .background {
+                            TransportBarBackground()
+                        }
+
+                    // Skip explainer label
+                    Text("← → Skip: 1×=15s  2×=2min  3×=5min")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.6))
+                        .padding(.horizontal, 60)
+                        .padding(.bottom, 20)
+                }
             }
         }
 
@@ -118,66 +170,29 @@ extension VideoPlayer {
         }
 
         var body: some View {
-            GeometryReader { _ in
+            GeometryReader { geometry in
                 ZStack {
-                    // Navigation Bar (Title/Series) - floating pill in top-left
-                    VStack {
-                        HStack {
-                            NavigationBar()
-                            Spacer()
-                        }
-                        .padding(.leading, 60)
-                        .padding(.top, 50)
-                        Spacer()
-                    }
-                    .isVisible(isScrubbing || isPresentingOverlay)
+                    // Title in top-left
+                    titleOverlay
 
                     // Skip indicator in center
                     skipIndicator
                         .animation(.easeOut(duration: 0.2), value: containerState.skipIndicatorText)
 
-                    // Skip Intro button (floating pill)
+                    // Side action buttons (right edge, vertically stacked)
+                    SideActionButtons()
+
+                    // Transport bar in bottom 10%
                     VStack {
                         Spacer()
-                        HStack {
-                            Spacer()
-                            SkipIntroTransportButton()
-                        }
-                        .padding(.bottom, 260) // Above utility row
-                        .padding(.trailing, 60)
-                    }
-                    .opacity(isScrubbing || isPresentingOverlay ? 1 : 0)
+                            .frame(minHeight: geometry.size.height * 0.90)
 
-                    // Bottom: Controls Section
-                    VStack(spacing: 32) {
-                        Spacer()
-
-                        // Utility Buttons Row (Subtitles, Audio, etc.)
-                        NavigationBar.ActionButtons()
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background {
-                                if #available(tvOS 26.0, *) {
-                                    Capsule()
-                                        .fill(.clear)
-                                        .glassEffect(.regular)
-                                } else {
-                                    Capsule()
-                                        .fill(.ultraThinMaterial)
-                                        .overlay {
-                                            Capsule()
-                                                .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
-                                        }
-                                }
-                            }
-                            .focusGuide(focusGuide, tag: "actionButtons", bottom: "transportBar")
-
-                        // Main Transport Bar
                         transportBar
+                            .padding(.horizontal, 40)
                             .padding(.bottom, 60)
+                            .opacity(isScrubbing || isPresentingOverlay ? 1 : 0)
+                            .disabled(!(isScrubbing || isPresentingOverlay))
                     }
-                    .opacity(isScrubbing || isPresentingOverlay ? 1 : 0)
-                    .disabled(!(isScrubbing || isPresentingOverlay))
                 }
             }
             .animation(.linear(duration: 0.1), value: isScrubbing)
@@ -193,7 +208,7 @@ extension VideoPlayer {
             .onChange(of: isPresentingOverlay) { _, isPresenting in
                 if isPresenting {
                     DispatchQueue.main.asyncAfter(deadline: .now() + AnimationTiming.skipIndicatorResetDelay) {
-                        focusGuide.transition(to: "actionButtons")
+                        focusGuide.transition(to: "sideButtons")
                     }
                 }
             }
@@ -324,84 +339,6 @@ extension VideoPlayer {
         private enum SkipDirection {
             case forward
             case backward
-        }
-    }
-}
-
-// MARK: - Skip Intro Transport Button
-
-extension VideoPlayer.PlaybackControls {
-
-    /// Skip Intro button styled for the unified transport bar
-    /// Only visible when intro segment is active
-    struct SkipIntroTransportButton: View {
-
-        @Environment(\.isFocused)
-        private var isFocused
-
-        @EnvironmentObject
-        private var manager: MediaPlayerManager
-
-        @FocusState
-        private var buttonFocused: Bool
-
-        private var currentSegment: MediaSegmentDto? {
-            manager.currentSegment
-        }
-
-        var body: some View {
-            if let segment = currentSegment {
-                Button {
-                    manager.proxy?.setSeconds(.seconds(segment.end))
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "forward.end.fill")
-                        Text(L10n.skipIntro)
-                    }
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background {
-                        skipIntroBackground(isFocused: buttonFocused)
-                    }
-                }
-                .buttonStyle(.plain)
-                .focused($buttonFocused)
-                .scaleEffect(buttonFocused ? 1.05 : 1.0)
-                .shadow(
-                    color: buttonFocused ? .black.opacity(0.2) : .clear,
-                    radius: buttonFocused ? 8 : 0,
-                    y: buttonFocused ? 6 : 0
-                )
-                .animation(.spring(duration: 0.2), value: buttonFocused)
-                .transition(.opacity.combined(with: .scale))
-            } else {
-                // Placeholder to maintain layout balance when skip intro is not available
-                Color.clear
-                    .frame(width: 140)
-            }
-        }
-
-        @ViewBuilder
-        private func skipIntroBackground(isFocused: Bool) -> some View {
-            if #available(tvOS 26.0, *) {
-                Capsule()
-                    .fill(.clear)
-                    .glassEffect(
-                        isFocused
-                            ? .regular.tint(.white.opacity(0.3))
-                            : .regular
-                    )
-            } else {
-                Capsule()
-                    .fill(
-                        isFocused
-                            ? Color.white.opacity(0.4)
-                            : Color.white.opacity(0.2)
-                    )
-            }
         }
     }
 }

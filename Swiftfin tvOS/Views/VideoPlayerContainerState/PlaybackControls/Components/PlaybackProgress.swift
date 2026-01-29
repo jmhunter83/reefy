@@ -23,8 +23,13 @@ extension VideoPlayer.PlaybackControls {
         }
 
         var body: some View {
-            // Non-interactive progress bar
-            staticProgressBar
+            VStack(spacing: 12) {
+                // Non-interactive progress bar
+                staticProgressBar
+
+                // Timestamps
+                SplitTimeStamp()
+            }
         }
 
         private var staticProgressBar: some View {
@@ -36,24 +41,23 @@ extension VideoPlayer.PlaybackControls {
                 ZStack(alignment: .leading) {
                     // Background track
                     Capsule()
-                        .fill(Color.white.opacity(0.15))
-                        .frame(height: 10)
+                        .fill(Color.white.opacity(0.2))
+                        .frame(height: 6)
 
                     // Progress fill
                     Capsule()
                         .fill(.white)
-                        .frame(width: progressWidth, height: 10)
-                        .shadow(color: .white.opacity(0.5), radius: 6)
+                        .frame(width: progressWidth, height: 6)
 
                     // Current position indicator (circle)
                     Circle()
                         .fill(.white)
-                        .frame(width: 20, height: 20)
-                        .offset(x: progressWidth - 10)
-                        .shadow(color: .black.opacity(0.3), radius: 4)
+                        .frame(width: 12, height: 12)
+                        .offset(x: progressWidth - 6)
+                        .shadow(color: .black.opacity(0.3), radius: 2)
                 }
             }
-            .frame(height: 20)
+            .frame(height: 12)
         }
     }
 }

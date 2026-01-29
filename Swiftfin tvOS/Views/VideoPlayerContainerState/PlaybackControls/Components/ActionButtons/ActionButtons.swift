@@ -47,8 +47,8 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             }
 
             // Build set of buttons to exclude based on current state
-            // Exclude info, aspectFill
-            var excluded: Set<VideoPlayerActionButton> = [.info, .aspectFill]
+            // Exclude audio, subtitles (moved to side), info, aspectFill, skip intro
+            var excluded: Set<VideoPlayerActionButton> = [.audio, .subtitles, .info, .aspectFill, .skipIntro]
 
             if manager.queue == nil {
                 excluded.formUnion([.autoPlay, .playNextItem, .playPreviousItem])
@@ -119,7 +119,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
                     guard !containerState.isScrubbing else { return }
                     focusedButton = defaultFocusButton(from: buttons)
                 },
-                bottom: "transportBar"
+                bottom: "playbackProgress"
             )
             .onChange(of: focusedButton) { oldValue, newValue in
                 // Machine-friendly log: event|old|new|buttonCount

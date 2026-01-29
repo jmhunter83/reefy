@@ -10,38 +10,53 @@ import SwiftUI
 
 extension VideoPlayer.PlaybackControls {
 
-    struct SplitTimestamp: View {
+    struct SplitTimeStamp: View {
 
-        enum Mode {
-            case current
-            case total
-        }
-
+        @EnvironmentObject
+        private var containerState: VideoPlayerContainerState
         @EnvironmentObject
         private var manager: MediaPlayerManager
         @EnvironmentObject
         private var scrubbedSecondsBox: PublishedBox<Duration>
 
-        let mode: Mode
+        @State
+        private var contentSize: CGSize = .zero
+        @State
+        private var leadingTimestampSize: CGSize = .zero
+        @State
+        private var trailingTimestampSize: CGSize = .zero
+
+        private var previewXOffset: CGFloat {
+            let p = contentSize.width * scrubbedProgress - (leadingTimestampSize.width / 2)
+            return clamp(p, min: 0, max: contentSize.width - (trailingTimestampSize.width + leadingTimestampSize.width))
+        }
+
+        private var scrubbedProgress: Double {
+            guard let runtime = manager.item.runtime, runtime > .zero else { return 0 }
+            return scrubbedSeconds / runtime
+        }
 
         private var scrubbedSeconds: Duration {
             scrubbedSecondsBox.value
         }
 
         var body: some View {
-            Group {
-                switch mode {
-                case .current:
-                    Text(scrubbedSeconds, format: .runtime)
-                case .total:
-                    if let runtime = manager.item.runtime {
-                        Text(.zero - (runtime - scrubbedSeconds), format: .runtime)
-                    } else {
-                        Text(verbatim: .emptyRuntime)
-                    }
+            ZStack {
+                if let runtime = manager.item.runtime {
+                    Text(.zero - (runtime - scrubbedSeconds), format: .runtime)
+                } else {
+                    Text(verbatim: .emptyRuntime)
                 }
             }
+            .trackingSize($trailingTimestampSize)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .overlay(alignment: .leading) {
+                Text(scrubbedSeconds, format: .runtime)
+                    .trackingSize($leadingTimestampSize)
+                    .offset(x: previewXOffset)
+            }
             .monospacedDigit()
+            .trackingSize($contentSize)
         }
     }
 }
