@@ -13,8 +13,9 @@ import JellyfinAPI
 final class CulturesViewModel: BaseFetchViewModel<[CultureDto]> {
 
     override func getValue() async throws -> [CultureDto] {
+        guard let session = userSession else { return [] }
         let request = Paths.getCultures
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
         return response.value
     }

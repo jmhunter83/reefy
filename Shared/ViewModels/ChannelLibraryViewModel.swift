@@ -13,35 +13,36 @@ import JellyfinAPI
 final class ChannelLibraryViewModel: PagingLibraryViewModel<ChannelProgram> {
 
     override func get(page: Int) async throws -> [ChannelProgram] {
+        guard let session = userSession else { return [] }
 
         var parameters = Paths.GetLiveTvChannelsParameters()
         parameters.fields = .MinimumFields
-        parameters.userID = userSession!.user.id
+        parameters.userID = session.user.id
         parameters.sortBy = [ItemSortBy.name]
 
         parameters.limit = pageSize
         parameters.startIndex = page * pageSize
 
         let request = Paths.getLiveTvChannels(parameters: parameters)
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
-        return try await getPrograms(for: response.value.items ?? [])
+        return try await getPrograms(for: response.value.items ?? [], session: session)
     }
 
-    private func getPrograms(for channels: [BaseItemDto]) async throws -> [ChannelProgram] {
+    private func getPrograms(for channels: [BaseItemDto], session: UserSession) async throws -> [ChannelProgram] {
 
         guard let minEndDate = Calendar.current.date(byAdding: .hour, value: -1, to: .now),
               let maxStartDate = Calendar.current.date(byAdding: .hour, value: 6, to: .now) else { return [] }
 
         var parameters = Paths.GetLiveTvProgramsParameters()
         parameters.channelIDs = channels.compactMap(\.id)
-        parameters.userID = userSession!.user.id
+        parameters.userID = session.user.id
         parameters.maxStartDate = maxStartDate
         parameters.minEndDate = minEndDate
         parameters.sortBy = [ItemSortBy.startDate]
 
         let request = Paths.getLiveTvPrograms(parameters: parameters)
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
         let groupedPrograms = (response.value.items ?? [])
             .grouped { program in

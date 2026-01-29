@@ -52,12 +52,13 @@ final class MediaViewModel: ViewModel {
     }
 
     private func getUserViews() async throws -> [BaseItemDto] {
+        guard let session = userSession else { return [] }
 
-        let parameters = Paths.GetUserViewsParameters(userID: userSession!.user.id)
+        let parameters = Paths.GetUserViewsParameters(userID: session.user.id)
         let userViewsPath = Paths.getUserViews(parameters: parameters)
-        async let userViews = userSession!.client.send(userViewsPath)
+        async let userViews = session.client.send(userViewsPath)
 
-        async let excludedLibraryIDs = getExcludedLibraries()
+        async let excludedLibraryIDs = getExcludedLibraries(session: session)
 
         // folders has `type = UserView`, but we manually
         // force it to `folders` for better view handling
@@ -75,9 +76,9 @@ final class MediaViewModel: ViewModel {
             }
     }
 
-    private func getExcludedLibraries() async throws -> [String] {
+    private func getExcludedLibraries(session: UserSession) async throws -> [String] {
         let currentUserPath = Paths.getCurrentUser
-        let response = try await userSession!.client.send(currentUserPath)
+        let response = try await session.client.send(currentUserPath)
 
         return response.value.configuration?.myMediaExcludes ?? []
     }
@@ -106,6 +107,8 @@ final class MediaViewModel: ViewModel {
             filters = [.isFavorite]
         }
 
+        guard let session = userSession else { return [] }
+
         var parameters = Paths.GetItemsByUserIDParameters()
         parameters.limit = 3
         parameters.isRecursive = true
@@ -114,8 +117,8 @@ final class MediaViewModel: ViewModel {
         parameters.filters = filters
         parameters.sortBy = [ItemSortBy.random.rawValue]
 
-        let request = Paths.getItemsByUserID(userID: userSession!.user.id, parameters: parameters)
-        let response = try await userSession!.client.send(request)
+        let request = Paths.getItemsByUserID(userID: session.user.id, parameters: parameters)
+        let response = try await session.client.send(request)
 
         return (response.value.items ?? [])
             .map { $0.imageSource(.backdrop, maxWidth: 200) }
