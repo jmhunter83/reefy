@@ -6,6 +6,7 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import JellyfinAPI
 import SwiftUI
 
 extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {

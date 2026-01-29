@@ -6,7 +6,6 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import JellyfinAPI
 import SwiftUI
 
 extension VideoPlayer.PlaybackControls {
@@ -15,12 +14,6 @@ extension VideoPlayer.PlaybackControls {
 
         @EnvironmentObject
         private var manager: MediaPlayerManager
-
-        private var chapters: [ChapterInfo.FullInfo]? {
-            manager.supplements.first(where: { $0.id.contains("Chapters") }) as? MediaChaptersSupplement
-                ? .init((manager.supplements.first(where: { $0.id.contains("Chapters") }) as! MediaChaptersSupplement).chapters)
-                : nil
-        }
 
         private var progress: Double {
             guard let runtime = manager.item.runtime, runtime > .zero else { return 0 }
@@ -41,20 +34,10 @@ extension VideoPlayer.PlaybackControls {
                 let progressWidth = width * clampedProgress
 
                 ZStack(alignment: .leading) {
-                    // Background track with glass effect on tvOS 18+
+                    // Background track
                     Capsule()
                         .fill(Color.white.opacity(0.15))
                         .frame(height: 10)
-                        .overlay {
-                            if let chapters = (manager.supplements
-                                .first(where: { $0.id.contains("Chapters") }) as? MediaChaptersSupplement)?.chapters,
-                                let runtime = manager.item.runtime
-                            {
-                                ChapterTrackMask(chapters: chapters, runtime: runtime)
-                                    .blendMode(.destinationOut)
-                            }
-                        }
-                        .compositingGroup()
 
                     // Progress fill
                     Capsule()
