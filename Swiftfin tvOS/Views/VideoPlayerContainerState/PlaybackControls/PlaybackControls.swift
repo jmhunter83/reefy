@@ -3,10 +3,10 @@
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, you can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Copyright (c) 2026 Jellyfin & Jellyfin Contributors
+// Copyright (c) 2026 Jellyfin, Swiftfin & Reefy Contributors
 //
 
-import Defaults
+import JellyfinAPI
 import PreferencesView
 import SwiftUI
 import VLCUI
@@ -61,44 +61,61 @@ extension VideoPlayer {
             containerState.isPresentingSupplement
         }
 
-        private var transportBarContent: some View {
-            VStack(spacing: 24) {
-                // Timeline
-                PlaybackProgress()
-                    .padding(.horizontal, 20)
+        // MARK: - Unified Transport Pill Content
 
-                // Controls and Timestamps
-                HStack {
+        /// Unified transport bar content with integrated action buttons
+        /// Layout: [ActionButtons] | [PlaybackButtons] | [SkipIntro] with progress bar below
+        private var transportBarContent: some View {
+            VStack(spacing: 8) {
+                // Main controls row
+                HStack(spacing: 0) {
+                    // Left side: Action buttons (Subtitles, Audio, Speed, etc.)
+                    NavigationBar.ActionButtons()
+                        .focusGuide(focusGuide, tag: "actionButtons", bottom: "transportBar")
+                        .scaleEffect(0.9) // Slightly smaller buttons
+
+                    Spacer()
+
+                    // Center: Playback buttons (Jump Back, Play/Pause, Jump Forward)
+                    PlaybackButtons()
+                        .scaleEffect(0.9)
+
+                    Spacer()
+
+                    // Right side: Skip Intro button (when available)
+                    SkipIntroTransportButton()
+                        .scaleEffect(0.9)
+                }
+                .padding(.horizontal, 16)
+
+                // Timeline row
+                HStack(spacing: 12) {
                     // Current position
                     SplitTimestamp(mode: .current)
-                        .font(.headline)
-                        .monospacedDigit()
-                        .frame(width: 120, alignment: .leading)
+                        .font(.callout.monospacedDigit())
+                        .foregroundStyle(.white.opacity(0.8))
 
-                    Spacer()
-
-                    // Primary Playback Buttons (Jump Back, Play/Pause, Jump Forward)
-                    PlaybackButtons()
-
-                    Spacer()
+                    // Progress bar
+                    PlaybackProgress()
+                        .frame(height: 8) // Thinner progress bar
 
                     // Total/Remaining time
                     SplitTimestamp(mode: .total)
-                        .font(.headline)
-                        .monospacedDigit()
-                        .frame(width: 120, alignment: .trailing)
+                        .font(.callout.monospacedDigit())
+                        .foregroundStyle(.white.opacity(0.8))
                 }
-                .padding(.horizontal, 40)
+                .padding(.horizontal, 20)
+                .focusGuide(focusGuide, tag: "transportBar", top: "actionButtons")
             }
-            .focusGuide(focusGuide, tag: "transportBar", top: "actionButtons")
         }
 
         @ViewBuilder
         private var transportBar: some View {
             if !isPresentingSupplement {
                 transportBarContent
-                    .padding(.vertical, 32)
-                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .frame(maxWidth: 900) // Tighter width constraint
                     .background {
                         TransportBarBackground()
                     }
@@ -121,11 +138,14 @@ extension VideoPlayer {
         var body: some View {
             GeometryReader { _ in
                 ZStack {
-                    // Navigation Bar (Title/Series) in top-left
+                    // Navigation Bar (Title/Series) - floating pill in top-left
                     VStack {
-                        NavigationBar()
-                            .padding(.leading, 80)
-                            .padding(.top, 60)
+                        HStack {
+                            NavigationBar()
+                            Spacer()
+                        }
+                        .padding(.leading, 60)
+                        .padding(.top, 50)
                         Spacer()
                     }
                     .isVisible(isScrubbing || isPresentingOverlay)
@@ -134,27 +154,11 @@ extension VideoPlayer {
                     skipIndicator
                         .animation(.easeOut(duration: 0.2), value: containerState.skipIndicatorText)
 
-                    // Skip Intro button (floating pill)
+                    // Bottom: Unified transport pill - centered
                     VStack {
                         Spacer()
-                        HStack {
-                            Spacer()
-                            SkipIntroPill()
-                        }
-                        .padding(.bottom, 240) // Above utility row
-                    }
-
-                    // Bottom Controls Section
-                    VStack(spacing: 32) {
-                        Spacer()
-
-                        // Utility Buttons Row (Subtitles, Audio, etc.)
-                        NavigationBar.ActionButtons()
-
-                        // Main Transport Bar (Progress + Playback)
                         transportBar
-                            .padding(.horizontal, 60)
-                            .padding(.bottom, 60)
+                            .padding(.bottom, 20)
                     }
                     .opacity(isScrubbing || isPresentingOverlay ? 1 : 0)
                     .disabled(!(isScrubbing || isPresentingOverlay))
@@ -173,7 +177,7 @@ extension VideoPlayer {
             .onChange(of: isPresentingOverlay) { _, isPresenting in
                 if isPresenting {
                     DispatchQueue.main.asyncAfter(deadline: .now() + AnimationTiming.skipIndicatorResetDelay) {
-                        focusGuide.transition(to: "sideButtons")
+                        focusGuide.transition(to: "actionButtons")
                     }
                 }
             }
@@ -304,6 +308,84 @@ extension VideoPlayer {
         private enum SkipDirection {
             case forward
             case backward
+        }
+    }
+}
+
+// MARK: - Skip Intro Transport Button
+
+extension VideoPlayer.PlaybackControls {
+
+    /// Skip Intro button styled for the unified transport bar
+    /// Only visible when intro segment is active
+    struct SkipIntroTransportButton: View {
+
+        @Environment(\.isFocused)
+        private var isFocused
+
+        @EnvironmentObject
+        private var manager: MediaPlayerManager
+
+        @FocusState
+        private var buttonFocused: Bool
+
+        private var currentSegment: MediaSegmentDto? {
+            manager.currentSegment
+        }
+
+        var body: some View {
+            if let segment = currentSegment {
+                Button {
+                    manager.proxy?.setSeconds(.seconds(segment.end))
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "forward.end.fill")
+                        Text(L10n.skipIntro)
+                    }
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background {
+                        skipIntroBackground(isFocused: buttonFocused)
+                    }
+                }
+                .buttonStyle(.plain)
+                .focused($buttonFocused)
+                .scaleEffect(buttonFocused ? 1.05 : 1.0)
+                .shadow(
+                    color: buttonFocused ? .black.opacity(0.2) : .clear,
+                    radius: buttonFocused ? 8 : 0,
+                    y: buttonFocused ? 6 : 0
+                )
+                .animation(.spring(duration: 0.2), value: buttonFocused)
+                .transition(.opacity.combined(with: .scale))
+            } else {
+                // Placeholder to maintain layout balance when skip intro is not available
+                Color.clear
+                    .frame(width: 140)
+            }
+        }
+
+        @ViewBuilder
+        private func skipIntroBackground(isFocused: Bool) -> some View {
+            if #available(tvOS 26.0, *) {
+                Capsule()
+                    .fill(.clear)
+                    .glassEffect(
+                        isFocused
+                            ? .regular.tint(.white.opacity(0.3))
+                            : .regular
+                    )
+            } else {
+                Capsule()
+                    .fill(
+                        isFocused
+                            ? Color.white.opacity(0.4)
+                            : Color.white.opacity(0.2)
+                    )
+            }
         }
     }
 }
