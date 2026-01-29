@@ -9,10 +9,29 @@
 import Foundation
 import JellyfinAPI
 
-// MARK: - Media Segment Extensions
+// MARK: - MediaSegmentType Extensions
 
-// Extensions for Jellyfin 10.10+ Media Segments API
-// NOTE: Intro skipper functionality is planned but not yet implemented
+extension MediaSegmentType: Displayable {
+
+    var displayTitle: String {
+        switch self {
+        case .commercial:
+            "Commercial"
+        case .preview:
+            "Preview"
+        case .recap:
+            "Recap"
+        case .outro:
+            "Outro"
+        case .intro:
+            "Intro"
+        case .unknown:
+            L10n.unknown
+        }
+    }
+}
+
+// MARK: - MediaSegmentDto Extensions
 
 public extension MediaSegmentDto {
 

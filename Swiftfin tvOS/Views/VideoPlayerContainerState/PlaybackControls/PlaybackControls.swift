@@ -7,6 +7,7 @@
 //
 
 import Defaults
+import JellyfinAPI
 import PreferencesView
 import SwiftUI
 import VLCUI
@@ -169,6 +170,33 @@ extension VideoPlayer {
             }
         }
 
+        // MARK: - Skip Segment Button
+
+        @ViewBuilder
+        private var skipSegmentButton: some View {
+            if let segment = manager.currentSegment,
+               let type = segment.type,
+               !isPresentingSupplement
+            {
+                Button {
+                    manager.skipCurrentSegment()
+                } label: {
+                    Label("Skip \(type.displayTitle)", systemImage: "forward.end.fill")
+                        .font(.title3.weight(.semibold))
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule()
+                                .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+                .transition(.opacity.combined(with: .scale))
+            }
+        }
+
         var body: some View {
             GeometryReader { geometry in
                 ZStack {
@@ -181,6 +209,18 @@ extension VideoPlayer {
 
                     // Side action buttons (right edge, vertically stacked)
                     SideActionButtons()
+
+                    // Skip segment button (bottom-right corner)
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            skipSegmentButton
+                                .padding(.trailing, 80)
+                                .padding(.bottom, 120)
+                                .animation(.spring(), value: manager.currentSegment?.startTicks)
+                        }
+                    }
 
                     // Transport bar in bottom 10%
                     VStack {

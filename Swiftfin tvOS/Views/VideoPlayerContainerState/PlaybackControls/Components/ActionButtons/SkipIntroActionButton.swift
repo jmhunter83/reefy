@@ -6,6 +6,7 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import JellyfinAPI
 import SwiftUI
 
 extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
@@ -18,13 +19,22 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         @EnvironmentObject
         private var manager: MediaPlayerManager
 
-        var body: some View {
-            // Intro skipper is not yet implemented
-            // This button will be enabled once media segments API integration is complete
-            Button(L10n.skipIntro, systemImage: VideoPlayerActionButton.skipIntro.systemImage) {
-                // TODO: Implement intro skip functionality
+        private var currentSegment: MediaSegmentDto? {
+            manager.currentSegment
+        }
+
+        private var segmentTitle: String {
+            guard let segment = currentSegment, let type = segment.type else {
+                return L10n.skipIntro
             }
-            .disabled(true) // Always disabled until feature is implemented
+            return "Skip \(type.displayTitle)"
+        }
+
+        var body: some View {
+            Button(segmentTitle, systemImage: VideoPlayerActionButton.skipIntro.systemImage) {
+                manager.skipCurrentSegment()
+            }
+            .disabled(currentSegment == nil)
             .labelStyle(.iconOnly)
         }
     }

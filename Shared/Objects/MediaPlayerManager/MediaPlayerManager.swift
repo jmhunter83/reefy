@@ -400,4 +400,21 @@ final class MediaPlayerManager: ViewModel {
         let nextIndex = (index + 1) % allModes.count
         repeatMode = allModes[nextIndex]
     }
+
+    // MARK: - Media Segment Skipping
+
+    /// Skip to the end of the given segment
+    func skipSegment(_ segment: MediaSegmentDto) {
+        guard let endTicks = segment.endTicks else { return }
+        let endSeconds = Double(endTicks) / 10_000_000
+        let newDuration = Duration.seconds(endSeconds)
+        self.seconds = newDuration
+        self.proxy?.setSeconds(newDuration)
+    }
+
+    /// Skip the current active segment (if any)
+    func skipCurrentSegment() {
+        guard let currentSegment else { return }
+        skipSegment(currentSegment)
+    }
 }
