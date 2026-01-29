@@ -83,15 +83,16 @@ class EpisodeMediaPlayerQueue: ViewModel, MediaPlayerQueue {
     private func getAdjacentEpisodes(for item: BaseItemDto?) async throws {
         guard let item else { return }
         guard let seriesID = item.seriesID, item.type == .episode else { return }
+        guard let session = userSession else { return }
 
         let parameters = Paths.GetEpisodesParameters(
-            userID: userSession!.user.id,
+            userID: session.user.id,
             fields: .MinimumFields,
             adjacentTo: item.id!,
             limit: 3
         )
         let request = Paths.getEpisodes(seriesID: seriesID, parameters: parameters)
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
         // 4 possible states:
         //  1 - only current episode

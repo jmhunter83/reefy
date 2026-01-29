@@ -110,6 +110,8 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
         guard Defaults[.sendProgressReports] else { return }
         #endif
 
+        guard let session = userSession else { return }
+
         Task {
             do {
                 var info = PlaybackStartInfo()
@@ -122,7 +124,7 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
                 info.subtitleStreamIndex = item.selectedSubtitleStreamIndex
 
                 let request = Paths.reportPlaybackStart(info)
-                _ = try await userSession!.client.send(request)
+                _ = try await session.client.send(request)
 
                 self.hasSentStart = true
             } catch {
@@ -149,6 +151,8 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
         guard Defaults[.sendProgressReports] else { return }
         #endif
 
+        guard let session = userSession else { return }
+
         Task {
             do {
                 var info = PlaybackStopInfo()
@@ -158,7 +162,7 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
                 info.sessionID = item.playSessionID
 
                 let request = Paths.reportPlaybackStopped(info)
-                _ = try await userSession!.client.send(request)
+                _ = try await session.client.send(request)
             } catch {
                 logger.error("Failed to send playback stop report: \(error.localizedDescription)")
             }
@@ -170,6 +174,8 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
         #if DEBUG
         guard Defaults[.sendProgressReports] else { return }
         #endif
+
+        guard let session = userSession else { return }
 
         Task {
             do {
@@ -184,7 +190,7 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
                 info.subtitleStreamIndex = item.selectedSubtitleStreamIndex
 
                 let request = Paths.reportPlaybackProgress(info)
-                _ = try await userSession!.client.send(request)
+                _ = try await session.client.send(request)
             } catch {
                 // Don't log progress errors at error level - they're frequent and expected during network issues
                 logger.warning("Failed to send playback progress report: \(error.localizedDescription)")
