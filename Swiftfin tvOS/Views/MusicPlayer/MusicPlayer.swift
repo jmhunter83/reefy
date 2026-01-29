@@ -37,7 +37,7 @@ struct MusicPlayer: View {
             // Background: Blurred album art
             AlbumArtBackground()
 
-            // Main content
+            // Main content: Album art + track info centered vertically
             VStack(spacing: 0) {
                 Spacer()
 
@@ -53,9 +53,12 @@ struct MusicPlayer: View {
                 TrackInfoView()
 
                 Spacer()
-                    .frame(height: 40)
+            }
 
-                // Transport controls
+            // Transport controls floating at bottom (overlay)
+            VStack {
+                Spacer()
+
                 MusicPlayerControls()
                     .padding(.horizontal, 100)
                     .padding(.bottom, 80)
@@ -111,6 +114,14 @@ private struct VLCAudioPlayer: View {
 
     let proxy: VLCMediaPlayerProxy
 
+    /// State debouncing to prevent race conditions from rapid state changes
+    @State
+    private var stateDebounceTask: Task<Void, Never>?
+
+    /// Last reported VLC state to filter duplicates
+    @State
+    private var lastReportedState: VLCVideoPlayer.State?
+
     private func vlcConfiguration(for item: MediaPlayerItem) -> VLCVideoPlayer.Configuration {
         var configuration = VLCVideoPlayer.Configuration(url: item.url)
         configuration.autoPlay = true
@@ -136,10 +147,43 @@ private struct VLCAudioPlayer: View {
                     }
                 }
                 .onStateUpdated { state, _ in
-                    Task { @MainActor in
+                    // Cancel any pending debounce task
+                    stateDebounceTask?.cancel()
+
+                    // Skip duplicate states to prevent race conditions
+                    guard state != lastReportedState else { return }
+
+                    // Handle buffering states immediately (no debounce needed)
+                    if case .buffering = state {
+                        proxy.isBuffering.value = true
+                        lastReportedState = state
+                        return
+                    }
+                    if case .esAdded = state {
+                        proxy.isBuffering.value = true
+                        lastReportedState = state
+                        return
+                    }
+                    if case .opening = state {
+                        proxy.isBuffering.value = true
+                        lastReportedState = state
+                        return
+                    }
+
+                    // Debounce play/pause states to handle rapid transitions
+                    stateDebounceTask = Task { @MainActor in
+                        // Small delay to debounce rapid state changes
+                        try? await Task.sleep(for: .milliseconds(100))
+
+                        guard !Task.isCancelled else { return }
+
+                        // Update last reported state
+                        lastReportedState = state
+
                         switch state {
                         case .buffering, .esAdded, .opening:
-                            proxy.isBuffering.value = true
+                            // Already handled above
+                            break
                         case .ended:
                             proxy.isBuffering.value = false
                             await manager.ended()
