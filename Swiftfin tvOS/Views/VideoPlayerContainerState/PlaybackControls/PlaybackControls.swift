@@ -61,98 +61,47 @@ extension VideoPlayer {
             containerState.isPresentingSupplement
         }
 
-        @ViewBuilder
-        private var titleOverlay: some View {
-            if !isPresentingSupplement {
-                VStack(alignment: .leading, spacing: 8) {
-                    if manager.item.type == .episode {
-                        // Episode: Show S#E# • Series Name • Episode Title • Year
-                        if let seasonEpisodeLabel = manager.item.seasonEpisodeLabel {
-                            Text(seasonEpisodeLabel)
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.white.opacity(0.9))
-                                .shadow(color: .black.opacity(0.5), radius: 8)
-                        }
-
-                        if let seriesName = manager.item.seriesName {
-                            Text(seriesName)
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.white)
-                                .shadow(color: .black.opacity(0.5), radius: 8)
-                        }
-
-                        Text(manager.item.displayTitle)
-                            .font(.title3)
-                            .foregroundStyle(.white.opacity(0.8))
-                            .shadow(color: .black.opacity(0.5), radius: 8)
-
-                        if let year = manager.item.premiereDateYear {
-                            Text(year)
-                                .font(.callout)
-                                .foregroundStyle(.white.opacity(0.7))
-                                .shadow(color: .black.opacity(0.5), radius: 8)
-                        }
-                    } else {
-                        // Non-episode: Show Title • Year
-                        Text(manager.item.displayTitle)
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.5), radius: 8)
-
-                        if let year = manager.item.premiereDateYear {
-                            Text(year)
-                                .font(.title3)
-                                .foregroundStyle(.white.opacity(0.8))
-                                .shadow(color: .black.opacity(0.5), radius: 8)
-                        }
-                    }
-                }
-                .padding(.leading, 80)
-                .padding(.top, 60)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .isVisible(isScrubbing || isPresentingOverlay)
-            }
-        }
-
         private var transportBarContent: some View {
-            HStack(spacing: 20) {
-                // Previous episode button
-                NavigationBar.ActionButtons.PlayPreviousItem()
-
-                Spacer()
-
-                // Progress display
+            VStack(spacing: 24) {
+                // Timeline
                 PlaybackProgress()
+                    .padding(.horizontal, 20)
 
-                Spacer()
+                // Controls and Timestamps
+                HStack {
+                    // Current position
+                    SplitTimestamp(mode: .current)
+                        .font(.headline)
+                        .monospacedDigit()
+                        .frame(width: 120, alignment: .leading)
 
-                // Next episode button
-                NavigationBar.ActionButtons.PlayNextItem()
+                    Spacer()
+
+                    // Primary Playback Buttons (Jump Back, Play/Pause, Jump Forward)
+                    PlaybackButtons()
+
+                    Spacer()
+
+                    // Total/Remaining time
+                    SplitTimestamp(mode: .total)
+                        .font(.headline)
+                        .monospacedDigit()
+                        .frame(width: 120, alignment: .trailing)
+                }
+                .padding(.horizontal, 40)
             }
-            .focusGuide(focusGuide, tag: "transportBar", top: "sideButtons")
+            .focusGuide(focusGuide, tag: "transportBar", top: "actionButtons")
         }
 
         @ViewBuilder
         private var transportBar: some View {
             if !isPresentingSupplement {
-                VStack(spacing: 8) {
-                    transportBarContent
-                        .padding(.horizontal, 60)
-                        .padding(.vertical, 30)
-                        .background {
-                            TransportBarBackground()
-                        }
-
-                    // Skip explainer label
-                    Text("← → Skip: 1×=15s  2×=2min  3×=5min")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.6))
-                        .padding(.horizontal, 60)
-                        .padding(.bottom, 20)
-                }
+                transportBarContent
+                    .padding(.vertical, 32)
+                    .padding(.horizontal, 24)
+                    .background {
+                        TransportBarBackground()
+                    }
             }
         }
 
@@ -170,29 +119,45 @@ extension VideoPlayer {
         }
 
         var body: some View {
-            GeometryReader { geometry in
+            GeometryReader { _ in
                 ZStack {
-                    // Title in top-left
-                    titleOverlay
+                    // Navigation Bar (Title/Series) in top-left
+                    VStack {
+                        NavigationBar()
+                            .padding(.leading, 80)
+                            .padding(.top, 60)
+                        Spacer()
+                    }
+                    .isVisible(isScrubbing || isPresentingOverlay)
 
                     // Skip indicator in center
                     skipIndicator
                         .animation(.easeOut(duration: 0.2), value: containerState.skipIndicatorText)
 
-                    // Side action buttons (right edge, vertically stacked)
-                    SideActionButtons()
-
-                    // Transport bar in bottom 10%
+                    // Skip Intro button (floating pill)
                     VStack {
                         Spacer()
-                            .frame(minHeight: geometry.size.height * 0.90)
-
-                        transportBar
-                            .padding(.horizontal, 40)
-                            .padding(.bottom, 60)
-                            .opacity(isScrubbing || isPresentingOverlay ? 1 : 0)
-                            .disabled(!(isScrubbing || isPresentingOverlay))
+                        HStack {
+                            Spacer()
+                            SkipIntroPill()
+                        }
+                        .padding(.bottom, 240) // Above utility row
                     }
+
+                    // Bottom Controls Section
+                    VStack(spacing: 32) {
+                        Spacer()
+
+                        // Utility Buttons Row (Subtitles, Audio, etc.)
+                        NavigationBar.ActionButtons()
+
+                        // Main Transport Bar (Progress + Playback)
+                        transportBar
+                            .padding(.horizontal, 60)
+                            .padding(.bottom, 60)
+                    }
+                    .opacity(isScrubbing || isPresentingOverlay ? 1 : 0)
+                    .disabled(!(isScrubbing || isPresentingOverlay))
                 }
             }
             .animation(.linear(duration: 0.1), value: isScrubbing)

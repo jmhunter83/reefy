@@ -48,23 +48,46 @@ struct MusicPlayerControls: View {
                     .offset(y: -200)
             }
 
-            VStack(spacing: 24) {
+            VStack(spacing: 32) {
                 // Progress bar
                 MusicProgressBar()
+                    .padding(.horizontal, 20)
 
                 // Transport buttons
-                transportButtons
-            }
-            .padding(.vertical, 30)
-            .padding(.horizontal, 40)
-            .background {
-                // Liquid Glass background
-                RoundedRectangle(cornerRadius: 30)
-                    .fill(.ultraThinMaterial)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 30)
-                            .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+                HStack(spacing: 80) {
+                    // Skip backward
+                    Button {
+                        handleSkip(direction: .backward)
+                    } label: {
+                        Image(systemName: "gobackward.15")
+                            .font(.system(size: 36, weight: .semibold))
                     }
+                    .buttonStyle(.plain)
+
+                    // Play/Pause
+                    Button {
+                        manager.togglePlayPause()
+                    } label: {
+                        Image(systemName: manager.playbackRequestStatus == .playing ? "pause.fill" : "play.fill")
+                            .font(.system(size: 64, weight: .bold))
+                    }
+                    .buttonStyle(.plain)
+
+                    // Skip forward
+                    Button {
+                        handleSkip(direction: .forward)
+                    } label: {
+                        Image(systemName: "goforward.15")
+                            .font(.system(size: 36, weight: .semibold))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .foregroundStyle(.white)
+            }
+            .padding(.vertical, 40)
+            .padding(.horizontal, 60)
+            .background {
+                TransportBarBackground()
             }
             .opacity(containerState.isPresentingControls ? 1 : 0)
         }
@@ -87,42 +110,6 @@ struct MusicPlayerControls: View {
         .onPlayPauseCommand {
             containerState.showControls()
             manager.togglePlayPause()
-        }
-    }
-
-    // MARK: - Transport Buttons
-
-    private var transportButtons: some View {
-        HStack(spacing: 60) {
-            // Skip backward
-            Button {
-                handleSkip(direction: .backward)
-            } label: {
-                Image(systemName: "gobackward.15")
-                    .font(.system(size: 36))
-                    .foregroundStyle(.white)
-            }
-            .buttonStyle(.plain)
-
-            // Play/Pause
-            Button {
-                manager.togglePlayPause()
-            } label: {
-                Image(systemName: manager.playbackRequestStatus == .playing ? "pause.fill" : "play.fill")
-                    .font(.system(size: 56))
-                    .foregroundStyle(.white)
-            }
-            .buttonStyle(.plain)
-
-            // Skip forward
-            Button {
-                handleSkip(direction: .forward)
-            } label: {
-                Image(systemName: "goforward.15")
-                    .font(.system(size: 36))
-                    .foregroundStyle(.white)
-            }
-            .buttonStyle(.plain)
         }
     }
 

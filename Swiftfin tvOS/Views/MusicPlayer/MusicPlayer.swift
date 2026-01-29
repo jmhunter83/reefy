@@ -43,14 +43,18 @@ struct MusicPlayer: View {
 
                 // Album art (centered, sharp)
                 AlbumArtView()
-                    .frame(width: 400, height: 400)
-                    .shadow(color: .black.opacity(0.5), radius: 30)
+                    .frame(width: 500, height: 500)
+                    .shadow(color: .black.opacity(0.6), radius: 40)
+                    .scaleEffect(containerState.isPresentingControls ? 0.9 : 1.0)
+                    .animation(.spring(duration: 0.4), value: containerState.isPresentingControls)
 
                 Spacer()
-                    .frame(height: 60)
+                    .frame(height: 40)
 
                 // Track info
                 TrackInfoView()
+                    .offset(y: containerState.isPresentingControls ? -20 : 0)
+                    .animation(.spring(duration: 0.4), value: containerState.isPresentingControls)
 
                 Spacer()
             }

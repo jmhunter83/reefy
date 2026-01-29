@@ -130,6 +130,9 @@ final class MediaPlayerManager: ViewModel {
     @Published
     var supplements: [any MediaPlayerSupplement] = []
 
+    @Published
+    var currentSegment: MediaSegmentDto? = nil
+
     // TODO: replace with graph dependency package
     private func setSupplements() {
         var newSupplements: [any MediaPlayerSupplement] = []
@@ -156,7 +159,24 @@ final class MediaPlayerManager: ViewModel {
 
     var seconds: Duration {
         get { secondsBox.value }
-        set { secondsBox.value = newValue }
+        set {
+            secondsBox.value = newValue
+            updateCurrentSegment(at: newValue)
+        }
+    }
+
+    private func updateCurrentSegment(at seconds: Duration) {
+        guard let playbackItem else {
+            currentSegment = nil
+            return
+        }
+
+        let time = seconds.seconds
+        let activeSegment = playbackItem.mediaSegments.first { $0.contains(time: time) }
+
+        if currentSegment?.startTicks != activeSegment?.startTicks {
+            currentSegment = activeSegment
+        }
     }
 
     /// Holds a weak reference to the current media player proxy.

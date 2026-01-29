@@ -62,23 +62,24 @@ struct MusicProgressBar: View {
             ZStack(alignment: .leading) {
                 // Background track
                 Capsule()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(height: 6)
+                    .fill(Color.white.opacity(0.15))
+                    .frame(height: 10)
 
                 // Progress fill
                 Capsule()
                     .fill(.white)
-                    .frame(width: progressWidth, height: 6)
+                    .frame(width: progressWidth, height: 10)
+                    .shadow(color: .white.opacity(0.5), radius: 6)
 
-                // Current position indicator
+                // Current position indicator indicator
                 Circle()
                     .fill(.white)
-                    .frame(width: 14, height: 14)
-                    .offset(x: progressWidth - 7)
-                    .shadow(color: .black.opacity(0.3), radius: 2)
+                    .frame(width: 20, height: 20)
+                    .offset(x: progressWidth - 10)
+                    .shadow(color: .black.opacity(0.3), radius: 4)
             }
         }
-        .frame(height: 14)
+        .frame(height: 20)
     }
 
     private func formatTime(_ seconds: Double) -> String {

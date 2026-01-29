@@ -18,14 +18,57 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
         @EnvironmentObject
         private var manager: MediaPlayerManager
 
+        private var currentSegment: MediaSegmentDto? {
+            manager.currentSegment
+        }
+
+        private var canSkip: Bool {
+            currentSegment != nil
+        }
+
         var body: some View {
-            // Intro skipper is not yet implemented
-            // This button will be enabled once media segments API integration is complete
             Button(L10n.skipIntro, systemImage: VideoPlayerActionButton.skipIntro.systemImage) {
-                // TODO: Implement intro skip functionality
+                guard let segment = currentSegment else { return }
+                manager.proxy?.setSeconds(.seconds(segment.end))
             }
-            .disabled(true) // Always disabled until feature is implemented
+            .disabled(!canSkip)
             .labelStyle(.iconOnly)
+        }
+    }
+}
+
+extension VideoPlayer.PlaybackControls {
+
+    struct SkipIntroPill: View {
+
+        @EnvironmentObject
+        private var manager: MediaPlayerManager
+
+        private var currentSegment: MediaSegmentDto? {
+            manager.currentSegment
+        }
+
+        var body: some View {
+            if let segment = currentSegment {
+                Button {
+                    manager.proxy?.setSeconds(.seconds(segment.end))
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "forward.end.fill")
+                        Text(L10n.skipIntro)
+                    }
+                    .font(.headline)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background {
+                        TransportBarBackground()
+                    }
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .padding(40)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
     }
 }

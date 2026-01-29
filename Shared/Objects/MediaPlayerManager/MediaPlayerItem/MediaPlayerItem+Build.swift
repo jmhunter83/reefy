@@ -156,7 +156,12 @@ extension MediaPlayerItem {
             return nil
         }()
 
-        return .init(
+        let mediaSegments: [MediaSegmentDto] = {
+            let request = Request<[MediaSegmentDto]>(path: "/Items/\(itemID)/MediaSegments", method: .get)
+            return await (try? userSession.client.send(request))?.value ?? []
+        }()
+
+        let mediaPlayerItem = MediaPlayerItem(
             baseItem: item,
             mediaSource: mediaSource,
             playSessionID: playSessionID,
@@ -165,6 +170,10 @@ extension MediaPlayerItem {
             previewImageProvider: previewImageProvider,
             thumbnailProvider: item.getNowPlayingImage
         )
+
+        mediaPlayerItem.mediaSegments = mediaSegments
+
+        return mediaPlayerItem
     }
 
     // TODO: build live tv stream from Paths.getLiveHlsStream?

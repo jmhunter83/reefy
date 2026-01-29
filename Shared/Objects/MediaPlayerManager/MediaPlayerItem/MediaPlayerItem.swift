@@ -74,6 +74,9 @@ class MediaPlayerItem: ViewModel, MediaPlayerObserver {
     let subtitleStreams: [MediaStream]
     let videoStreams: [MediaStream]
 
+    @Published
+    var mediaSegments: [MediaSegmentDto] = []
+
     let requestedBitrate: PlaybackBitrate
 
     // MARK: init

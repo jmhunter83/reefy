@@ -8,6 +8,7 @@
 
 import Combine
 import Foundation
+import JellyfinAPI
 import SwiftUI
 
 // MARK: - State Enums
@@ -164,6 +165,9 @@ class VideoPlayerContainerState: ObservableObject {
 
     @Published
     var centerOffset: CGFloat = 0.0
+
+    @Published
+    var currentSegment: MediaSegmentDto? = nil
 
     /// Tracks when a supplement was recently dismissed to prevent immediate overlay hiding
     var supplementRecentlyDismissed = false
