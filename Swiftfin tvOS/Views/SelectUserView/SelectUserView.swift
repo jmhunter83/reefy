@@ -87,11 +87,13 @@ struct SelectUserView: View {
                 .reversed()
                 .map { UserItem(user: $0.user, server: $0.server) }
         case let .server(id: id):
-            guard let server = viewModel.servers.keys.first(where: { server in server.id == id }) else {
+            guard let server = viewModel.servers.keys.first(where: { server in server.id == id }),
+                  let users = viewModel.servers[server]
+            else {
                 return []
             }
 
-            return viewModel.servers[server]!
+            return users
                 .sorted(using: \.username)
                 .map { UserItem(user: $0, server: server) }
         }
