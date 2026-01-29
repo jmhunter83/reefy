@@ -39,26 +39,37 @@ struct MainTabView: View {
     #endif
 
     var body: some View {
-        TabView(selection: $tabCoordinator.selectedTabID) {
-            ForEach(tabCoordinator.tabs, id: \.item.id) { tab in
-                NavigationInjectionView(
-                    coordinator: tab.coordinator
-                ) {
-                    tab.item.content
+        ZStack(alignment: .bottom) {
+            TabView(selection: $tabCoordinator.selectedTabID) {
+                ForEach(tabCoordinator.tabs, id: \.item.id) { tab in
+                    NavigationInjectionView(
+                        coordinator: tab.coordinator
+                    ) {
+                        tab.item.content
+                    }
+                    .environmentObject(tabCoordinator)
+                    .environment(\.tabItemSelected, tab.publisher)
+                    .tabItem {
+                        Label(
+                            tab.item.title,
+                            systemImage: tab.item.systemImage
+                        )
+                        .labelStyle(tab.item.labelStyle)
+                        .symbolRenderingMode(.monochrome)
+                        .eraseToAnyView()
+                    }
+                    .tag(tab.item.id)
                 }
-                .environmentObject(tabCoordinator)
-                .environment(\.tabItemSelected, tab.publisher)
-                .tabItem {
-                    Label(
-                        tab.item.title,
-                        systemImage: tab.item.systemImage
-                    )
-                    .labelStyle(tab.item.labelStyle)
-                    .symbolRenderingMode(.monochrome)
-                    .eraseToAnyView()
-                }
-                .tag(tab.item.id)
             }
+
+            #if os(tvOS)
+            // Background audio player (persistent, hidden)
+            BackgroundAudioPlayer()
+
+            // Now Playing mini-bar (Spotify-style)
+            NowPlayingMiniBar()
+                .padding(.bottom, 120) // Position above tab bar
+            #endif
         }
     }
 }

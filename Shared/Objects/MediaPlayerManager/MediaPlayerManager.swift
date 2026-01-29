@@ -147,6 +147,20 @@ final class MediaPlayerManager: ViewModel {
     @Published
     var currentSegment: MediaSegmentDto? = nil
 
+    // MARK: - Background Audio Support
+
+    /// Whether there's an active audio playback session (for background audio)
+    /// Returns true during loading, playback, or when paused - as long as it's an audio item
+    var isAudioPlaybackActive: Bool {
+        guard state != .stopped, state != .error, state != .initial else { return false }
+        return item.type == .audio
+    }
+
+    /// Whether the current item supports background playback (audio only)
+    var supportsBackgroundPlayback: Bool {
+        item.type == .audio
+    }
+
     // TODO: replace with graph dependency package
     private func setSupplements() {
         var newSupplements: [any MediaPlayerSupplement] = []

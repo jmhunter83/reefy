@@ -16,21 +16,11 @@ struct MusicPlayer: View {
     @InjectedObject(\.mediaPlayerManager)
     private var manager: MediaPlayerManager
 
-    @LazyState
-    private var proxy: VLCMediaPlayerProxy
-
     @Router
     private var router
 
-    @State
-    private var isBeingDismissedByTransition = false
-
     @StateObject
     private var containerState: MusicPlayerContainerState = .init()
-
-    init() {
-        self._proxy = .init(wrappedValue: VLCMediaPlayerProxy())
-    }
 
     var body: some View {
         ZStack {
@@ -68,29 +58,28 @@ struct MusicPlayer: View {
                     .padding(.bottom, 80)
             }
 
-            // Hidden VLC player (audio only - no video rendering)
-            VLCAudioPlayer(proxy: proxy)
-                .frame(width: 1, height: 1)
-                .opacity(0)
+            // Note: VLC audio player now lives in BackgroundAudioPlayer (MainTabView)
+            // This allows music to continue playing when navigating away
         }
         .environmentObject(manager)
         .environmentObject(containerState)
         .onAppear {
-            manager.proxy = proxy
-            manager.start()
+            // Start playback if not already playing
+            if manager.state == .loadingItem || manager.state == .initial {
+                manager.start()
+            }
         }
-        .onDisappear {
-            proxy.stop()
-            manager.stop()
-        }
+        // Note: No onDisappear stop - audio continues in background via BackgroundAudioPlayer
         .onReceive(manager.$state) { newState in
-            if newState == .stopped, !isBeingDismissedByTransition {
+            // Only auto-dismiss on error, not on stopped (user may have stopped intentionally)
+            if newState == .error {
                 router.dismiss()
             }
         }
         .onReceive(containerState.$shouldDismiss) { shouldDismiss in
             if shouldDismiss {
-                proxy.stop()
+                // User explicitly requested stop - stop playback and dismiss
+                manager.stop()
                 router.dismiss()
             }
         }
@@ -104,110 +93,6 @@ struct MusicPlayer: View {
             }
         } message: {
             Text("Unable to load this item.")
-        }
-    }
-}
-
-// MARK: - VLC Audio Player (Hidden)
-
-/// Minimal VLC player view that handles audio playback without video rendering
-private struct VLCAudioPlayer: View {
-
-    @EnvironmentObject
-    private var manager: MediaPlayerManager
-
-    let proxy: VLCMediaPlayerProxy
-
-    /// State debouncing to prevent race conditions from rapid state changes
-    @State
-    private var stateDebounceTask: Task<Void, Never>?
-
-    /// Last reported VLC state to filter duplicates
-    @State
-    private var lastReportedState: VLCVideoPlayer.State?
-
-    private func vlcConfiguration(for item: MediaPlayerItem) -> VLCVideoPlayer.Configuration {
-        var configuration = VLCVideoPlayer.Configuration(url: item.url)
-        configuration.autoPlay = true
-        configuration.startSeconds = item.baseItem.startSeconds ?? .zero
-
-        // Audio-specific options
-        var options: [String: Any] = [
-            "network-caching": 3000,
-            "file-caching": 3000,
-        ]
-
-        configuration.options = options
-        return configuration
-    }
-
-    var body: some View {
-        if let playbackItem = manager.playbackItem, manager.state != .stopped {
-            VLCVideoPlayer(configuration: vlcConfiguration(for: playbackItem))
-                .proxy(proxy.vlcUIProxy)
-                .onSecondsUpdated { newSeconds, _ in
-                    Task { @MainActor in
-                        manager.seconds = newSeconds
-                    }
-                }
-                .onStateUpdated { state, _ in
-                    // Cancel any pending debounce task
-                    stateDebounceTask?.cancel()
-
-                    // Skip duplicate states to prevent race conditions
-                    guard state != lastReportedState else { return }
-
-                    // Handle buffering states immediately (no debounce needed)
-                    if case .buffering = state {
-                        proxy.isBuffering.value = true
-                        lastReportedState = state
-                        return
-                    }
-                    if case .esAdded = state {
-                        proxy.isBuffering.value = true
-                        lastReportedState = state
-                        return
-                    }
-                    if case .opening = state {
-                        proxy.isBuffering.value = true
-                        lastReportedState = state
-                        return
-                    }
-
-                    // Debounce play/pause states to handle rapid transitions
-                    stateDebounceTask = Task { @MainActor in
-                        // Small delay to debounce rapid state changes
-                        try? await Task.sleep(for: .milliseconds(100))
-
-                        guard !Task.isCancelled else { return }
-
-                        // Update last reported state
-                        lastReportedState = state
-
-                        switch state {
-                        case .buffering, .esAdded, .opening:
-                            // Already handled above
-                            break
-                        case .ended:
-                            proxy.isBuffering.value = false
-                            await manager.ended()
-                        case .stopped:
-                            break
-                        case .error:
-                            proxy.isBuffering.value = false
-                            await manager.error(ErrorMessage("Unable to play audio"))
-                        case .playing:
-                            proxy.isBuffering.value = false
-                            await manager.setPlaybackRequestStatus(status: .playing)
-                        case .paused:
-                            await manager.setPlaybackRequestStatus(status: .paused)
-                        }
-                    }
-                }
-                .onReceive(manager.$playbackItem) { playbackItem in
-                    guard let playbackItem else { return }
-                    proxy.vlcUIProxy.playNewMedia(vlcConfiguration(for: playbackItem))
-                }
         }
     }
 }
