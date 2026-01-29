@@ -9,6 +9,7 @@
 import Defaults
 import Factory
 import Foundation
+import Get
 import JellyfinAPI
 import Logging
 
@@ -156,10 +157,8 @@ extension MediaPlayerItem {
             return nil
         }()
 
-        let mediaSegments: [MediaSegmentDto] = {
-            let request = Request<[MediaSegmentDto]>(path: "/Items/\(itemID)/MediaSegments", method: .get)
-            return await (try? userSession.client.send(request))?.value ?? []
-        }()
+        let mediaSegmentsRequest = Request<[MediaSegmentDto]>(path: "/Items/\(itemID)/MediaSegments", method: .get)
+        let mediaSegments = await (try? userSession.client.send(mediaSegmentsRequest))?.value ?? []
 
         let mediaPlayerItem = MediaPlayerItem(
             baseItem: item,
