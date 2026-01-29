@@ -77,14 +77,15 @@ final class SeriesItemViewModel: ItemViewModel {
     // MARK: - Get Next Up Item
 
     private func getNextUp() async throws -> BaseItemDto? {
+        guard let session = userSession else { return nil }
 
         var parameters = Paths.GetNextUpParameters()
         parameters.fields = .MinimumFields
         parameters.seriesID = item.id
-        parameters.userID = userSession!.user.id
+        parameters.userID = session.user.id
 
         let request = Paths.getNextUp(parameters: parameters)
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
         guard let item = response.value.items?.first, !item.isMissing else {
             return nil
@@ -96,15 +97,16 @@ final class SeriesItemViewModel: ItemViewModel {
     // MARK: - Get Resumable Item
 
     private func getResumeItem() async throws -> BaseItemDto? {
+        guard let session = userSession else { return nil }
 
         var parameters = Paths.GetResumeItemsParameters()
-        parameters.userID = userSession!.user.id
+        parameters.userID = session.user.id
         parameters.fields = .MinimumFields
         parameters.limit = 1
         parameters.parentID = item.id
 
         let request = Paths.getResumeItems(parameters: parameters)
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
         return response.value.items?.first
     }
@@ -112,6 +114,7 @@ final class SeriesItemViewModel: ItemViewModel {
     // MARK: - Get First Available Item
 
     private func getFirstAvailableItem() async throws -> BaseItemDto? {
+        guard let session = userSession else { return nil }
 
         var parameters = Paths.GetItemsByUserIDParameters()
         parameters.fields = .MinimumFields
@@ -122,10 +125,10 @@ final class SeriesItemViewModel: ItemViewModel {
         parameters.sortOrder = [.ascending]
 
         let request = Paths.getItemsByUserID(
-            userID: userSession!.user.id,
+            userID: session.user.id,
             parameters: parameters
         )
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
         return response.value.items?.first
     }
@@ -133,18 +136,18 @@ final class SeriesItemViewModel: ItemViewModel {
     // MARK: - Get First Item Seasons
 
     private func getSeasons() async throws -> [BaseItemDto] {
-
+        guard let session = userSession else { return [] }
         guard let seriesID = item.id else { return [] }
 
         var parameters = Paths.GetSeasonsParameters()
         parameters.isMissing = Defaults[.Customization.shouldShowMissingSeasons] ? nil : false
-        parameters.userID = userSession!.user.id
+        parameters.userID = session.user.id
 
         let request = Paths.getSeasons(
             seriesID: seriesID,
             parameters: parameters
         )
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
         return response.value.items ?? []
     }
