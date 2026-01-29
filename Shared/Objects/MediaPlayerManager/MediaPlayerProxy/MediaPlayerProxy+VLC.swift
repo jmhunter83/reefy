@@ -291,6 +291,12 @@ extension VLCMediaPlayerProxy {
                         }
                     }
                     .onReceive(manager.$playbackItem) { playbackItem in
+                        // Reset state tracking when item changes to prevent stale
+                        // ended/stopped events from the old item from firing
+                        lastReportedState = nil
+                        stateDebounceTask?.cancel()
+                        consecutiveBufferingCount = 0
+
                         guard let playbackItem else { return }
                         proxy.playNewMedia(vlcConfiguration(for: playbackItem))
                     }

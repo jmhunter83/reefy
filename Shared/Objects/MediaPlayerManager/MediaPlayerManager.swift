@@ -262,8 +262,21 @@ final class MediaPlayerManager: ViewModel {
 
     @Function(\Action.Cases.ended)
     private func _ended() async throws {
-        // TODO: change to observe given seconds against runtime
-        //       instead of sent action?
+        // Capture the current item ID at the time ended is called
+        let endedItemID = item.id
+
+        // Verify we're still playing the same item (guards against race conditions
+        // where item changed between VLC sending ended and us processing it)
+        guard playbackItem?.baseItem.id == endedItemID else {
+            logger.trace(
+                "Ignoring ended event for different item",
+                metadata: [
+                    "expectedID": .stringConvertible(endedItemID ?? "nil"),
+                    "currentID": .stringConvertible(playbackItem?.baseItem.id ?? "nil"),
+                ]
+            )
+            return
+        }
 
         // Ended should represent natural ending of playback, which
         // is verifiable by given seconds being near item runtime.
