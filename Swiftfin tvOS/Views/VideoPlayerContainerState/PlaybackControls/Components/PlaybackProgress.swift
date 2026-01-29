@@ -34,6 +34,10 @@ extension VideoPlayer.PlaybackControls {
 
         private var staticProgressBar: some View {
             GeometryReader { geometry in
+                let width = max(0, geometry.size.width)
+                let clampedProgress = progress.isFinite ? max(0, min(1, progress)) : 0
+                let progressWidth = width * clampedProgress
+
                 ZStack(alignment: .leading) {
                     // Background track
                     Capsule()
@@ -43,13 +47,13 @@ extension VideoPlayer.PlaybackControls {
                     // Progress fill
                     Capsule()
                         .fill(.white)
-                        .frame(width: geometry.size.width * progress, height: 6)
+                        .frame(width: progressWidth, height: 6)
 
                     // Current position indicator (circle)
                     Circle()
                         .fill(.white)
                         .frame(width: 12, height: 12)
-                        .offset(x: geometry.size.width * progress - 6)
+                        .offset(x: progressWidth - 6)
                         .shadow(color: .black.opacity(0.3), radius: 2)
                 }
             }
