@@ -34,7 +34,7 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Reefy needs local network access to discover and connect to your Jellyfin media server.</string>
 	<key>UIDesignRequiresCompatibility</key>
-	<true/>
+	<false/>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
