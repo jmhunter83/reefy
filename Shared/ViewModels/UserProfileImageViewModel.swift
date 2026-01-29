@@ -127,7 +127,7 @@ final class UserProfileImageViewModel: ViewModel, Eventful, Stateful {
     // MARK: - Upload Image
 
     private func upload(_ image: UIImage) async throws {
-
+        guard let session = userSession else { return }
         guard let userID = user.id else { return }
 
         let contentType: String
@@ -156,7 +156,7 @@ final class UserProfileImageViewModel: ViewModel, Eventful, Stateful {
             )
         }
 
-        _ = try await userSession!.client.send(request)
+        _ = try await session.client.send(request)
 
         sweepProfileImageCache()
 
@@ -168,11 +168,11 @@ final class UserProfileImageViewModel: ViewModel, Eventful, Stateful {
     // MARK: - Delete Image
 
     private func delete() async throws {
-
+        guard let session = userSession else { return }
         guard let userID = user.id else { return }
 
         let request = Paths.deleteUserImage(userID: userID)
-        _ = try await userSession!.client.send(request)
+        _ = try await session.client.send(request)
 
         sweepProfileImageCache()
 

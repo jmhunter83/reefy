@@ -30,6 +30,11 @@ struct SettingsView: View {
     @StateObject
     private var viewModel = SettingsViewModel()
 
+    /// Safe access to user session - returns nil if session is invalid
+    private var session: UserSession? {
+        viewModel.userSession
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -54,46 +59,48 @@ struct SettingsView: View {
 
     @ViewBuilder
     private var serverSection: some View {
-        Section {
-            UserProfileRow(user: viewModel.userSession!.user.data) {
-                router.route(to: .userProfile(viewModel: viewModel))
-            }
-
-            ChevronButton(
-                L10n.server,
-                action: {
-                    router.route(to: .editServer(server: viewModel.userSession!.server))
+        if let session {
+            Section {
+                UserProfileRow(user: session.user.data) {
+                    router.route(to: .userProfile(viewModel: viewModel))
                 }
-            ) {
-                EmptyView()
-            } subtitle: {
-                Label {
-                    Text(viewModel.userSession!.server.name)
-                } icon: {
-                    if !viewModel.userSession!.server.isVersionCompatible {
-                        Image(systemName: "exclamationmark.circle.fill")
+
+                ChevronButton(
+                    L10n.server,
+                    action: {
+                        router.route(to: .editServer(server: session.server))
+                    }
+                ) {
+                    EmptyView()
+                } subtitle: {
+                    Label {
+                        Text(session.server.name)
+                    } icon: {
+                        if !session.server.isVersionCompatible {
+                            Image(systemName: "exclamationmark.circle.fill")
+                        }
+                    }
+                    .labelStyle(.sectionFooterWithImage(imageStyle: .orange))
+                }
+
+                #if os(iOS)
+                if session.user.permissions.isAdministrator {
+                    ChevronButton(L10n.dashboard) {
+                        router.route(to: .adminDashboard)
                     }
                 }
-                .labelStyle(.sectionFooterWithImage(imageStyle: .orange))
+                #endif
             }
 
-            #if os(iOS)
-            if viewModel.userSession!.user.permissions.isAdministrator {
-                ChevronButton(L10n.dashboard) {
-                    router.route(to: .adminDashboard)
+            Section {
+                Button(L10n.switchUser) {
+                    UIDevice.impact(.medium)
+                    viewModel.signOut()
+                    router.dismiss()
                 }
+                .buttonStyle(.primary)
+                .foregroundStyle(accentColor.overlayColor, accentColor)
             }
-            #endif
-        }
-
-        Section {
-            Button(L10n.switchUser) {
-                UIDevice.impact(.medium)
-                viewModel.signOut()
-                router.dismiss()
-            }
-            .buttonStyle(.primary)
-            .foregroundStyle(accentColor.overlayColor, accentColor)
         }
     }
 
