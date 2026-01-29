@@ -49,13 +49,19 @@ struct ItemView: View {
     private var scrollContentView: some View {
         switch viewModel.item.type {
         case .boxSet, .musicAlbum, .person, .musicArtist:
-            CollectionItemContentView(viewModel: viewModel as! CollectionItemViewModel)
+            if let vm = viewModel as? CollectionItemViewModel {
+                CollectionItemContentView(viewModel: vm)
+            }
         case .audio, .episode, .musicVideo, .video:
             SimpleItemContentView(viewModel: viewModel)
         case .movie:
-            MovieItemContentView(viewModel: viewModel as! MovieItemViewModel)
+            if let vm = viewModel as? MovieItemViewModel {
+                MovieItemContentView(viewModel: vm)
+            }
         case .series:
-            SeriesItemContentView(viewModel: viewModel as! SeriesItemViewModel)
+            if let vm = viewModel as? SeriesItemViewModel {
+                SeriesItemContentView(viewModel: vm)
+            }
         default:
             Text(L10n.notImplementedYetWithType(viewModel.item.type ?? "--"))
         }
