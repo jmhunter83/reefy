@@ -25,13 +25,13 @@ struct ItemView: View {
 
     private static func typeViewModel(for item: BaseItemDto) -> ItemViewModel {
         switch item.type {
-        case .boxSet, .person, .musicArtist:
+        case .boxSet, .musicAlbum, .person, .musicArtist:
             return CollectionItemViewModel(item: item)
         case .episode:
             return EpisodeItemViewModel(item: item)
         case .movie:
             return MovieItemViewModel(item: item)
-        case .musicVideo, .video:
+        case .audio, .musicVideo, .video:
             return ItemViewModel(item: item)
         case .series:
             return SeriesItemViewModel(item: item)
@@ -48,9 +48,9 @@ struct ItemView: View {
     @ViewBuilder
     private var scrollContentView: some View {
         switch viewModel.item.type {
-        case .boxSet, .person, .musicArtist:
+        case .boxSet, .musicAlbum, .person, .musicArtist:
             CollectionItemContentView(viewModel: viewModel as! CollectionItemViewModel)
-        case .episode, .musicVideo, .video:
+        case .audio, .episode, .musicVideo, .video:
             SimpleItemContentView(viewModel: viewModel)
         case .movie:
             MovieItemContentView(viewModel: viewModel as! MovieItemViewModel)

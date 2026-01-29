@@ -22,6 +22,7 @@ final class CollectionItemViewModel: ItemViewModel {
         self.itemCollection = ItemTypeCollection(
             parent: item,
             itemTypes: BaseItemKind.supportedCases
+                .appending(.audio)
                 .appending(.episode)
                 .appending(.person)
         )
