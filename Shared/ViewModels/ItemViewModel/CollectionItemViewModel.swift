@@ -19,12 +19,26 @@ final class CollectionItemViewModel: ItemViewModel {
     private let itemCollection: ItemTypeCollection
 
     override init(item: BaseItemDto) {
-        self.itemCollection = ItemTypeCollection(
-            parent: item,
-            itemTypes: BaseItemKind.supportedCases
-                .appending(.audio)
+        // Determine which item types to fetch based on parent type
+        let itemTypes: [BaseItemKind]
+
+        switch item.type {
+        case .musicAlbum:
+            // Albums only show audio tracks
+            itemTypes = [.audio]
+        case .musicArtist:
+            // Artists show albums and audio tracks
+            itemTypes = [.musicAlbum, .audio]
+        default:
+            // BoxSets, Persons, etc. - show supported media types + episodes + people
+            itemTypes = BaseItemKind.supportedCases
                 .appending(.episode)
                 .appending(.person)
+        }
+
+        self.itemCollection = ItemTypeCollection(
+            parent: item,
+            itemTypes: itemTypes
         )
         self._sections = ObservedPublisher(
             wrappedValue: [:],

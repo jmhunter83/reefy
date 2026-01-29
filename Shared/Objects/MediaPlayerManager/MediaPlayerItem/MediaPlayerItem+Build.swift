@@ -167,7 +167,6 @@ extension MediaPlayerItem {
         )
     }
 
-    // TODO: audio type stream
     // TODO: build live tv stream from Paths.getLiveHlsStream?
     private static func streamURL(
         item: BaseItemDto,
@@ -189,6 +188,29 @@ extension MediaPlayerItem {
             return fullTranscodeURL
         }
 
+        // Audio streaming
+        if item.mediaType == .audio {
+            logger.trace("Making audio stream URL for item \(itemID)")
+
+            let audioStreamParameters = Paths.GetAudioStreamParameters(
+                isStatic: true,
+                tag: item.etag,
+                playSessionID: playSessionID,
+                mediaSourceID: itemID
+            )
+
+            let audioStreamRequest = Paths.getAudioStream(
+                itemID: itemID,
+                parameters: audioStreamParameters
+            )
+
+            guard let audioStreamURL = userSession.client.fullURL(with: audioStreamRequest)
+            else { throw ErrorMessage("Unable to make audio stream URL") }
+
+            return audioStreamURL
+        }
+
+        // Video streaming
         if item.mediaType == .video, !item.isLiveStream {
 
             logger.trace("Making video stream URL for item \(itemID)")
