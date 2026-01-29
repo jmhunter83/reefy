@@ -21,7 +21,42 @@ final class ItemLibraryViewModel: PagingLibraryViewModel<BaseItemDto> {
 
         let parameters = itemParameters(for: page)
         let request = Paths.getItemsByUserID(userID: userSession!.user.id, parameters: parameters)
-        let response = try await userSession!.client.send(request)
+
+        // Debug: Log request start with key params
+        let startTime = CFAbsoluteTimeGetCurrent()
+        let itemTypes = parameters.includeItemTypes?.map(\.rawValue).joined(separator: ", ") ?? "all"
+        let requestURL = userSession?.client.fullURL(with: request)?.absoluteString ?? "unknown"
+        logger.debug("Library request start", metadata: [
+            "page": "\(page)",
+            "itemTypes": "\(itemTypes)",
+            "url": "\(requestURL)",
+        ])
+
+        let response: Response<BaseItemDtoQueryResult>
+        do {
+            response = try await userSession!.client.send(request)
+        } catch {
+            // Debug: Log failure with full error details
+            let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+            let networkError = NetworkError.from(error)
+            logger.error("Library request FAILED", metadata: [
+                "elapsed": "\(String(format: "%.2f", elapsed))s",
+                "page": "\(page)",
+                "itemTypes": "\(itemTypes)",
+                "networkError": "\(networkError)",
+                "isTimeout": "\(networkError == .timeout)",
+                "underlyingError": "\(error)",
+            ])
+            throw error
+        }
+
+        // Debug: Log success with timing
+        let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+        logger.debug("Library request success", metadata: [
+            "elapsed": "\(String(format: "%.2f", elapsed))s",
+            "page": "\(page)",
+            "itemCount": "\(response.value.items?.count ?? 0)",
+        ])
 
         // 1 - only care to keep collections that hold valid items
         // 2 - if parent is type `folder`, then we are in a folder-view

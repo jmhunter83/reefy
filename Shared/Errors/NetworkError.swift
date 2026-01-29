@@ -53,7 +53,25 @@ enum NetworkError: LocalizedError, Hashable {
     /// An unknown error occurred
     case unknown(message: String)
 
-    // MARK: - Initialization from URLError
+    // MARK: - Initialization from Errors
+
+    /// Create a NetworkError from any Error, attempting to classify it
+    static func from(_ error: Error) -> NetworkError {
+        // Handle URLError directly
+        if let urlError = error as? URLError {
+            return from(urlErrorCode: urlError.code.rawValue)
+        }
+
+        // Check for nested URLError in underlying error
+        if let nsError = error as NSError?,
+           nsError.domain == NSURLErrorDomain
+        {
+            return from(urlErrorCode: nsError.code)
+        }
+
+        // Default to unknown with the error description
+        return .unknown(message: error.localizedDescription)
+    }
 
     /// Create a NetworkError from a URLError code
     static func from(urlErrorCode: Int) -> NetworkError {

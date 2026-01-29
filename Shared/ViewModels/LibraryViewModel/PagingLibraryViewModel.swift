@@ -269,6 +269,15 @@ class PagingLibraryViewModel<Element: Poster>: ViewModel, Eventful, Stateful {
                 } catch {
                     guard !Task.isCancelled else { return }
 
+                    // Debug: Classify and log refresh errors
+                    let networkError = NetworkError.from(error)
+                    self.logger.error("Library refresh failed", metadata: [
+                        "errorType": "\(type(of: error))",
+                        "networkError": "\(networkError)",
+                        "isTimeout": "\(networkError == .timeout)",
+                        "isRecoverable": "\(networkError.isRecoverable)",
+                    ])
+
                     await MainActor.run {
                         self.send(.error(.init(error.localizedDescription)))
                     }
@@ -295,6 +304,15 @@ class PagingLibraryViewModel<Element: Poster>: ViewModel, Eventful, Stateful {
                     }
                 } catch {
                     guard !Task.isCancelled else { return }
+
+                    // Debug: Classify and log paging errors
+                    let networkError = NetworkError.from(error)
+                    self?.logger.error("Library getNextPage failed", metadata: [
+                        "errorType": "\(type(of: error))",
+                        "networkError": "\(networkError)",
+                        "isTimeout": "\(networkError == .timeout)",
+                        "isRecoverable": "\(networkError.isRecoverable)",
+                    ])
 
                     await MainActor.run {
                         self?.backgroundStates.remove(.gettingNextPage)

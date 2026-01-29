@@ -174,9 +174,38 @@ final class SearchViewModel: ViewModel {
         }
 
         let request = Paths.getItemsByUserID(userID: userSession!.user.id, parameters: parameters)
-        let response = try await userSession!.client.send(request)
 
-        return response.value.items ?? []
+        // Debug: Log search request start
+        let startTime = CFAbsoluteTimeGetCurrent()
+        logger.debug("Search request start", metadata: [
+            "itemType": "\(itemType.rawValue)",
+            "query": "\(query)",
+        ])
+
+        do {
+            let response = try await userSession!.client.send(request)
+
+            // Debug: Log success with timing
+            let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+            logger.debug("Search request success", metadata: [
+                "itemType": "\(itemType.rawValue)",
+                "elapsed": "\(String(format: "%.2f", elapsed))s",
+                "resultCount": "\(response.value.items?.count ?? 0)",
+            ])
+
+            return response.value.items ?? []
+        } catch {
+            // Debug: Log failure with error details
+            let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+            let networkError = NetworkError.from(error)
+            logger.error("Search request FAILED", metadata: [
+                "itemType": "\(itemType.rawValue)",
+                "elapsed": "\(String(format: "%.2f", elapsed))s",
+                "networkError": "\(networkError)",
+                "isTimeout": "\(networkError == .timeout)",
+            ])
+            throw error
+        }
     }
 
     private func _getPeople(query: String) async throws -> [BaseItemDto] {
