@@ -242,6 +242,9 @@ final class SubtitleEditorViewModel: ViewModel, Stateful, Eventful {
     // MARK: - Delete Subtitle
 
     private func deleteSubtitles(mediaStreams: Set<MediaStream>) async throws {
+        guard let session = userSession else {
+            throw ErrorMessage(L10n.unknownError)
+        }
         guard let itemID = item.id else {
             throw ErrorMessage(L10n.unknownError)
         }
@@ -256,7 +259,7 @@ final class SubtitleEditorViewModel: ViewModel, Stateful, Eventful {
         for index in indices {
             let request = Paths.deleteSubtitle(itemID: itemID, index: index)
             do {
-                _ = try await userSession!.client.send(request)
+                _ = try await session.client.send(request)
                 deletedIndices.insert(index)
             } catch {
                 throw ErrorMessage(L10n.failedDeletionAtIndexError(
@@ -270,6 +273,9 @@ final class SubtitleEditorViewModel: ViewModel, Stateful, Eventful {
     // MARK: - Search for Subtitles
 
     private func searchSubtitles(language: String, isPerfectMatch: Bool? = nil) async throws -> [RemoteSubtitleInfo] {
+        guard let session = userSession else {
+            throw ErrorMessage(L10n.unknownError)
+        }
         guard let itemID = item.id else {
             throw ErrorMessage(L10n.unknownError)
         }
@@ -279,7 +285,7 @@ final class SubtitleEditorViewModel: ViewModel, Stateful, Eventful {
             language: language,
             isPerfectMatch: isPerfectMatch
         )
-        let results = try await userSession!.client.send(request)
+        let results = try await session.client.send(request)
 
         return results.value
     }
@@ -287,6 +293,9 @@ final class SubtitleEditorViewModel: ViewModel, Stateful, Eventful {
     // MARK: - Set Remote Subtitles
 
     private func setSubtitles(subtitles: Set<String>) async throws {
+        guard let session = userSession else {
+            throw ErrorMessage(L10n.unknownError)
+        }
         guard let itemID = item.id else {
             throw ErrorMessage(L10n.unknownError)
         }
@@ -295,7 +304,7 @@ final class SubtitleEditorViewModel: ViewModel, Stateful, Eventful {
             for subtitleID in subtitles {
                 group.addTask {
                     let request = Paths.downloadRemoteSubtitles(itemID: itemID, subtitleID: subtitleID)
-                    _ = try await self.userSession!.client.send(request)
+                    _ = try await session.client.send(request)
                 }
             }
 
@@ -306,17 +315,21 @@ final class SubtitleEditorViewModel: ViewModel, Stateful, Eventful {
     // MARK: - Subtitle Upload Logic
 
     private func uploadSubtitle(subtitle: UploadSubtitleDto) async throws {
+        guard let session = userSession else {
+            throw ErrorMessage(L10n.unknownError)
+        }
         guard let itemID = item.id else {
             throw ErrorMessage(L10n.unknownError)
         }
 
         let request = Paths.uploadSubtitle(itemID: itemID, subtitle)
-        _ = try await userSession!.client.send(request)
+        _ = try await session.client.send(request)
     }
 
     // MARK: - Refresh Item
 
     private func refreshItem() async throws {
+        guard let session = userSession else { return }
         guard let itemID = item.id else { return }
 
         await MainActor.run {
@@ -325,10 +338,10 @@ final class SubtitleEditorViewModel: ViewModel, Stateful, Eventful {
 
         let request = Paths.getItem(
             itemID: itemID,
-            userID: userSession!.user.id
+            userID: session.user.id
         )
 
-        let response = try await userSession!.client.send(request)
+        let response = try await session.client.send(request)
 
         await MainActor.run {
             self.item = response.value

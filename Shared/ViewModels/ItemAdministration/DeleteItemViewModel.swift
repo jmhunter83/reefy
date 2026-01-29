@@ -91,12 +91,15 @@ final class DeleteItemViewModel: ViewModel, Stateful, Eventful {
     // MARK: - Item Deletion Logic
 
     private func deleteItem() async throws {
+        guard let session = userSession else {
+            throw ErrorMessage(L10n.unknownError)
+        }
         guard let item, let itemID = item.id else {
             throw ErrorMessage(L10n.unknownError)
         }
 
         let request = Paths.deleteItem(itemID: itemID)
-        _ = try await userSession!.client.send(request)
+        _ = try await session.client.send(request)
 
         await MainActor.run {
             Notifications[.didDeleteItem].post(itemID)

@@ -72,11 +72,13 @@ final class RefreshMetadataViewModel: ViewModel {
         parameters.isReplaceAllImages = replaceImages
         parameters.isRegenerateTrickplay = regenerateTrickplay
 
+        guard let session = userSession else { return }
+
         let request = Paths.refreshItem(
             itemID: itemId,
             parameters: parameters
         )
-        _ = try await userSession!.client.send(request)
+        _ = try await session.client.send(request)
 
         events.send(.refreshing)
         // TODO: Remove this call when we have a WebSocket
@@ -87,11 +89,13 @@ final class RefreshMetadataViewModel: ViewModel {
 
     // TODO: Remove this func when we have a WebSocket
     private func refreshItem() async throws {
+        guard let session = userSession else { return }
+
         try await pollRefreshProgress()
 
         // TODO: Call only this func via a Notification when we have a WebSocket
         // - We might be able to just get the full item/changes from the WebSocket
-        let newItem = try await item.getFullItem(userSession: userSession!)
+        let newItem = try await item.getFullItem(userSession: session)
 
         self.item = newItem
         self.progress = 0.0
