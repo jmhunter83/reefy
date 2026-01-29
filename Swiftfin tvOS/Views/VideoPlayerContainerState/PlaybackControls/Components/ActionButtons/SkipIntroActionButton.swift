@@ -3,7 +3,7 @@
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, you can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Copyright (c) 2026 Jellyfin & Jellyfin Contributors
+// Copyright (c) 2026 Jellyfin, Swiftfin & Reefy Contributors
 //
 
 import JellyfinAPI
@@ -34,42 +34,6 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
             }
             .disabled(!canSkip)
             .labelStyle(.iconOnly)
-        }
-    }
-}
-
-extension VideoPlayer.PlaybackControls {
-
-    struct SkipIntroPill: View {
-
-        @EnvironmentObject
-        private var manager: MediaPlayerManager
-
-        private var currentSegment: MediaSegmentDto? {
-            manager.currentSegment
-        }
-
-        var body: some View {
-            if let segment = currentSegment {
-                Button {
-                    manager.proxy?.setSeconds(.seconds(segment.end))
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "forward.end.fill")
-                        Text(L10n.skipIntro)
-                    }
-                    .font(.headline)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background {
-                        TransportBarBackground()
-                    }
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-                .padding(40)
-                .transition(.move(edge: .trailing).combined(with: .opacity))
-            }
         }
     }
 }
