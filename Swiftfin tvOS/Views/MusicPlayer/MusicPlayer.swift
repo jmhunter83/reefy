@@ -6,7 +6,6 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Combine
 import Factory
 import SwiftUI
 import VLCUI
@@ -31,20 +30,18 @@ struct MusicPlayer: View {
             VStack(spacing: 0) {
                 Spacer()
 
-                // Album art (centered, sharp)
+                // Album art (centered, sharp, scaled to accommodate controls)
                 AlbumArtView()
                     .frame(width: 500, height: 500)
                     .shadow(color: .black.opacity(0.6), radius: 40)
-                    .scaleEffect(containerState.isPresentingControls ? 0.9 : 1.0)
-                    .animation(.spring(duration: 0.4), value: containerState.isPresentingControls)
+                    .scaleEffect(0.9)
 
                 Spacer()
                     .frame(height: 40)
 
-                // Track info
+                // Track info (offset to accommodate controls)
                 TrackInfoView()
-                    .offset(y: containerState.isPresentingControls ? -20 : 0)
-                    .animation(.spring(duration: 0.4), value: containerState.isPresentingControls)
+                    .offset(y: -20)
 
                 Spacer()
             }
@@ -103,30 +100,5 @@ struct MusicPlayer: View {
 final class MusicPlayerContainerState: ObservableObject {
 
     @Published
-    var isPresentingControls: Bool = true
-
-    @Published
     var shouldDismiss: Bool = false
-
-    /// Timer for auto-hiding controls
-    let timer: PokeIntervalTimer = .init(defaultInterval: 5)
-
-    private var timerCancellable: AnyCancellable?
-
-    init() {
-        timerCancellable = timer.sink { [weak self] in
-            guard let self else { return }
-            withAnimation(.easeInOut(duration: 0.3)) {
-                self.isPresentingControls = false
-            }
-        }
-        timer.poke()
-    }
-
-    func showControls() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            isPresentingControls = true
-        }
-        timer.poke()
-    }
 }

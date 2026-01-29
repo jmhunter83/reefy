@@ -133,7 +133,6 @@ struct MusicPlayerControls: View {
             .background {
                 TransportBarBackground()
             }
-            .opacity(containerState.isPresentingControls ? 1 : 0)
         }
         .animation(.easeOut(duration: 0.2), value: skipIndicatorText)
         .focusable()
@@ -141,7 +140,6 @@ struct MusicPlayerControls: View {
             handleMenuPress()
         }
         .onMoveCommand { direction in
-            containerState.showControls()
             switch direction {
             case .left:
                 handleSkip(direction: .backward)
@@ -152,7 +150,6 @@ struct MusicPlayerControls: View {
             }
         }
         .onPlayPauseCommand {
-            containerState.showControls()
             manager.togglePlayPause()
         }
     }
@@ -167,22 +164,13 @@ struct MusicPlayerControls: View {
     // MARK: - Menu Press Handler
 
     private func handleMenuPress() {
-        if containerState.isPresentingControls {
-            // First press hides controls
-            withAnimation(.easeInOut(duration: 0.3)) {
-                containerState.isPresentingControls = false
-            }
-        } else {
-            // Second press exits
-            containerState.shouldDismiss = true
-        }
+        // Controls always visible, so Menu always exits
+        containerState.shouldDismiss = true
     }
 
     // MARK: - Skip Logic
 
     private func handleSkip(direction: SkipDirection) {
-        containerState.showControls()
-
         switch direction {
         case .forward:
             forwardResetTask?.cancel()
