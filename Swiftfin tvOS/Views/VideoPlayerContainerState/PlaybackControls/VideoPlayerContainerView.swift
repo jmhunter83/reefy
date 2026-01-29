@@ -75,26 +75,63 @@ extension VideoPlayer {
         }()
 
         private lazy var playbackControlsViewController: UIHostingController<AnyView> = {
-            let controller = UIHostingController(
-                rootView: playbackControls
+            let content = ZStack {
+                GestureView()
+                    .environment(\.panGestureDirection, .vertical)
+
+                playbackControls
                     .environment(\.onPressEventPublisher, onPressEvent)
                     .environmentObject(containerState)
                     .environmentObject(containerState.scrubbedSeconds)
                     .environmentObject(focusGuide)
                     .environmentObject(manager)
-                    .eraseToAnyView()
+            }
+            .environment(
+                \.panAction,
+                .init(
+                    action: { [weak self] translation, velocity, location, _, state in
+                        self?.handleSupplementPanAction(
+                            translation: translation,
+                            velocity: velocity.y,
+                            location: location,
+                            state: state
+                        )
+                    }
+                )
             )
+            .eraseToAnyView()
+
+            let controller = UIHostingController(rootView: content)
             controller.disableSafeArea()
             controller.view.translatesAutoresizingMaskIntoConstraints = false
             return controller
         }()
 
         private lazy var supplementContainerViewController: UIHostingController<AnyView> = {
-            let content = SupplementContainerView()
-                .environmentObject(containerState)
-                .environmentObject(focusGuide)
-                .environmentObject(manager)
-                .eraseToAnyView()
+            let content = ZStack {
+                GestureView()
+                    .environment(\.panGestureDirection, .vertical)
+
+                SupplementContainerView()
+                    .environmentObject(containerState)
+                    .environmentObject(focusGuide)
+                    .environmentObject(manager)
+            }
+            .environment(
+                \.panAction,
+                .init(
+                    action: { [weak self] translation, velocity, location, _, state in
+                        self?.handleSupplementPanAction(
+                            translation: translation,
+                            velocity: velocity.y,
+                            location: location,
+                            state: state
+                        )
+                    }
+                )
+            )
+            .eraseToAnyView()
+
             let controller = UIHostingController(rootView: content)
             controller.disableSafeArea()
             controller.view.translatesAutoresizingMaskIntoConstraints = false
@@ -119,6 +156,22 @@ extension VideoPlayer {
 
         private var supplementHeightAnchor: NSLayoutConstraint!
         private var supplementBottomAnchor: NSLayoutConstraint!
+
+        // MARK: - Pan Gesture State
+
+        private var lastVerticalPanLocation: CGPoint?
+        private var verticalPanGestureStartConstant: CGFloat?
+        private var isPanning: Bool = false
+        private var didStartPanningWithSupplement: Bool = false
+
+        // MARK: - Constants
+
+        private var supplementContainerOffset: CGFloat {
+            (view.bounds.height / 3) + EdgeInsets.edgePadding * 2
+        }
+
+        private let dismissedSupplementContainerOffset: CGFloat = 50.0 + EdgeInsets.edgePadding * 2
+        private let minimumTranslation: CGFloat = 100.0
 
         private let manager: MediaPlayerManager
         private let player: AnyView
@@ -164,34 +217,134 @@ extension VideoPlayer {
             fatalError("init(coder:) has not been implemented")
         }
 
-        // MARK: - didPresent
+        // MARK: - Supplement Pan Action
 
-        func presentSupplementContainer(
-            _ didPresent: Bool
+        func handleSupplementPanAction(
+            translation: CGPoint,
+            velocity: CGFloat,
+            location: CGPoint,
+            state: UIGestureRecognizer.State
         ) {
-            let oldConstant = supplementBottomAnchor.constant
-            if didPresent {
-                self.supplementBottomAnchor.constant = -(500 + EdgeInsets.edgePadding * 2)
-            } else {
-                self.supplementBottomAnchor.constant = -(100 + EdgeInsets.edgePadding)
+            let yDirection: CGFloat = translation.y > 0 ? -1 : 1
+            let newOffset: CGFloat
+            let clampedOffset: CGFloat
+
+            if state == .began {
+                self.view.layer.removeAllAnimations()
+                didStartPanningWithSupplement = containerState.selectedSupplement != nil
+                verticalPanGestureStartConstant = supplementBottomAnchor.constant
             }
 
-            let newConstant = supplementBottomAnchor.constant
-            print("🎯 Supplement positioning: \(didPresent ? "PRESENTING" : "DISMISSING") - constant: \(oldConstant) -> \(newConstant)")
+            if state == .began || state == .changed {
+                lastVerticalPanLocation = location
+                isPanning = true
+
+                let shouldHaveSupplementPresented = self.supplementBottomAnchor
+                    .constant < -(minimumTranslation + dismissedSupplementContainerOffset)
+
+                if shouldHaveSupplementPresented, !containerState.isPresentingSupplement {
+                    containerState.selectedSupplement = manager.supplements.first
+                } else if !shouldHaveSupplementPresented, containerState.selectedSupplement != nil {
+                    containerState.selectedSupplement = nil
+                }
+            } else {
+                lastVerticalPanLocation = nil
+                verticalPanGestureStartConstant = nil
+                isPanning = false
+
+                let shouldActuallyDismissSupplement = didStartPanningWithSupplement &&
+                    (translation.y > minimumTranslation || velocity > 1000)
+                if shouldActuallyDismissSupplement {
+                    containerState.selectedSupplement = nil
+                }
+
+                let shouldActuallyPresentSupplement = !didStartPanningWithSupplement &&
+                    (translation.y < -minimumTranslation || velocity < -1000)
+                if shouldActuallyPresentSupplement {
+                    containerState.selectedSupplement = manager.supplements.first
+                }
+
+                let stateToPass: (translation: CGFloat, velocity: CGFloat)? = (
+                    translation: translation.y,
+                    velocity: velocity
+                )
+                presentSupplementContainer(containerState.selectedSupplement != nil, with: stateToPass)
+                return
+            }
+
+            guard let verticalPanGestureStartConstant else { return }
+
+            if (!didStartPanningWithSupplement && yDirection > 0) || (didStartPanningWithSupplement && yDirection < 0) {
+                newOffset = verticalPanGestureStartConstant + (translation.y.magnitude * -yDirection)
+            } else {
+                newOffset = verticalPanGestureStartConstant - (translation.y.magnitude * yDirection)
+            }
+
+            clampedOffset = clamp(
+                newOffset,
+                min: -supplementContainerOffset,
+                max: -dismissedSupplementContainerOffset
+            )
+
+            // Rubber-band resistance at boundaries
+            if newOffset < clampedOffset {
+                let excess = clampedOffset - newOffset
+                let resistance = pow(excess, 0.7)
+                supplementBottomAnchor.constant = clampedOffset - resistance
+            } else if newOffset > -dismissedSupplementContainerOffset {
+                let excess = newOffset - clampedOffset
+                let resistance = pow(excess, 0.5)
+                supplementBottomAnchor.constant = clamp(clampedOffset + resistance, min: -dismissedSupplementContainerOffset, max: -50)
+            } else {
+                supplementBottomAnchor.constant = clampedOffset
+            }
+
+            containerState.supplementOffset = supplementBottomAnchor.constant
+        }
+
+        // MARK: - Supplement Presentation
+
+        func presentSupplementContainer(
+            _ didPresent: Bool,
+            with panningState: (translation: CGFloat, velocity: CGFloat)? = nil
+        ) {
+            guard !isPanning else { return }
+
+            if didPresent {
+                self.supplementBottomAnchor.constant = -supplementContainerOffset
+            } else {
+                self.supplementBottomAnchor.constant = -dismissedSupplementContainerOffset
+            }
 
             containerState.isPresentingPlaybackControls = !didPresent
             containerState.supplementOffset = supplementBottomAnchor.constant
 
-            UIView.animate(
-                withDuration: 0.75,
-                delay: 0,
-                usingSpringWithDamping: 0.8,
-                initialSpringVelocity: 0.4,
-                options: .allowUserInteraction
-            ) {
-                self.view.layoutIfNeeded()
-            } completion: { _ in
-                print("✅ Supplement animation completed: final constant = \(self.supplementBottomAnchor.constant)")
+            view.setNeedsLayout()
+
+            if let panningState {
+                let velocity = panningState.velocity.magnitude / 1000
+                let distance = panningState.translation.magnitude
+                let duration = min(max(Double(distance) / Double(velocity * 1000), 0.2), 0.75)
+
+                UIView.animate(
+                    withDuration: duration,
+                    delay: 0,
+                    usingSpringWithDamping: 0.8,
+                    initialSpringVelocity: velocity,
+                    options: .allowUserInteraction
+                ) { [weak self] in
+                    self?.view.layoutIfNeeded()
+                }
+            } else {
+                UIView.animate(
+                    withDuration: 0.75,
+                    delay: 0,
+                    usingSpringWithDamping: 0.8,
+                    initialSpringVelocity: 0.4,
+                    options: .allowUserInteraction
+                ) { [weak self] in
+                    self?.view.layoutIfNeeded()
+                }
             }
         }
 
@@ -295,7 +448,7 @@ extension VideoPlayer {
 
             supplementBottomAnchor = supplementContainerView.topAnchor.constraint(
                 equalTo: view.bottomAnchor,
-                constant: -(100 + EdgeInsets.edgePadding)
+                constant: -dismissedSupplementContainerOffset
             )
             // Defer to avoid "Publishing changes from within view updates" warning
             DispatchQueue.main.async { [weak self] in
@@ -303,8 +456,9 @@ extension VideoPlayer {
                 self.containerState.supplementOffset = self.supplementBottomAnchor.constant
             }
 
-            let constant = (500 + EdgeInsets.edgePadding * 2)
-            supplementHeightAnchor = supplementContainerView.heightAnchor.constraint(equalToConstant: constant)
+            supplementHeightAnchor = supplementContainerView.heightAnchor.constraint(
+                equalToConstant: supplementContainerOffset
+            )
 
             supplementRegularConstraints = [
                 supplementContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
