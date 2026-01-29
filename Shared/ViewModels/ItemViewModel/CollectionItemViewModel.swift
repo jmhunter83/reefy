@@ -78,4 +78,8 @@ final class CollectionItemViewModel: ItemViewModel {
             .elements
             .randomElement()
     }
+
+    var allTracks: [BaseItemDto] {
+        sections[.audio]?.elements ?? []
+    }
 }

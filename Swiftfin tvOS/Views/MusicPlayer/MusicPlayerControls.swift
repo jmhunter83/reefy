@@ -6,9 +6,13 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import Defaults
 import SwiftUI
 
 struct MusicPlayerControls: View {
+
+    @Default(.accentColor)
+    private var accentColor
 
     @EnvironmentObject
     private var manager: MediaPlayerManager
@@ -54,13 +58,33 @@ struct MusicPlayerControls: View {
                     .padding(.horizontal, 20)
 
                 // Transport buttons
-                HStack(spacing: 80) {
+                HStack(spacing: 50) {
+                    // Shuffle
+                    Button {
+                        manager.toggleShuffle()
+                    } label: {
+                        Image(systemName: "shuffle")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundStyle(manager.shuffleEnabled ? accentColor : .white.opacity(0.6))
+                    }
+                    .buttonStyle(.plain)
+
+                    // Previous track
+                    Button {
+                        manager.skipPrevious()
+                    } label: {
+                        Image(systemName: "backward.end.fill")
+                            .font(.system(size: 36, weight: .semibold))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(manager.queue?.hasPreviousItem == false)
+
                     // Skip backward
                     Button {
                         handleSkip(direction: .backward)
                     } label: {
                         Image(systemName: "gobackward.15")
-                            .font(.system(size: 36, weight: .semibold))
+                            .font(.system(size: 32, weight: .semibold))
                     }
                     .buttonStyle(.plain)
 
@@ -78,7 +102,27 @@ struct MusicPlayerControls: View {
                         handleSkip(direction: .forward)
                     } label: {
                         Image(systemName: "goforward.15")
+                            .font(.system(size: 32, weight: .semibold))
+                    }
+                    .buttonStyle(.plain)
+
+                    // Next track
+                    Button {
+                        manager.skipNext()
+                    } label: {
+                        Image(systemName: "forward.end.fill")
                             .font(.system(size: 36, weight: .semibold))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(manager.queue?.hasNextItem == false)
+
+                    // Repeat
+                    Button {
+                        manager.cycleRepeatMode()
+                    } label: {
+                        Image(systemName: repeatIconName)
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundStyle(manager.repeatMode != .off ? accentColor : .white.opacity(0.6))
                     }
                     .buttonStyle(.plain)
                 }
@@ -110,6 +154,13 @@ struct MusicPlayerControls: View {
         .onPlayPauseCommand {
             containerState.showControls()
             manager.togglePlayPause()
+        }
+    }
+
+    private var repeatIconName: String {
+        switch manager.repeatMode {
+        case .off, .all: return "repeat"
+        case .one: return "repeat.1"
         }
     }
 

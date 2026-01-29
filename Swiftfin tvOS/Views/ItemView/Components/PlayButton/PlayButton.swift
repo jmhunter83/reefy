@@ -167,6 +167,14 @@ extension ItemView {
                 if playButtonItem.type == .episode {
                     return EpisodeMediaPlayerQueue(episode: playButtonItem)
                 }
+
+                if playButtonItem.type == .audio, let collectionViewModel = viewModel as? CollectionItemViewModel {
+                    let tracks = collectionViewModel.allTracks
+                    if tracks.isNotEmpty {
+                        return MusicPlaylistQueue(items: tracks, title: collectionViewModel.item.displayTitle)
+                    }
+                }
+
                 return nil
             }()
 

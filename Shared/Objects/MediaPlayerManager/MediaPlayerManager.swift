@@ -54,16 +54,20 @@ final class MediaPlayerManager: ViewModel {
         case playNewItem(provider: MediaPlayerItemProvider)
         case setPlaybackRequestStatus(status: PlaybackRequestStatus)
         case setRate(rate: Float)
+        case skipNext
+        case skipPrevious
         case start
         case stop
         case togglePlayPause
+        case toggleShuffle
+        case cycleRepeatMode
 
         var transition: Transition {
             switch self {
             case .error:
                 .to(.error)
                     .invalid(.stopped)
-            case .playNewItem, .start:
+            case .playNewItem, .start, .skipNext, .skipPrevious:
                 .to(.loadingItem, then: .playback)
                     .invalid(.stopped)
             case .stop:
@@ -91,6 +95,12 @@ final class MediaPlayerManager: ViewModel {
 
         /// The player is paused
         case paused
+    }
+
+    enum RepeatMode: String, CaseIterable {
+        case off
+        case all
+        case one
     }
 
     @Published
@@ -124,6 +134,10 @@ final class MediaPlayerManager: ViewModel {
     private(set) var playbackRequestStatus: PlaybackRequestStatus = .playing
     @Published
     var rate: Float = 1.0
+    @Published
+    var shuffleEnabled: Bool = false
+    @Published
+    var repeatMode: RepeatMode = .off
     @Published
     var queue: AnyMediaPlayerQueue? = nil
 
@@ -346,5 +360,30 @@ final class MediaPlayerManager: ViewModel {
         case .paused:
             setPlaybackRequestStatus(status: .playing)
         }
+    }
+
+    @Function(\Action.Cases.skipNext)
+    private func _skipNext() async throws {
+        guard let nextItem = queue?.nextItem else { return }
+        await playNewItem(provider: nextItem)
+    }
+
+    @Function(\Action.Cases.skipPrevious)
+    private func _skipPrevious() async throws {
+        guard let previousItem = queue?.previousItem else { return }
+        await playNewItem(provider: previousItem)
+    }
+
+    @Function(\Action.Cases.toggleShuffle)
+    private func _toggleShuffle() {
+        shuffleEnabled.toggle()
+    }
+
+    @Function(\Action.Cases.cycleRepeatMode)
+    private func _cycleRepeatMode() {
+        let allModes = RepeatMode.allCases
+        guard let index = allModes.firstIndex(of: repeatMode) else { return }
+        let nextIndex = (index + 1) % allModes.count
+        repeatMode = allModes[nextIndex]
     }
 }
