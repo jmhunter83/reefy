@@ -62,6 +62,27 @@ Yes. Reefy supports HDR10 and Dolby Vision content when your Apple TV and TV sup
 
 ---
 
+## Troubleshooting
+
+### I'm experiencing intermittent audio (buffering/stuttering) with surround sound content
+
+**Symptom:** Audio rapidly cuts in and out, or you see frequent buffering, specifically with 5.1 surround sound content (AC3/Dolby Digital or EAC3/Dolby Digital Plus).
+
+**Cause:** This occurs when your Apple TV outputs to stereo (TV speakers or stereo soundbar) but receives AC3/EAC3 5.1 audio that it must downmix. VLC's software decoder can struggle with this, causing audio dropouts.
+
+**Fix:** Enable "Most Compatible" playback mode to force server-side transcoding:
+
+1. Open Reefy settings
+2. Navigate to: **Video Player → Playback Compatibility**
+3. Change from "Auto" to **"Most Compatible"**
+4. Retry playback
+
+This tells your Jellyfin server to transcode AC3/EAC3 5.1 audio to AAC stereo before sending it to your Apple TV, which VLC handles reliably.
+
+**Note:** If you have a proper surround sound receiver connected via eARC/ARC and use audio passthrough, you likely won't experience this issue.
+
+---
+
 ## App Store
 
 ### Which countries is Reefy available in?
