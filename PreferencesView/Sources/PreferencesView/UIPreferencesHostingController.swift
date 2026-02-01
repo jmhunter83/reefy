@@ -15,22 +15,22 @@ public class UIPreferencesHostingController: UIHostingController<AnyView> {
         let rootView = AnyView(
             content()
             #if os(iOS)
-            .onPreferenceChange(KeyCommandsPreferenceKey.self) {
-                box.value?._keyCommandActions = $0
-            }
-            .onPreferenceChange(PrefersHomeIndicatorAutoHiddenPreferenceKey.self) {
-                box.value?._prefersHomeIndicatorAutoHidden = $0
-            }
-            .onPreferenceChange(PreferredScreenEdgesDeferringSystemGesturesPreferenceKey.self) {
-                box.value?._preferredScreenEdgesDeferringSystemGestures = $0
-            }
-            .onPreferenceChange(SupportedOrientationsPreferenceKey.self) {
-                box.value?._orientations = $0
-            }
+                .onPreferenceChange(KeyCommandsPreferenceKey.self) {
+                    box.value?._keyCommandActions = $0
+                }
+                .onPreferenceChange(PrefersHomeIndicatorAutoHiddenPreferenceKey.self) {
+                    box.value?._prefersHomeIndicatorAutoHidden = $0
+                }
+                .onPreferenceChange(PreferredScreenEdgesDeferringSystemGesturesPreferenceKey.self) {
+                    box.value?._preferredScreenEdgesDeferringSystemGestures = $0
+                }
+                .onPreferenceChange(SupportedOrientationsPreferenceKey.self) {
+                    box.value?._orientations = $0
+                }
             #elseif os(tvOS)
-            .onPreferenceChange(PressCommandsPreferenceKey.self) {
-                box.value?._pressCommandActions = $0
-            }
+                .onPreferenceChange(PressCommandsPreferenceKey.self) {
+                    box.value?._pressCommandActions = $0
+                }
             #endif
         )
 

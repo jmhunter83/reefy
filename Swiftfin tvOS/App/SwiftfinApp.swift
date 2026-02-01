@@ -25,7 +25,7 @@ struct SwiftfinApp: App {
 
             let handlers: [any LogHandler] = [PersistentLogHandler(label: label)]
             #if DEBUG
-            .appending(SwiftfinConsoleHandler())
+                .appending(SwiftfinConsoleHandler())
             #endif
 
             var multiplexHandler = MultiplexLogHandler(handlers)

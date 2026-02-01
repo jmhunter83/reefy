@@ -41,13 +41,13 @@ extension SwiftfinStore.State {
         var client: JellyfinClient {
             let allowsInsecure = StoredValues[.Server.allowsInsecureConnection(id: id)]
             let logger = NetworkLogger.swiftfin()
-            
+
             let delegate: URLSessionTaskDelegate = if allowsInsecure {
                 InsecureURLSessionDelegate(logger: logger, allowInsecureConnection: true)
             } else {
                 URLSessionProxyDelegate(logger: logger)
             }
-            
+
             return JellyfinClient(
                 configuration: .swiftfinConfiguration(url: currentURL),
                 sessionConfiguration: .swiftfin,

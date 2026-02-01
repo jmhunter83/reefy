@@ -149,7 +149,7 @@ struct UserSignInView: View {
             .textInputAutocapitalization(.never)
             .focused($focusedTextField, equals: .password)
             #if os(tvOS)
-            .frame(minHeight: 60)
+                .frame(minHeight: 60)
             #endif
         } header: {
             Text(L10n.signInToServer(viewModel.server.name))

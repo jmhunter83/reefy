@@ -107,20 +107,20 @@ extension View {
         case .landscape:
             posterAspectRatio(type, contentMode: contentMode)
             #if !os(tvOS)
-            .posterBorder()
-            .posterCornerRadius(type)
+                .posterBorder()
+                .posterCornerRadius(type)
             #endif
         case .portrait:
             posterAspectRatio(type, contentMode: contentMode)
             #if !os(tvOS)
-            .posterBorder()
-            .posterCornerRadius(type)
+                .posterBorder()
+                .posterCornerRadius(type)
             #endif
         case .square:
             posterAspectRatio(type, contentMode: contentMode)
             #if os(iOS)
-            .posterBorder()
-            .posterCornerRadius(type)
+                .posterBorder()
+                .posterCornerRadius(type)
             #endif
         }
     }

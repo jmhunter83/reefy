@@ -203,7 +203,7 @@ final class ConnectToServerViewModel: ViewModel {
     /// Convert URLError to user-friendly message with actionable suggestions
     private func userFriendlyMessage(for error: URLError, host: String?) -> String {
         let hostName = host ?? "server"
-        
+
         switch error.code {
         case .appTransportSecurityRequiresSecureConnection:
             return L10n.atsBlockedConnection(hostName)

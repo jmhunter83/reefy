@@ -28,7 +28,7 @@ final class UserSession {
 
         let allowsInsecure = StoredValues[.Server.allowsInsecureConnection(id: server.id)]
         let logger = NetworkLogger.swiftfin()
-        
+
         let delegate: URLSessionTaskDelegate = if allowsInsecure {
             InsecureURLSessionDelegate(logger: logger, allowInsecureConnection: true)
         } else {

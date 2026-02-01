@@ -299,15 +299,15 @@ extension EpisodeMediaPlayerQueue {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
                 #if os(tvOS)
-                .background {
-                    if #available(tvOS 26.0, *) {
-                        Color.clear
-                            .glassEffect(.regular, in: .capsule)
-                    } else {
-                        Capsule()
-                            .fill(.ultraThinMaterial)
+                    .background {
+                        if #available(tvOS 26.0, *) {
+                            Color.clear
+                                .glassEffect(.regular, in: .capsule)
+                        } else {
+                            Capsule()
+                                .fill(.ultraThinMaterial)
+                        }
                     }
-                }
                 #endif
             }
             .buttonStyle(.plain)
