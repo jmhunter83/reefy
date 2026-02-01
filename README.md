@@ -72,6 +72,16 @@ Reefy is available on the Apple App Store in 175 countries.
 
 *Note: tvOS apps can only be purchased directly on Apple TV. Search for "Reefy Media Player" in the tvOS App Store.*
 
+### TestFlight (Bleeding Edge)
+
+Want to try new features first and help shape the future of Reefy? Join the TestFlight beta!
+
+**Join the beta:** [https://testflight.apple.com/join/nVGxSegz](https://testflight.apple.com/join/nVGxSegz)
+
+Beta testers get early access to bleeding-edge features, can provide feedback, and directly influence the product roadmap. Your input helps make Reefy better for everyone.
+
+**Please consider purchasing the App Store version to support ongoing development**, even if you use the TestFlight build day-to-day.
+
 ### Build from Source (Developers)
 
 Developers can build Reefy from source for free under the MPL 2.0 license.
