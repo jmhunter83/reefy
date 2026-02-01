@@ -77,9 +77,11 @@ struct AppSettingsView: View {
 
             SignOutIntervalSection()
 
-            ChevronButton(L10n.logs) {
-                router.route(to: .log)
-            }
+            // FIXME: Disabled due to Pulse 5.1.4 crash on tvOS (ConsoleFiltersView EnvironmentObject issue)
+            // Re-enable after upgrading to Pulse 5.1.5+ with tvOS fix
+            // ChevronButton(L10n.logs) {
+            //     router.route(to: .log)
+            // }
         }
         .navigationTitle(L10n.advanced)
     }
