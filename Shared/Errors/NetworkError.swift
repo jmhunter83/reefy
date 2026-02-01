@@ -31,6 +31,9 @@ enum NetworkError: LocalizedError, Hashable {
     /// SSL/TLS certificate error
     case sslError
 
+    /// App Transport Security blocked the connection (HTTP not allowed)
+    case atsBlocked
+
     // MARK: - HTTP Errors
 
     /// Bad request (400)
@@ -88,6 +91,8 @@ enum NetworkError: LocalizedError, Hashable {
             return .noConnection
         case -1200, -1201, -1202, -1203, -1204, -1205, -1206:
             return .sslError
+        case -1022:
+            return .atsBlocked
         default:
             return .unknown(message: "URL error with code: \(urlErrorCode)")
         }
@@ -122,11 +127,13 @@ enum NetworkError: LocalizedError, Hashable {
         case .cannotConnect:
             return L10n.cannotConnectToHost
         case .connectionLost:
-            return L10n.error // TODO: Add specific localization
+            return L10n.connectionLost
         case .noConnection:
-            return L10n.error // TODO: Add specific localization
+            return L10n.noNetworkConnection
         case .sslError:
-            return L10n.error // TODO: Add specific localization
+            return L10n.sslCertificateError
+        case .atsBlocked:
+            return L10n.httpConnectionBlocked
         case let .badRequest(message):
             return message ?? L10n.error
         case .unauthorized:
@@ -157,7 +164,7 @@ enum NetworkError: LocalizedError, Hashable {
         switch self {
         case .timeout, .connectionLost, .noConnection, .cannotConnect:
             return true
-        case .hostNotFound, .sslError, .unauthorized, .forbidden, .notFound:
+        case .hostNotFound, .sslError, .atsBlocked, .unauthorized, .forbidden, .notFound:
             return false
         case .badRequest, .serverError, .unknown:
             return false

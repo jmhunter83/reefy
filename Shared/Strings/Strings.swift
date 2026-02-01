@@ -372,6 +372,8 @@ internal enum L10n {
   internal static let confirmPassword = L10n.tr("Localizable", "confirmPassword", fallback: "Confirm password")
   /// Connect
   internal static let connect = L10n.tr("Localizable", "connect", fallback: "Connect")
+  /// Connection was lost. Please try again.
+  internal static let connectionLost = L10n.tr("Localizable", "connectionLost", fallback: "Connection was lost. Please try again.")
   /// Connection timed out. Check your network connection and server status.
   internal static let connectionTimedOut = L10n.tr("Localizable", "connectionTimedOut", fallback: "Connection timed out. Check your network connection and server status.")
   /// Connect to a Jellyfin server to get started
@@ -742,6 +744,8 @@ internal enum L10n {
   internal static let horizontalSwipe = L10n.tr("Localizable", "horizontalSwipe", fallback: "Horizontal swipe")
   /// Hours
   internal static let hours = L10n.tr("Localizable", "hours", fallback: "Hours")
+  /// HTTP connection blocked. Try using HTTPS, or verify the server address.
+  internal static let httpConnectionBlocked = L10n.tr("Localizable", "httpConnectionBlocked", fallback: "HTTP connection blocked. Try using HTTPS, or verify the server address.")
   /// ID
   internal static let id = L10n.tr("Localizable", "id", fallback: "ID")
   /// Identify
@@ -1016,6 +1020,8 @@ internal enum L10n {
   internal static let noLocalServersFound = L10n.tr("Localizable", "noLocalServersFound", fallback: "No local servers found")
   /// None
   internal static let `none` = L10n.tr("Localizable", "none", fallback: "None")
+  /// No network connection. Check your internet or Wi-Fi settings.
+  internal static let noNetworkConnection = L10n.tr("Localizable", "noNetworkConnection", fallback: "No network connection. Check your internet or Wi-Fi settings.")
   /// No overview available
   internal static let noOverviewAvailable = L10n.tr("Localizable", "noOverviewAvailable", fallback: "No overview available")
   /// No public users
@@ -1450,6 +1456,8 @@ internal enum L10n {
   internal static let split = L10n.tr("Localizable", "split", fallback: "Split")
   /// Sports
   internal static let sports = L10n.tr("Localizable", "sports", fallback: "Sports")
+  /// SSL certificate error. The server's security certificate may be invalid or self-signed.
+  internal static let sslCertificateError = L10n.tr("Localizable", "sslCertificateError", fallback: "SSL certificate error. The server's security certificate may be invalid or self-signed.")
   /// Start date
   internal static let startDate = L10n.tr("Localizable", "startDate", fallback: "Start date")
   /// Start time
