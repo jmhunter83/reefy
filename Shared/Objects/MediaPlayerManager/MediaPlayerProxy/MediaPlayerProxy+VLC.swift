@@ -171,6 +171,14 @@ extension VLCMediaPlayerProxy {
                 "clock-synchro": 0, // Disable clock sync (reduces latency sensitivity)
             ]
 
+            // Allow insecure SSL connections if enabled for this server
+            if let session = manager.userSession,
+               StoredValues[.Server.allowsInsecureConnection(id: session.server.id)]
+            {
+                options["no-http-ssl-check"] = true
+                options["http-reconnect"] = true
+            }
+
             // Apply audio output mode settings
             switch Defaults[.VideoPlayer.Audio.outputMode] {
             case .auto:
