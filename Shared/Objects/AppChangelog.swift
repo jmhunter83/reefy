@@ -21,8 +21,8 @@ struct ChangelogItem {
 
 enum AppChangelog {
     static let entries: [String: ChangelogEntry] = [
-        "1.2.0": ChangelogEntry(
-            version: "1.2.0",
+        "1.1.1": ChangelogEntry(
+            version: "1.1.1",
             items: [
                 ChangelogItem(
                     icon: "lock.shield",
