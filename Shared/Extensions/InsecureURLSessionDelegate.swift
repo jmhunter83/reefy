@@ -7,12 +7,11 @@
 //
 
 import Foundation
-import Logging
 import Pulse
 
 /// URLSession delegate that allows insecure connections (HTTP and self-signed certificates)
 /// for local network servers when explicitly enabled.
-final class InsecureURLSessionDelegate: URLSessionTaskDelegate {
+final class InsecureURLSessionDelegate: NSObject, URLSessionTaskDelegate {
 
     private let logger: NetworkLogger
     private let allowInsecureConnection: Bool
@@ -20,6 +19,7 @@ final class InsecureURLSessionDelegate: URLSessionTaskDelegate {
     init(logger: NetworkLogger, allowInsecureConnection: Bool) {
         self.logger = logger
         self.allowInsecureConnection = allowInsecureConnection
+        super.init()
     }
 
     func urlSession(
@@ -42,15 +42,6 @@ final class InsecureURLSessionDelegate: URLSessionTaskDelegate {
             completionHandler(.performDefaultHandling, nil)
             return
         }
-
-        // Log warning about insecure connection
-        logger.logger.warning(
-            "Accepting insecure SSL certificate for \(challenge.protectionSpace.host)",
-            metadata: [
-                "host": "\(challenge.protectionSpace.host)",
-                "port": "\(challenge.protectionSpace.port)",
-            ]
-        )
 
         // Trust the server certificate without validation
         let credential = URLCredential(trust: serverTrust)
