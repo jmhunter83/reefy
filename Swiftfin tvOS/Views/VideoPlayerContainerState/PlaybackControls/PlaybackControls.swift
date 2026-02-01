@@ -133,7 +133,7 @@ extension VideoPlayer {
                 // Next episode button
                 NavigationBar.ActionButtons.PlayNextItem()
             }
-            .focusGuide(focusGuide, tag: "transportBar", top: "sideButtons")
+            .focusGuide(focusGuide, tag: "transportBar", top: "sideButtons", bottom: "supplementTitles")
         }
 
         @ViewBuilder
