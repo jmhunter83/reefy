@@ -154,6 +154,10 @@ struct SettingsView: View {
 
     private var diagnosticsSection: some View {
         Section {
+            ChevronButton(L10n.about) {
+                router.route(to: .about)
+            }
+
             ChevronButton(L10n.logs) {
                 router.route(to: .log)
             }

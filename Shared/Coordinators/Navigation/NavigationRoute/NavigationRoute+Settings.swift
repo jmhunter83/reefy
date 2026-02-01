@@ -27,6 +27,12 @@ extension NavigationRoute {
         }
     }
 
+    static let about = NavigationRoute(
+        id: "about"
+    ) {
+        AboutSettingsView()
+    }
+
     #if os(iOS)
     static let adminDashboard = NavigationRoute(
         id: "adminDashboard"

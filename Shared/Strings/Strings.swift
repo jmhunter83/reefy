@@ -128,6 +128,8 @@ internal enum L10n {
   internal static let appearance = L10n.tr("Localizable", "appearance", fallback: "Appearance")
   /// App icon
   internal static let appIcon = L10n.tr("Localizable", "appIcon", fallback: "App icon")
+  /// Application
+  internal static let application = L10n.tr("Localizable", "application", fallback: "Application")
   /// Application name
   internal static let applicationName = L10n.tr("Localizable", "applicationName", fallback: "Application name")
   /// Arranger
@@ -270,6 +272,8 @@ internal enum L10n {
   internal static let brightness = L10n.tr("Localizable", "brightness", fallback: "Brightness")
   /// Bugs and features
   internal static let bugsAndFeatures = L10n.tr("Localizable", "bugsAndFeatures", fallback: "Bugs and features")
+  /// Build
+  internal static let build = L10n.tr("Localizable", "build", fallback: "Build")
   /// Buttons
   internal static let buttons = L10n.tr("Localizable", "buttons", fallback: "Buttons")
   /// Cancel
@@ -610,6 +614,10 @@ internal enum L10n {
   internal static let enabled = L10n.tr("Localizable", "enabled", fallback: "Enabled")
   /// Enabled trailers
   internal static let enabledTrailers = L10n.tr("Localizable", "enabledTrailers", fallback: "Enabled trailers")
+  /// Enable Remote Notices
+  internal static let enableRemoteNotices = L10n.tr("Localizable", "enableRemoteNotices", fallback: "Enable Remote Notices")
+  /// Checks for important announcements from Reefy developers. Your IP and app version are sent. Opt-in only.
+  internal static let enableRemoteNoticesDescription = L10n.tr("Localizable", "enableRemoteNoticesDescription", fallback: "Checks for important announcements from Reefy developers. Your IP and app version are sent. Opt-in only.")
   /// End date
   internal static let endDate = L10n.tr("Localizable", "endDate", fallback: "End date")
   /// Ended
@@ -1410,6 +1418,16 @@ internal enum L10n {
   internal static let showUnwatched = L10n.tr("Localizable", "showUnwatched", fallback: "Show unwatched")
   /// Show watched
   internal static let showWatched = L10n.tr("Localizable", "showWatched", fallback: "Show watched")
+  /// Show Welcome After Update
+  internal static let showWelcomeAfterUpdate = L10n.tr("Localizable", "showWelcomeAfterUpdate", fallback: "Show Welcome After Update")
+  /// Shows what's new after app updates. Automatically disables after first view.
+  internal static let showWelcomeAfterUpdateDescription = L10n.tr("Localizable", "showWelcomeAfterUpdateDescription", fallback: "Shows what's new after app updates. Automatically disables after first view.")
+  /// Show Welcome Every Launch
+  internal static let showWelcomeEveryLaunch = L10n.tr("Localizable", "showWelcomeEveryLaunch", fallback: "Show Welcome Every Launch")
+  /// Shows the welcome screen every time you launch Reefy. For demo or testing purposes.
+  internal static let showWelcomeEveryLaunchDescription = L10n.tr("Localizable", "showWelcomeEveryLaunchDescription", fallback: "Shows the welcome screen every time you launch Reefy. For demo or testing purposes.")
+  /// Show Welcome Screen
+  internal static let showWelcomeScreen = L10n.tr("Localizable", "showWelcomeScreen", fallback: "Show Welcome Screen")
   /// Shutdown server
   internal static let shutdownServer = L10n.tr("Localizable", "shutdownServer", fallback: "Shutdown server")
   /// Are you sure you want to shutdown the server?
@@ -1716,6 +1734,8 @@ internal enum L10n {
   internal static let weekend = L10n.tr("Localizable", "weekend", fallback: "Weekend")
   /// Weekly
   internal static let weekly = L10n.tr("Localizable", "weekly", fallback: "Weekly")
+  /// Welcome Screen
+  internal static let welcomeScreen = L10n.tr("Localizable", "welcomeScreen", fallback: "Welcome Screen")
   /// This will be created as a new item on your Jellyfin Server.
   internal static let willBeCreatedOnServer = L10n.tr("Localizable", "willBeCreatedOnServer", fallback: "This will be created as a new item on your Jellyfin Server.")
   /// Writer

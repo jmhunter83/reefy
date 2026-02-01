@@ -18,6 +18,9 @@ struct RootView: View {
     @StateObject
     private var rootCoordinator: RootCoordinator = .init()
 
+    @StateObject
+    private var welcomeManager = WelcomeManager.shared
+
     var body: some View {
         ZStack {
             if rootCoordinator.root.id == RootItem.appLoading.id {
@@ -43,6 +46,19 @@ struct RootView: View {
         .prefersStatusBarHidden(isStatusBarHidden)
         .onPreferenceChange(IsStatusBarHiddenKey.self) { newValue in
             isStatusBarHidden = newValue
+        }
+        .onAppear {
+            welcomeManager.checkShouldShowWelcome()
+            Task {
+                await welcomeManager.fetchRemoteNotices()
+            }
+        }
+        .fullScreenCover(isPresented: $welcomeManager.shouldShowWelcome) {
+            if let changelog = welcomeManager.changelog {
+                WelcomeView(changelog: changelog) {
+                    welcomeManager.markWelcomeSeen()
+                }
+            }
         }
     }
 }

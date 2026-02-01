@@ -122,6 +122,13 @@ extension Defaults.Keys {
 
     static let signOutOnBackground: Key<Bool> = AppKey("signOutOnBackground", default: true)
     static let signOutOnClose: Key<Bool> = AppKey("signOutOnClose", default: false)
+
+    // Welcome Screen
+    static let showWelcomeAfterUpdate: Key<Bool> = AppKey("showWelcomeAfterUpdate", default: true)
+    static let showWelcomeEveryLaunch: Key<Bool> = AppKey("showWelcomeEveryLaunch", default: false)
+    static let lastSeenAppVersion: Key<String?> = AppKey("lastSeenAppVersion", default: nil)
+    static let enableRemoteNotices: Key<Bool> = AppKey("enableRemoteNotices", default: false)
+    static let lastSeenNoticeIDs: Key<Set<String>> = AppKey("lastSeenNoticeIDs", default: [])
 }
 
 // MARK: User
