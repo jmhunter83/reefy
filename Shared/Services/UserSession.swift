@@ -26,13 +26,22 @@ final class UserSession {
         self.server = server
         self.user = user
 
+        let allowsInsecure = StoredValues[.Server.allowsInsecureConnection(id: server.id)]
+        let logger = NetworkLogger.swiftfin()
+        
+        let delegate: URLSessionTaskDelegate = if allowsInsecure {
+            InsecureURLSessionDelegate(logger: logger, allowInsecureConnection: true)
+        } else {
+            URLSessionProxyDelegate(logger: logger)
+        }
+
         let client = JellyfinClient(
             configuration: .swiftfinConfiguration(
                 url: server.currentURL,
                 accessToken: user.accessToken
             ),
             sessionConfiguration: .swiftfin,
-            sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.swiftfin())
+            sessionDelegate: delegate
         )
 
         self.client = client

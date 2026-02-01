@@ -97,7 +97,14 @@ final class ConnectToServerViewModel: ViewModel {
             sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.swiftfin())
         )
 
-        let response = try await client.send(Paths.getPublicSystemInfo)
+        let response: Response<PublicSystemInfo>
+        do {
+            response = try await client.send(Paths.getPublicSystemInfo)
+        } catch let urlError as URLError {
+            throw ErrorMessage(userFriendlyMessage(for: urlError, host: url.host))
+        } catch {
+            throw error
+        }
 
         guard let name = response.value.serverName,
               let id = response.value.id
@@ -191,5 +198,25 @@ final class ConnectToServerViewModel: ViewModel {
     @Function(\Action.Cases.searchForServers)
     private func _searchForServers() {
         discovery.broadcast()
+    }
+
+    /// Convert URLError to user-friendly message with actionable suggestions
+    private func userFriendlyMessage(for error: URLError, host: String?) -> String {
+        let hostName = host ?? "server"
+        
+        switch error.code {
+        case .appTransportSecurityRequiresSecureConnection:
+            return L10n.atsBlockedConnection(hostName)
+        case .cannotFindHost:
+            return L10n.cannotFindServer(hostName)
+        case .cannotConnectToHost:
+            return L10n.cannotConnectToServer(hostName)
+        case .timedOut:
+            return L10n.connectionTimedOut
+        case .secureConnectionFailed:
+            return L10n.secureConnectionFailed(hostName)
+        default:
+            return error.localizedDescription
+        }
     }
 }

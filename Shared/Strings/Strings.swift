@@ -100,6 +100,10 @@ internal enum L10n {
   internal static let allMedia = L10n.tr("Localizable", "allMedia", fallback: "All media")
   /// Allowed
   internal static let allowed = L10n.tr("Localizable", "allowed", fallback: "Allowed")
+  /// Allow Insecure Connection
+  internal static let allowInsecureConnection = L10n.tr("Localizable", "allowInsecureConnection", fallback: "Allow Insecure Connection")
+  /// Allows HTTP connections and untrusted SSL certificates for this server. Only enable for local servers you trust.
+  internal static let allowInsecureConnectionDescription = L10n.tr("Localizable", "allowInsecureConnectionDescription", fallback: "Allows HTTP connections and untrusted SSL certificates for this server. Only enable for local servers you trust.")
   /// All servers
   internal static let allServers = L10n.tr("Localizable", "allServers", fallback: "All servers")
   /// View and manage all registered users on the server, including their permissions and activity status.
@@ -138,6 +142,10 @@ internal enum L10n {
   internal static let ascending = L10n.tr("Localizable", "ascending", fallback: "Ascending")
   /// Aspect fill
   internal static let aspectFill = L10n.tr("Localizable", "aspectFill", fallback: "Aspect fill")
+  /// Security policy blocked connection to '%@'. Try using the server's IP address instead of the hostname.
+  internal static func atsBlockedConnection(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "atsBlockedConnection", String(describing: p1), fallback: "Security policy blocked connection to '%@'. Try using the server's IP address instead of the hostname.")
+  }
   /// Audio
   internal static let audio = L10n.tr("Localizable", "audio", fallback: "Audio")
   /// The audio bit depth is not supported
@@ -270,6 +278,14 @@ internal enum L10n {
   internal static let cancelling = L10n.tr("Localizable", "cancelling", fallback: "Cancelling...")
   /// Cannot connect to host
   internal static let cannotConnectToHost = L10n.tr("Localizable", "cannotConnectToHost", fallback: "Cannot connect to host")
+  /// Cannot connect to '%@'. Verify the server is running and accessible on your network.
+  internal static func cannotConnectToServer(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "cannotConnectToServer", String(describing: p1), fallback: "Cannot connect to '%@'. Verify the server is running and accessible on your network.")
+  }
+  /// Cannot find server '%@'. Check the address or try using the IP address directly.
+  internal static func cannotFindServer(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "cannotFindServer", String(describing: p1), fallback: "Cannot find server '%@'. Check the address or try using the IP address directly.")
+  }
   /// Capabilities
   internal static let capabilities = L10n.tr("Localizable", "capabilities", fallback: "Capabilities")
   /// Cast & crew
@@ -356,6 +372,8 @@ internal enum L10n {
   internal static let confirmPassword = L10n.tr("Localizable", "confirmPassword", fallback: "Confirm password")
   /// Connect
   internal static let connect = L10n.tr("Localizable", "connect", fallback: "Connect")
+  /// Connection timed out. Check your network connection and server status.
+  internal static let connectionTimedOut = L10n.tr("Localizable", "connectionTimedOut", fallback: "Connection timed out. Check your network connection and server status.")
   /// Connect to a Jellyfin server to get started
   internal static let connectToJellyfinServerStart = L10n.tr("Localizable", "connectToJellyfinServerStart", fallback: "Connect to a Jellyfin server to get started")
   /// Connect to server
@@ -1314,6 +1332,10 @@ internal enum L10n {
   internal static let seasons = L10n.tr("Localizable", "seasons", fallback: "Seasons")
   /// Secondary audio is not supported
   internal static let secondaryAudioNotSupported = L10n.tr("Localizable", "secondaryAudioNotSupported", fallback: "Secondary audio is not supported")
+  /// Secure connection to '%@' failed. The server may be using an untrusted or self-signed certificate.
+  internal static func secureConnectionFailed(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "secureConnectionFailed", String(describing: p1), fallback: "Secure connection to '%@' failed. The server may be using an untrusted or self-signed certificate.")
+  }
   /// Security
   internal static let security = L10n.tr("Localizable", "security", fallback: "Security")
   /// See all
