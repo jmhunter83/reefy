@@ -1,35 +1,34 @@
-# Testing Guide for atvfin
+# Testing Guide for Reefy
 
-This document provides guidance on writing and running tests for the atvfin project.
+This document provides guidance on writing and running tests for the Reefy project.
 
 ## Test Structure
 
-Tests are organized in the `Tests/` directory with the following structure:
+Tests are organized in the `Swiftfin tvOS Tests/` directory:
 
 ```
-Tests/
-├── SharedTests/        # Tests for shared business logic
-│   ├── DownloadTaskTests.swift
-│   └── ...
-└── UITests/           # UI tests for tvOS app
-    └── ...
+Swiftfin tvOS Tests/
+├── VideoPlayerContainerStateTests.swift
+├── NetworkErrorTests.swift
+├── MediaErrorTests.swift
+└── ...
 ```
 
 ## Running Tests
 
 ### Via Xcode
-1. Open `Swiftfin.xcodeproj` (Note: Update to actual project file name)
+1. Open `Swiftfin.xcodeproj`
 2. Select the test scheme
 3. Press `Cmd+U` to run all tests
 4. Press `Cmd+Control+Option+U` to run tests with code coverage
 
 ### Via Command Line
 ```bash
-# Run all tests (update scheme name to match your project)
+# Run all tests
 xcodebuild test -scheme "Swiftfin tvOS" -destination "platform=tvOS Simulator,name=Apple TV 4K"
 
 # Run specific test class
-xcodebuild test -scheme "Swiftfin tvOS" -only-testing:SharedTests/DownloadTaskTests
+xcodebuild test -scheme "Swiftfin tvOS" -only-testing:VideoPlayerContainerStateTests
 
 # Run with code coverage
 xcodebuild test -scheme "Swiftfin tvOS" -enableCodeCoverage YES
