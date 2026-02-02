@@ -27,6 +27,9 @@ struct SettingsView: View {
     @StateObject
     private var viewModel = SettingsViewModel()
 
+    @State
+    private var showLogsWarning = false
+
     /// Safe access to user session - returns nil if session is invalid
     private var session: UserSession? {
         viewModel.userSession
@@ -50,6 +53,14 @@ struct SettingsView: View {
             router.dismiss()
         }
         #endif
+        .alert("Proceed with Caution", isPresented: $showLogsWarning) {
+            Button("Cancel", role: .cancel) { }
+            Button("Open Logs") {
+                router.route(to: .log)
+            }
+        } message: {
+            Text("The logs feature may be unstable on some tvOS versions. If the app closes unexpectedly, simply reopen it.")
+        }
     }
 
     // MARK: - Server Section
@@ -159,7 +170,7 @@ struct SettingsView: View {
             }
 
             ChevronButton(L10n.logs) {
-                router.route(to: .log)
+                showLogsWarning = true
             }
 
             #if DEBUG && os(iOS)

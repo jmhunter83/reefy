@@ -29,6 +29,8 @@ struct AppSettingsView: View {
     private var resetUserSettingsSelected: Bool = false
     @State
     private var removeAllServersSelected: Bool = false
+    @State
+    private var showLogsWarning = false
 
     private var selectedServer: ServerState? {
         viewModel.servers.first { server in
@@ -77,12 +79,20 @@ struct AppSettingsView: View {
 
             SignOutIntervalSection()
 
-            // FIXME: Disabled due to Pulse 5.1.4 crash on tvOS (ConsoleFiltersView EnvironmentObject issue)
-            // Re-enable after upgrading to Pulse 5.1.5+ with tvOS fix
-            // ChevronButton(L10n.logs) {
-            //     router.route(to: .log)
-            // }
+            Section {
+                ChevronButton(L10n.logs) {
+                    showLogsWarning = true
+                }
+            }
         }
         .navigationTitle(L10n.advanced)
+        .alert("Proceed with Caution", isPresented: $showLogsWarning) {
+            Button("Cancel", role: .cancel) { }
+            Button("Open Logs") {
+                router.route(to: .log)
+            }
+        } message: {
+            Text("The logs feature may be unstable on some tvOS versions. If the app closes unexpectedly, simply reopen it.")
+        }
     }
 }
