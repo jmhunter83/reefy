@@ -28,14 +28,7 @@ extension Container {
 
     var mediaPlayerManager: Factory<MediaPlayerManager> {
         self { @MainActor in
-            .init(
-                playbackItem: .init(
-                    baseItem: .init(),
-                    mediaSource: .init(),
-                    playSessionID: "",
-                    url: URL(string: "/")!
-                )
-            )
+            .placeholder()
         }
         .scope(.session)
     }
@@ -222,13 +215,19 @@ final class MediaPlayerManager: ViewModel {
 
     // MARK: init
 
-//    static let empty: MediaPlayerManager = .init()
+    /// Creates an empty placeholder MediaPlayerManager with no active playback.
+    /// Used by Factory DI to provide a default instance before real playback starts.
+    static func placeholder() -> MediaPlayerManager {
+        let manager = MediaPlayerManager(item: .init())
+        manager.state = .stopped
+        return manager
+    }
 
-//    override private init() {
-//        self.item = .init()
-//        self.state = .stopped
-//        super.init()
-//    }
+    private init(item: BaseItemDto) {
+        self.item = item
+        self.state = .stopped
+        super.init()
+    }
 
     init(
         item: BaseItemDto,
