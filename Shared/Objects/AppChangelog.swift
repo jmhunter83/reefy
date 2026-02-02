@@ -30,7 +30,7 @@ enum AppChangelog {
                     description: "New per-server setting to allow connections to local Jellyfin servers using HTTP or self-signed certificates."
                 ),
                 ChangelogItem(
-                    icon: "shield.checkmark",
+                    icon: "checkmark.shield",
                     title: "Enhanced Security",
                     description: "Remote servers now require secure HTTPS connections. Local server exceptions are scoped to your home network only."
                 ),
