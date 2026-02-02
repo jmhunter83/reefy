@@ -1,6 +1,6 @@
 ## Library Support
 
-The Jellyfin Team is hard at work making Swiftfin the best Jellyfin client possible. As a volunteer-driven project, we unfortunately don't always have the resources to focus on every element that we would like to. Please know that these other library types are not forgotten, and we recognize the importance of additional media support. As we progress, we will update this page to reflect any new developments.
+> **Note:** This document is inherited from the upstream Swiftfin project. Reefy focuses on tvOS video playback and may have different priorities for library type support.
 
 For details on current library support and what is required for future expansion, see the table below.
 
