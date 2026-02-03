@@ -275,18 +275,13 @@ extension VideoPlayer {
 
                 case (.menu, .began):
                     print(
-                        "🎮 Menu press: isPresentingSupplement=\(isPresentingSupplement), isPresentingOverlay=\(isPresentingOverlay), supplementRecentlyDismissed=\(containerState.supplementRecentlyDismissed)"
+                        "🎮 Menu press: isPresentingSupplement=\(isPresentingSupplement), isPresentingOverlay=\(isPresentingOverlay)"
                     )
                     if isPresentingSupplement {
                         print("🎮 Menu: Dismissing supplement")
                         containerState.select(supplement: nil)
-                    } else if containerState.supplementRecentlyDismissed {
-                        print("🎮 Menu: Clearing recent supplement dismissal flag")
-                        // Supplement was just dismissed - clear flag but keep overlay visible
-                        containerState.supplementRecentlyDismissed = false
                     } else if isPresentingOverlay {
                         print("🎮 Menu: Hiding overlay")
-                        // First menu press hides overlay
                         withAnimation(.linear(duration: 0.25)) {
                             containerState.isPresentingOverlay = false
                         }
