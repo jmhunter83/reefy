@@ -29,7 +29,7 @@ struct PosterButton<Item: Poster>: View {
 
     private func poster(overlay: some View) -> some View {
         PosterImage(item: item, type: type)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: type == .landscape ? landscapeMaxWidth : portraitMaxWidth)
             .overlay { overlay }
             .contentShape(.contextMenuPreview, Rectangle())
             .posterStyle(type)
