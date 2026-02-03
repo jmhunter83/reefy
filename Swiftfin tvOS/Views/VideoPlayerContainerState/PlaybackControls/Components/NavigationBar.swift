@@ -17,16 +17,37 @@ extension VideoPlayer.PlaybackControls {
 
         var body: some View {
             VStack(alignment: .leading, spacing: 10) {
-                if let subtitle = manager.item.subtitle {
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.white)
-                }
+                // For episodes: Show series name, S#:E#, episode name
+                if manager.item.type == .episode {
+                    if let seriesName = manager.item.seriesName {
+                        Text(seriesName)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                    }
 
-                Text(manager.item.displayTitle)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    if let seasonEpisode = manager.item.subtitle {
+                        Text(seasonEpisode)
+                            .font(.title3)
+                            .foregroundStyle(.white.opacity(0.9))
+                    }
+
+                    Text(manager.item.displayTitle)
+                        .font(.callout)
+                        .foregroundStyle(.white.opacity(0.8))
+                } else {
+                    // For non-episodes: Show subtitle (if any) then title
+                    if let subtitle = manager.item.subtitle {
+                        Text(subtitle)
+                            .font(.subheadline)
+                            .foregroundStyle(.white)
+                    }
+
+                    Text(manager.item.displayTitle)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
     }
