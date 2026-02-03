@@ -7,6 +7,7 @@
 //
 
 import Defaults
+import Nuke
 import SwiftUI
 
 struct AppSettingsView: View {
@@ -31,6 +32,10 @@ struct AppSettingsView: View {
     private var removeAllServersSelected: Bool = false
     @State
     private var showLogsWarning = false
+    @State
+    private var showClearCacheConfirmation = false
+    @State
+    private var cacheCleared = false
 
     private var selectedServer: ServerState? {
         viewModel.servers.first { server in
@@ -80,19 +85,64 @@ struct AppSettingsView: View {
             SignOutIntervalSection()
 
             Section {
+                Button(role: .destructive) {
+                    showClearCacheConfirmation = true
+                } label: {
+                    HStack {
+                        Text("Clear Image Cache")
+                        if cacheCleared {
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                        }
+                    }
+                }
+            } header: {
+                Text("Cache")
+            } footer: {
+                Text(
+                    "Clears cached poster images and backdrops. Use this if images appear incorrect after updating metadata on your Jellyfin server."
+                )
+            }
+
+            Section {
                 ChevronButton(L10n.logs) {
                     showLogsWarning = true
                 }
             }
         }
         .navigationTitle(L10n.advanced)
+        .alert("Clear Image Cache?", isPresented: $showClearCacheConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Clear Cache", role: .destructive) {
+                clearImageCache()
+            }
+        } message: {
+            Text(
+                "This will remove all cached poster images and backdrops. They will be re-downloaded from your Jellyfin server when needed."
+            )
+        }
         .alert("Proceed with Caution", isPresented: $showLogsWarning) {
-            Button("Cancel", role: .cancel) { }
+            Button("Cancel", role: .cancel) {}
             Button("Open Logs") {
                 router.route(to: .log)
             }
         } message: {
             Text("The logs feature may be unstable on some tvOS versions. If the app closes unexpectedly, simply reopen it.")
+        }
+    }
+
+    private func clearImageCache() {
+        // Clear Nuke image caches
+        ImagePipeline.Swiftfin.posters.cache.removeAll()
+        DataCache.Swiftfin.posters?.removeAll()
+
+        // Show confirmation
+        cacheCleared = true
+
+        // Reset confirmation after delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            cacheCleared = false
         }
     }
 }
