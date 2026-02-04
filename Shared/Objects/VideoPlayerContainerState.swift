@@ -423,6 +423,10 @@ class VideoPlayerContainerState: ObservableObject {
         if let runtime = manager?.item.runtime {
             let totalDuration = runtime.seconds
             newScrubbed = max(0, min(totalDuration, newScrubbed))
+        } else {
+            // For items without runtime (e.g., live streams), clamp to minimum of 0
+            // Use a large fallback maximum (24 hours) for safety
+            newScrubbed = max(0, min(86400, newScrubbed))
         }
 
         scrubbedSeconds.value = .seconds(newScrubbed)
