@@ -106,7 +106,7 @@ private struct BackgroundVLCPlayer: View {
                     // Connect proxy to manager when player appears
                     manager.proxy = audioState.proxy
                     audioState.isPlayerReady = true
-                    
+
                     // Audio session is already configured in MediaPlayerManager.init()
                     // Now it's safe to manually start playback
                     audioState.proxy.vlcUIProxy.play()

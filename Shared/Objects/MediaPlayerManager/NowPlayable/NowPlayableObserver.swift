@@ -281,8 +281,6 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
         nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo
     }
 
-
-
     deinit {
         cancellables.removeAll()
         itemImageCancellable?.cancel()
