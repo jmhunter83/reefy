@@ -35,7 +35,8 @@ extension UIImage {
         // Offload cropping to background thread to prevent UI lag during scrubbing
         return await Task.detached(priority: .userInitiated) { [cgImage = self.cgImage] in
             guard let cgImage = cgImage,
-                  let croppedCGImage = cgImage.cropping(to: rect) else {
+                  let croppedCGImage = cgImage.cropping(to: rect)
+            else {
                 return nil
             }
             return UIImage(cgImage: croppedCGImage)
