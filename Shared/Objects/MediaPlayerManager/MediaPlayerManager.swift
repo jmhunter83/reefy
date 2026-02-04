@@ -243,6 +243,14 @@ final class MediaPlayerManager: ViewModel {
         )
         super.init()
 
+        // Configure audio session BEFORE any views render to prevent race conditions
+        // where VLC starts playback before the session is active (causing silent audio)
+        do {
+            try AudioSessionService.shared.configureForPlayback()
+        } catch {
+            logger.error("Failed to configure audio session during init: \(error.localizedDescription)")
+        }
+
         self.queue?.manager = self
     }
 
@@ -254,6 +262,14 @@ final class MediaPlayerManager: ViewModel {
         self.queue = queue.map { AnyMediaPlayerQueue($0) }
         self.state = .playback
         super.init()
+
+        // Configure audio session BEFORE any views render to prevent race conditions
+        // where VLC starts playback before the session is active (causing silent audio)
+        do {
+            try AudioSessionService.shared.configureForPlayback()
+        } catch {
+            logger.error("Failed to configure audio session during init: \(error.localizedDescription)")
+        }
 
         self.queue?.manager = self
         self.playbackItem = playbackItem

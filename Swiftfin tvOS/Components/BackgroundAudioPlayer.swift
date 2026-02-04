@@ -72,7 +72,9 @@ private struct BackgroundVLCPlayer: View {
 
     private func vlcConfiguration(for item: MediaPlayerItem) -> VLCVideoPlayer.Configuration {
         var configuration = VLCVideoPlayer.Configuration(url: item.url)
-        configuration.autoPlay = true
+        // Disable autoPlay to prevent race condition where VLC starts before audio session is configured
+        // Playback is manually started in .onAppear after proxy is set
+        configuration.autoPlay = false
         configuration.startSeconds = item.baseItem.startSeconds ?? .zero
 
         // Audio-specific options for smooth playback
@@ -104,6 +106,10 @@ private struct BackgroundVLCPlayer: View {
                     // Connect proxy to manager when player appears
                     manager.proxy = audioState.proxy
                     audioState.isPlayerReady = true
+                    
+                    // Audio session is already configured in MediaPlayerManager.init()
+                    // Now it's safe to manually start playback
+                    audioState.proxy.vlcUIProxy.play()
                 }
                 .onReceive(manager.$playbackItem) { playbackItem in
                     guard let playbackItem, playbackItem.baseItem.type == .audio else { return }

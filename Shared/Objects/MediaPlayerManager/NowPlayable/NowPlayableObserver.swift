@@ -45,10 +45,12 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
     }
 
     private func setup(with manager: MediaPlayerManager) {
-        do {
-            try startSession()
-        } catch {
-            logger.critical("Unable to activate audio session: \(error.localizedDescription)")
+        // Audio session is now configured in MediaPlayerManager.init()
+        // to prevent race conditions with VLC autoPlay.
+        // As a safety fallback, ensure the session is active.
+        if !AudioSessionService.shared.isSessionActive {
+            logger.warning("Audio session not active during observer setup, configuring now as fallback")
+            _ = AudioSessionService.shared.ensureSessionActive()
         }
 
         cancellables = []
@@ -158,7 +160,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
             try? await Task.sleep(for: .seconds(0.3))
 
             do {
-                try stopSession()
+                try AudioSessionService.shared.deactivateSession()
             } catch {
                 logger.critical("Unable to stop audio session: \(error.localizedDescription)")
             }
@@ -178,7 +180,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
             manager?.setPlaybackRequestStatus(status: .paused)
         case .ended:
             do {
-                try startSession()
+                try AudioSessionService.shared.configureForPlayback()
 
                 if playbackRequestStateBeforeInterruption == .playing {
                     if options.contains(.shouldResume) {
@@ -279,29 +281,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
         nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo
     }
 
-    private func startSession() throws {
 
-        let audioSession = AVAudioSession.sharedInstance()
-
-        do {
-            try audioSession.setCategory(.playback, mode: .default)
-            try audioSession.setActive(true)
-            logger.trace("Started AVAudioSession")
-        } catch {
-            logger.critical("Unable to activate AVAudioSession instance: \(error.localizedDescription)")
-            throw error
-        }
-    }
-
-    private func stopSession() throws {
-        do {
-            try AVAudioSession.sharedInstance().setActive(false)
-            logger.trace("Stopped AVAudioSession")
-        } catch {
-            logger.critical("Unable to deactivate AVAudioSession instance: \(error.localizedDescription)")
-            throw error
-        }
-    }
 
     deinit {
         cancellables.removeAll()

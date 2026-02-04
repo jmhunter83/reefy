@@ -55,6 +55,9 @@ struct VideoPlayer: View {
             PlaybackControls()
         }
         .onAppear {
+            // Audio session is already configured in MediaPlayerManager.init()
+            // (called in NavigationRoute before this view renders), preventing
+            // race conditions with VLC autoPlay
             manager.proxy = proxy
             manager.start()
         }
