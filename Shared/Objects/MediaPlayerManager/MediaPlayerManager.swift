@@ -296,20 +296,49 @@ final class MediaPlayerManager: ViewModel {
         // Ended should represent natural ending of playback, which
         // is verifiable by given seconds being near item runtime.
         // VLC proxy will send ended early.
-        guard let runtime = item.runtime else {
-            await self.stop()
-            return
-        }
-        let isNearEnd = (runtime - seconds) <= .seconds(1)
 
-        guard isNearEnd else {
-            // If not near end, ignore.
+        // For live streams, ignore ended events (should be filtered by proxy, but defensive)
+        if item.isLiveStream {
+            logger.trace("Ignoring ended event for live stream")
             return
         }
 
+        // If runtime is available, verify this is a natural ending (near end of content).
+        // VLC proxy can send ended early, so we need to verify.
+        if let runtime = item.runtime {
+            let isNearEnd = (runtime - seconds) <= .seconds(1)
+
+            guard isNearEnd else {
+                // If not near end, this is likely a spurious ended event - ignore it
+                logger.trace(
+                    "Ignoring ended event - not near end of content",
+                    metadata: [
+                        "currentSeconds": .stringConvertible(seconds.seconds),
+                        "runtime": .stringConvertible(runtime.seconds),
+                        "delta": .stringConvertible((runtime - seconds).seconds),
+                    ]
+                )
+                return
+            }
+        } else {
+            // No runtime metadata available (rare, but possible for malformed items)
+            // Log a warning but proceed with queue/stop logic
+            logger.warning(
+                "Ended event for item without runtime metadata",
+                metadata: [
+                    "itemID": .stringConvertible(item.id ?? "nil"),
+                    "itemTitle": .stringConvertible(item.displayTitle),
+                    "itemType": .stringConvertible(item.type?.rawValue ?? "unknown"),
+                ]
+            )
+        }
+
+        // Attempt to play next item in queue if autoplay is enabled
         if let nextItem = queue?.nextItem, Defaults[.VideoPlayer.autoPlayEnabled] {
+            logger.info("Auto-playing next item in queue")
             await self.playNewItem(provider: nextItem)
         } else {
+            logger.info("Stopping playback (no next item or autoplay disabled)")
             await self.stop()
         }
     }
