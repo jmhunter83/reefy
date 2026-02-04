@@ -154,8 +154,18 @@ extension VideoPlayer {
         private var playerRegularConstraints: [NSLayoutConstraint] = []
         private var playbackControlsConstraints: [NSLayoutConstraint] = []
 
-        private var supplementHeightAnchor: NSLayoutConstraint!
-        private var supplementBottomAnchor: NSLayoutConstraint!
+        private lazy var supplementHeightAnchor: NSLayoutConstraint = {
+            supplementContainerView.heightAnchor.constraint(
+                equalToConstant: supplementContainerOffset
+            )
+        }()
+
+        private lazy var supplementBottomAnchor: NSLayoutConstraint = {
+            supplementContainerView.topAnchor.constraint(
+                equalTo: view.bottomAnchor,
+                constant: -dismissedSupplementContainerOffset
+            )
+        }()
 
         // MARK: - Pan Gesture State
 
@@ -446,19 +456,11 @@ extension VideoPlayer {
 
             NSLayoutConstraint.activate(playerRegularConstraints)
 
-            supplementBottomAnchor = supplementContainerView.topAnchor.constraint(
-                equalTo: view.bottomAnchor,
-                constant: -dismissedSupplementContainerOffset
-            )
             // Defer to avoid "Publishing changes from within view updates" warning
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 self.containerState.supplementOffset = self.supplementBottomAnchor.constant
             }
-
-            supplementHeightAnchor = supplementContainerView.heightAnchor.constraint(
-                equalToConstant: supplementContainerOffset
-            )
 
             supplementRegularConstraints = [
                 supplementContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),

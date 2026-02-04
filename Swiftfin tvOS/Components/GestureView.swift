@@ -33,7 +33,7 @@ struct GestureView: UIViewRepresentable {
     }
 
     class Coordinator {
-        lazy var panGesture: DirectionalPanGestureRecognizer! = {
+        lazy var panGesture: DirectionalPanGestureRecognizer = {
             .init(direction: .vertical, target: self, action: #selector(handlePan))
         }()
 

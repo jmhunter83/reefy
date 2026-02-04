@@ -315,34 +315,36 @@ struct UserSignInView: View {
                 let userState = existingUser.state.state
                 let existingUserAccessPolicy = userState.accessPolicy
 
-                Button(L10n.signIn) {
-                    viewModel.saveExisting(
-                        user: existingUser,
-                        replaceForAccessToken: false,
-                        authenticationAction: (
-                            authenticationAction!,
-                            existingUserAccessPolicy,
-                            existingUserAccessPolicy.authenticateReason(
-                                user: userState
-                            )
-                        ),
-                        evaluatedPolicyMap: .init(action: processEvaluatedPolicy)
-                    )
-                }
+                if let authenticationAction {
+                    Button(L10n.signIn) {
+                        viewModel.saveExisting(
+                            user: existingUser,
+                            replaceForAccessToken: false,
+                            authenticationAction: (
+                                authenticationAction,
+                                existingUserAccessPolicy,
+                                existingUserAccessPolicy.authenticateReason(
+                                    user: userState
+                                )
+                            ),
+                            evaluatedPolicyMap: .init(action: processEvaluatedPolicy)
+                        )
+                    }
 
-                Button(L10n.replace) {
-                    viewModel.saveExisting(
-                        user: existingUser,
-                        replaceForAccessToken: true,
-                        authenticationAction: (
-                            authenticationAction!,
-                            existingUserAccessPolicy,
-                            existingUserAccessPolicy.authenticateReason(
-                                user: userState
-                            )
-                        ),
-                        evaluatedPolicyMap: .init(action: processEvaluatedPolicy)
-                    )
+                    Button(L10n.replace) {
+                        viewModel.saveExisting(
+                            user: existingUser,
+                            replaceForAccessToken: true,
+                            authenticationAction: (
+                                authenticationAction,
+                                existingUserAccessPolicy,
+                                existingUserAccessPolicy.authenticateReason(
+                                    user: userState
+                                )
+                            ),
+                            evaluatedPolicyMap: .init(action: processEvaluatedPolicy)
+                        )
+                    }
                 }
 
                 Button(L10n.dismiss, role: .cancel)
