@@ -54,13 +54,13 @@ struct SettingsView: View {
         }
         #endif
         .alert("Proceed with Caution", isPresented: $showLogsWarning) {
-            Button("Cancel", role: .cancel) { }
-            Button("Open Logs") {
-                router.route(to: .log)
+                Button("Cancel", role: .cancel) {}
+                Button("Open Logs") {
+                    router.route(to: .log)
+                }
+            } message: {
+                Text("The logs feature may be unstable on some tvOS versions. If the app closes unexpectedly, simply reopen it.")
             }
-        } message: {
-            Text("The logs feature may be unstable on some tvOS versions. If the app closes unexpectedly, simply reopen it.")
-        }
     }
 
     // MARK: - Server Section
