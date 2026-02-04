@@ -165,7 +165,11 @@ extension NavigationRoute {
     static let log = NavigationRoute(
         id: "log"
     ) {
+        #if os(tvOS)
+        SafeConsoleView()
+        #else
         ConsoleView()
+        #endif
     }
 
     #if os(tvOS)
