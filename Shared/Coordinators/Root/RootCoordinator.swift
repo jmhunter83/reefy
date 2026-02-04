@@ -42,7 +42,8 @@ final class RootCoordinator: ObservableObject {
 
             } catch {
                 await MainActor.run {
-                    Notifications[.didFailMigration].post()
+                    logger.error("Migration failed: \(error)")
+                    root(.migrationError(error))
                 }
             }
         }

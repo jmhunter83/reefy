@@ -38,6 +38,14 @@ struct RootItem: Identifiable {
         }
     }
 
+    static func migrationError(_ error: Error) -> RootItem {
+        RootItem(id: "migrationError") {
+            NavigationInjectionView(coordinator: .init()) {
+                ErrorView(error: error)
+            }
+        }
+    }
+
     #if os(iOS)
     static let serverCheck = RootItem(id: "serverCheck") {
         NavigationInjectionView(coordinator: .init()) {
