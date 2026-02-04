@@ -68,6 +68,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
             .store(in: &cancellables)
 
         manager.secondsBox.$value
+            .throttle(for: .seconds(0.5), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] newValue in self?.secondsDidChange(newValue) }
             .store(in: &cancellables)
 
