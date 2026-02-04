@@ -26,13 +26,13 @@ class TrickplayPreviewImageProvider: PreviewImageProvider {
         let rows: Int
         let tileInterval: Duration
 
-        func tile(for seconds: Duration) -> UIImage? {
+        func tile(for seconds: Duration) async -> UIImage? {
             guard secondsRange.contains(seconds) else {
                 return nil
             }
 
             let index = Int(((seconds - secondsRange.lowerBound) / tileInterval).rounded(.down))
-            return image.getTileImage(columns: columns, rows: rows, index: index)
+            return await image.getTileImage(columns: columns, rows: rows, index: index)
         }
     }
 
@@ -70,7 +70,7 @@ class TrickplayPreviewImageProvider: PreviewImageProvider {
 
         if let task = imageTasks[imageIndex] {
             guard let image = await task.value else { return nil }
-            return image.tile(for: seconds)
+            return await image.tile(for: seconds)
         }
 
         let interval = info.interval ?? 0
@@ -112,7 +112,7 @@ class TrickplayPreviewImageProvider: PreviewImageProvider {
         imageTasks[imageIndex] = currentImageTask
 
         guard let image = await currentImageTask.value else { return nil }
-        return image.tile(for: seconds)
+        return await image.tile(for: seconds)
     }
 
     private func task(
