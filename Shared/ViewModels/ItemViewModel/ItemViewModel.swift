@@ -97,6 +97,10 @@ class ItemViewModel: ViewModel, Stateful {
     private var toggleIsPlayedTask: AnyCancellable?
     private var refreshTask: AnyCancellable?
 
+    // Synchronization for item updates to prevent race conditions
+    private let itemUpdateQueue = DispatchQueue(label: "com.jellyfin.reefy.itemViewModel.itemUpdate")
+    private var itemVersion: UInt64 = 0
+
     // MARK: init
 
     init(item: BaseItemDto) {
@@ -127,6 +131,23 @@ class ItemViewModel: ViewModel, Stateful {
         self.init(item: shellSeriesItem)
     }
 
+    // MARK: - Item Update Synchronization
+
+    /// Safely updates the item with version checking to prevent race conditions
+    private func updateItem(_ newItem: BaseItemDto, version: UInt64) {
+        itemUpdateQueue.async { [weak self] in
+            guard let self else { return }
+
+            // Only update if this version is newer than what we have
+            guard version > self.itemVersion else { return }
+            self.itemVersion = version
+
+            Task { @MainActor [weak self] in
+                self?.item = newItem
+            }
+        }
+    }
+
     // MARK: respond
 
     func respond(to action: Action) -> State {
@@ -154,8 +175,13 @@ class ItemViewModel: ViewModel, Stateful {
 
                     await MainActor.run {
                         self.backgroundStates.remove(.refresh)
+
+                        // Generate version for this update
+                        let updateVersion = self.itemVersion + 1
+
+                        // Use versioned update instead of direct assignment
                         if results.fullItem.id != self.item.id || results.fullItem != self.item {
-                            self.item = results.fullItem
+                            self.updateItem(results.fullItem, version: updateVersion)
                         }
 
                         if !results.similarItems.elementsEqual(self.similarItems, by: { $0.id == $1.id }) {
@@ -208,7 +234,13 @@ class ItemViewModel: ViewModel, Stateful {
                     guard !Task.isCancelled else { return }
 
                     await MainActor.run {
-                        self.item = results.fullItem
+                        // Generate version for this update
+                        let updateVersion = self.itemVersion + 1
+
+                        // Use versioned update
+                        self.updateItem(results.fullItem, version: updateVersion)
+
+                        // Other properties can be updated directly
                         self.similarItems = results.similarItems
                         self.specialFeatures = results.specialFeatures
                         self.localTrailers = results.localTrailers
@@ -229,15 +261,16 @@ class ItemViewModel: ViewModel, Stateful {
             return .refreshing
         case let .replace(newItem):
 
+            // Generate highest priority version (external updates are authoritative)
+            let updateVersion = itemVersion + 100
+
             backgroundStates.insert(.refresh)
 
             Task { [weak self] in
                 guard let self else { return }
-                do {
-                    await MainActor.run {
-                        self.backgroundStates.remove(.refresh)
-                        self.item = newItem
-                    }
+                await MainActor.run {
+                    self.backgroundStates.remove(.refresh)
+                    self.updateItem(newItem, version: updateVersion)
                 }
             }
             .store(in: &cancellables)
