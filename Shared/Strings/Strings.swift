@@ -698,6 +698,10 @@ internal enum L10n {
   internal static let folder = L10n.tr("Localizable", "folder", fallback: "Folder")
   /// Folders
   internal static let folders = L10n.tr("Localizable", "folders", fallback: "Folders")
+  /// Forbidden
+  internal static let forbidden = L10n.tr("Localizable", "forbidden", fallback: "Forbidden")
+  /// You do not have permission to access this resource
+  internal static let forbiddenAccess = L10n.tr("Localizable", "forbiddenAccess", fallback: "You do not have permission to access this resource")
   /// Forced
   internal static let forced = L10n.tr("Localizable", "forced", fallback: "Forced")
   /// Force remote media transcoding
@@ -1042,6 +1046,10 @@ internal enum L10n {
   internal static let noRuntimeLimit = L10n.tr("Localizable", "noRuntimeLimit", fallback: "No runtime limit")
   /// No session
   internal static let noSession = L10n.tr("Localizable", "noSession", fallback: "No session")
+  /// Not Found
+  internal static let notFound = L10n.tr("Localizable", "notFound", fallback: "Not Found")
+  /// The requested item or page does not exist on this server
+  internal static let notFoundMessage = L10n.tr("Localizable", "notFoundMessage", fallback: "The requested item or page does not exist on this server")
   /// Type: %@ not implemented yet :(
   internal static func notImplementedYetWithType(_ p1: Any) -> String {
     return L10n.tr("Localizable", "notImplementedYetWithType", String(describing: p1), fallback: "Type: %@ not implemented yet :(")
@@ -1382,6 +1390,8 @@ internal enum L10n {
   internal static let servers = L10n.tr("Localizable", "servers", fallback: "Servers")
   /// Server URL
   internal static let serverURL = L10n.tr("Localizable", "serverURL", fallback: "Server URL")
+  /// Enter your server address (e.g., http://192.168.1.100:8096). IP addresses are more reliable on local networks. For best results, assign a fixed IP to your server.
+  internal static let serverURLHint = L10n.tr("Localizable", "serverURLHint", fallback: "Enter your server address (e.g., http://192.168.1.100:8096). IP addresses are more reliable on local networks. For best results, assign a fixed IP to your server.")
   /// Reefy requires Jellyfin version %@ or higher.
   internal static func serverVersionWarning(_ p1: Any) -> String {
     return L10n.tr("Localizable", "serverVersionWarning", String(describing: p1), fallback: "Reefy requires Jellyfin version %@ or higher.")

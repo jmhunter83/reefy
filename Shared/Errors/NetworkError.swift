@@ -139,9 +139,9 @@ enum NetworkError: LocalizedError, Hashable {
         case .unauthorized:
             return L10n.unauthorizedUser
         case .forbidden:
-            return L10n.error // TODO: Add specific localization
+            return L10n.forbiddenAccess
         case .notFound:
-            return L10n.error // TODO: Add specific localization
+            return L10n.notFoundMessage
         case let .serverError(_, message):
             return message ?? L10n.error
         case let .unknown(message):
