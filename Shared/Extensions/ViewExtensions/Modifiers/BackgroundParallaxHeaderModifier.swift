@@ -38,7 +38,7 @@ struct BackgroundParallaxHeaderModifier<Header: View>: ViewModifier {
             .background(alignment: .top) {
                 header()
                     .offset(y: scrollViewOffset > 0 ? -scrollViewOffset * multiplier : 0)
-                    .scaleEffect(scrollViewOffset < 0 ? (height - scrollViewOffset) / height : 1, anchor: .top)
+                    .scaleEffect(scrollViewOffset < 0 && height > 0 ? (height - scrollViewOffset) / height : 1, anchor: .top)
                     .frame(width: contentSize.width)
                     .mask(alignment: .top) {
                         Color.black

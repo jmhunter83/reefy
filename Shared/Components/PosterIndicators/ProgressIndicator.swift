@@ -23,7 +23,7 @@ struct ProgressIndicator: View {
             Spacer()
 
             accentColor
-                .scaleEffect(x: progress, y: 1, anchor: .leading)
+                .scaleEffect(x: max(progress, 0.001), y: 1, anchor: .leading)
                 .frame(height: height)
         }
         .frame(maxWidth: .infinity)
