@@ -60,6 +60,15 @@ final class RootCoordinator: ObservableObject {
 
     @objc
     private func didSignIn() {
+        // Ensure session is ready before transitioning to prevent 401 race condition
+        guard Container.shared.currentUserSession() != nil else {
+            logger.warning("didSignIn called but session not ready yet, retrying...")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.didSignIn()
+            }
+            return
+        }
+        
         logger.info("Signed in")
 
         #if os(tvOS)
