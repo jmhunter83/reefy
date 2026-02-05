@@ -100,10 +100,6 @@ internal enum L10n {
   internal static let allMedia = L10n.tr("Localizable", "allMedia", fallback: "All media")
   /// Allowed
   internal static let allowed = L10n.tr("Localizable", "allowed", fallback: "Allowed")
-  /// Allow Insecure Connection
-  internal static let allowInsecureConnection = L10n.tr("Localizable", "allowInsecureConnection", fallback: "Allow Insecure Connection")
-  /// Allows HTTP connections and untrusted SSL certificates for this server. Only enable for local servers you trust.
-  internal static let allowInsecureConnectionDescription = L10n.tr("Localizable", "allowInsecureConnectionDescription", fallback: "Allows HTTP connections and untrusted SSL certificates for this server. Only enable for local servers you trust.")
   /// All servers
   internal static let allServers = L10n.tr("Localizable", "allServers", fallback: "All servers")
   /// View and manage all registered users on the server, including their permissions and activity status.

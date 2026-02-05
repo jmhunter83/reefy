@@ -54,14 +54,5 @@ extension StoredValues.Keys {
                 default: .init()
             )
         }
-
-        static func allowsInsecureConnection(id: String) -> Key<Bool> {
-            ServerKey(
-                "allowsInsecureConnection",
-                ownerID: id,
-                domain: "security",
-                default: false
-            )
-        }
     }
 }

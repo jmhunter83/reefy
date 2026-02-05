@@ -78,14 +78,6 @@ struct EditServerView: View {
                 }
             }
 
-            Section {
-                Toggle(L10n.allowInsecureConnection, isOn: $viewModel.allowsInsecureConnection)
-            } header: {
-                Text(L10n.security)
-            } footer: {
-                Text(L10n.allowInsecureConnectionDescription)
-            }
-
             if isEditing {
                 Section {
                     Button(L10n.delete, role: .destructive) {

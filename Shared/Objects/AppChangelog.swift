@@ -25,14 +25,9 @@ enum AppChangelog {
             version: "1.1.1",
             items: [
                 ChangelogItem(
-                    icon: "lock.shield",
-                    title: "Local Server Support",
-                    description: "New per-server setting to allow connections to local Jellyfin servers using HTTP or self-signed certificates."
-                ),
-                ChangelogItem(
-                    icon: "checkmark.shield",
-                    title: "Enhanced Security",
-                    description: "Remote servers now require secure HTTPS connections. Local server exceptions are scoped to your home network only."
+                    icon: "checkmark.circle",
+                    title: "Fixed Authentication Issue",
+                    description: "Resolved critical issue where users could sign in but couldn't access their libraries. All server connections now work reliably."
                 ),
                 ChangelogItem(
                     icon: "exclamationmark.bubble",

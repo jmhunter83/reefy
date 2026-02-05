@@ -15,16 +15,8 @@ final class ServerConnectionViewModel: ViewModel {
     @Published
     private(set) var server: ServerState
 
-    @Published
-    var allowsInsecureConnection: Bool {
-        didSet {
-            StoredValues[.Server.allowsInsecureConnection(id: server.id)] = allowsInsecureConnection
-        }
-    }
-
     init(server: ServerState) {
         self.server = server
-        self.allowsInsecureConnection = StoredValues[.Server.allowsInsecureConnection(id: server.id)]
         super.init()
     }
 
