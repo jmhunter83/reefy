@@ -39,6 +39,8 @@ struct PagingLibraryView<Element: Poster & Identifiable>: View {
     @State
     private var presentBackground = false
     @State
+    private var presentSortSheet = false
+    @State
     private var layout: CollectionVGridLayout
     @State
     private var safeArea: EdgeInsets = .zero
@@ -336,6 +338,20 @@ struct PagingLibraryView<Element: Poster & Identifiable>: View {
         .animation(.linear(duration: 0.1), value: viewModel.state)
         .ignoresSafeArea()
         .navigationTitle(viewModel.parent?.displayTitle ?? "")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if viewModel.filterViewModel != nil {
+                    Button {
+                        presentSortSheet = true
+                    } label: {
+                        Image(systemName: "arrow.up.arrow.down")
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $presentSortSheet) {
+            LibrarySortView(viewModel: viewModel)
+        }
         .refreshable {
             viewModel.send(.refresh)
         }
