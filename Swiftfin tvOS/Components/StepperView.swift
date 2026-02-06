@@ -15,8 +15,8 @@ struct StepperView<Value: CustomStringConvertible & Strideable>: View {
 
     @State
     private var updatedValue: Value
-    @Environment(\.presentationMode)
-    private var presentationMode
+    @Environment(\.dismiss)
+    private var dismiss
 
     private var title: String
     private var description: String?
@@ -75,7 +75,7 @@ struct StepperView<Value: CustomStringConvertible & Strideable>: View {
 
                 Button(L10n.close) {
                     onCloseSelected()
-                    presentationMode.wrappedValue.dismiss()
+                    dismiss()
                 }
 
                 Spacer()

@@ -48,6 +48,11 @@ struct TVTabView: View {
     @State
     private var selectedSection: Section = .tvShows
 
+    @StateObject
+    private var tvShowsViewModel = ItemLibraryViewModel(
+        filters: .init(itemTypes: [.series])
+    )
+
     @FocusState
     private var focusedSection: Section?
 
@@ -112,12 +117,8 @@ struct TVTabView: View {
     // MARK: - TV Shows Content
 
     /// Displays the TV series library using the existing PagingLibraryView
-    @ViewBuilder
     private var tvShowsContent: some View {
-        let viewModel = ItemLibraryViewModel(
-            filters: .init(itemTypes: [.series])
-        )
-        PagingLibraryView(viewModel: viewModel)
+        PagingLibraryView(viewModel: tvShowsViewModel)
     }
 
     // MARK: - Live TV Content
