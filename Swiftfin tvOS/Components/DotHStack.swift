@@ -15,7 +15,7 @@ func DotHStack<Content: View>(
     SeparatorHStack {
         Circle()
             .frame(width: 5, height: 5)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, padding)
     } content: {
         content()
     }

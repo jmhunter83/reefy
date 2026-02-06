@@ -24,10 +24,13 @@ extension ItemView {
                 type: .landscape,
                 items: items
             ) { item in
-                guard item.mediaSources?.first != nil else { return }
-//                router.route(
-//                    to: .videoPlayer(manager: OnlineVideoPlayerManager(item: item, mediaSource: mediaSource))
-//                )
+                guard let mediaSource = item.mediaSources?.first else { return }
+
+                let manager = MediaPlayerManager(item: item) { item in
+                    try await MediaPlayerItem.build(for: item, mediaSource: mediaSource)
+                }
+
+                router.route(to: .videoPlayer(manager: manager))
             }
             .posterOverlay(for: BaseItemDto.self) { _ in EmptyView() }
         }

@@ -59,7 +59,9 @@ private struct TransportBarFocusEffects: ViewModifier {
     }
 
     func body(content: Content) -> some View {
+        #if DEBUG
         let _ = focusLog.trace("   ⚡ TransportBarFocusEffects[\(debugLabel)] isFocused=\(isFocused)")
+        #endif
 
         return content
             .scaleEffect(isFocused ? 1.05 : 1.0)
@@ -151,7 +153,9 @@ struct TransportBarMenu<Label: View, Content: View>: View {
             let deltaUs = lastFocusTime > 0 ? (now - lastFocusTime) / 1000 : 0
             lastFocusTime = now
 
+            #if DEBUG
             focusLog.debug("🎭 '\(title)': \(oldValue) → \(newValue) [+\(deltaUs)µs]")
+            #endif
             handleFocusChange(newValue)
         }
         .onDisappear {

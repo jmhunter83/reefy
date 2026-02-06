@@ -53,6 +53,10 @@ extension VideoPlayer {
         private var backwardResetTask: Task<Void, Never>?
         @State
         private var skipIndicatorResetTask: Task<Void, Never>?
+        @State
+        private var showSkipHelp = false
+        @State
+        private var skipHelpTask: Task<Void, Never>?
 
         private var isPresentingOverlay: Bool {
             containerState.isPresentingOverlay
@@ -147,12 +151,15 @@ extension VideoPlayer {
                             TransportBarBackground()
                         }
 
-                    // Skip explainer label
-                    Text("← → Skip: 1×=15s  2×=2min  3×=5min")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.6))
-                        .padding(.horizontal, 60)
-                        .padding(.bottom, 20)
+                    // Skip explainer label (shown briefly when overlay first appears)
+                    if showSkipHelp {
+                        Text("← → Skip: 1×=15s  2×=2min  3×=5min")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.6))
+                            .padding(.horizontal, 60)
+                            .padding(.bottom, 20)
+                            .transition(.opacity)
+                    }
                 }
             }
         }
@@ -250,6 +257,21 @@ extension VideoPlayer {
                     DispatchQueue.main.asyncAfter(deadline: .now() + AnimationTiming.skipIndicatorResetDelay) {
                         focusGuide.transition(to: "sideButtons")
                     }
+
+                    // Show skip help briefly
+                    skipHelpTask?.cancel()
+                    withAnimation(.easeIn(duration: 0.2)) {
+                        showSkipHelp = true
+                    }
+                    skipHelpTask = Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(3))
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            showSkipHelp = false
+                        }
+                    }
+                } else {
+                    skipHelpTask?.cancel()
+                    showSkipHelp = false
                 }
             }
             .onReceive(onPressEvent) { press in
@@ -274,20 +296,13 @@ extension VideoPlayer {
                     handleSkip(direction: .forward)
 
                 case (.menu, .began):
-                    print(
-                        "🎮 Menu press: isPresentingSupplement=\(isPresentingSupplement), isPresentingOverlay=\(isPresentingOverlay)"
-                    )
                     if isPresentingSupplement {
-                        print("🎮 Menu: Dismissing supplement")
                         containerState.select(supplement: nil)
                     } else if isPresentingOverlay {
-                        print("🎮 Menu: Hiding overlay")
                         withAnimation(.linear(duration: 0.25)) {
                             containerState.isPresentingOverlay = false
                         }
                     } else {
-                        print("🎮 Menu: Exiting playback")
-                        // Overlay hidden - exit playback
                         manager.proxy?.stop()
                         router.dismiss()
                     }

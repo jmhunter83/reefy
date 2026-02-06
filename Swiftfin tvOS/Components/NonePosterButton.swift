@@ -13,25 +13,21 @@ struct NonePosterButton: View {
     let type: PosterDisplayType
 
     var body: some View {
-        Button {
-            ZStack {
-                ZStack {
-                    Color(UIColor.darkGray)
-                        .opacity(0.5)
+        ZStack {
+            Color.secondary
+                .opacity(0.3)
 
-                    VStack(spacing: 20) {
-                        Image(systemName: "minus.circle")
-                            .font(.title)
-                            .foregroundColor(.secondary)
+            VStack(spacing: 20) {
+                Image(systemName: "minus.circle")
+                    .font(.title)
+                    .foregroundColor(.secondary)
 
-                        Text(L10n.none)
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .posterStyle(type)
+                Text(L10n.none)
+                    .font(.title3)
+                    .foregroundColor(.secondary)
             }
         }
-        .buttonStyle(.card)
+        .posterStyle(type)
+        .posterShadow()
     }
 }
