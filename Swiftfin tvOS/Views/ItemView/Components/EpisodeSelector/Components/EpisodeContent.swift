@@ -34,7 +34,7 @@ extension SeriesEpisodeSelector {
             Text(header)
                 .font(.footnote)
                 .foregroundColor(.primary)
-                .lineLimit(1)
+                .lineLimit(2, reservesSpace: true)
                 .multilineTextAlignment(.leading)
                 .padding(.bottom, 1)
         }

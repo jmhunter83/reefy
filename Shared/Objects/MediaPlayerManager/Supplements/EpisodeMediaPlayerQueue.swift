@@ -393,7 +393,7 @@ extension EpisodeMediaPlayerQueue {
                             .font(.headline)
                             .fontWeight(.semibold)
                             .foregroundStyle(.white)
-                            .lineLimit(1)
+                            .lineLimit(2)
 
                         DotHStack {
                             if let seasonEpisodeLabel = episode.seasonEpisodeLabel {
