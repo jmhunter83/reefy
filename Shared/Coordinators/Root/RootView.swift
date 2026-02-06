@@ -43,6 +43,7 @@ struct RootView: View {
         }
         .animation(.linear(duration: 0.1), value: rootCoordinator.root.id)
         .environmentObject(rootCoordinator)
+        .environmentObject(welcomeManager)
         .prefersStatusBarHidden(isStatusBarHidden)
         .onPreferenceChange(IsStatusBarHiddenKey.self) { newValue in
             isStatusBarHidden = newValue
