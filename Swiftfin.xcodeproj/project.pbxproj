@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		08BEEA4E5F77A74D7B6FE59F /* VideoPlayerContainerStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DAEE9EF7528B67B93A71FB1 /* VideoPlayerContainerStateTests.swift */; };
+		23A062AD25ABC338AAA5E337 /* PlaybackBufferingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61615511905F8C0D166D56C0 /* PlaybackBufferingTests.swift */; };
+		B77EDBCBE0FA07D2A9C8FE82 /* ItemFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B94B476DB14301B0D6F468 /* ItemFilterTests.swift */; };
+		C4C7D16E55A00283695C6BA5 /* AppChangelogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5BDFE0A03677D874EE53F3 /* AppChangelogTests.swift */; };
 		53ABFDDC267972BF00886593 /* TVServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53ABFDDB267972BF00886593 /* TVServices.framework */; };
 		62666DFA27E5013700EC0ECD /* TVVLCKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 625CB57D2678E81E00530A6E /* TVVLCKit.xcframework */; };
 		62666DFB27E5013700EC0ECD /* TVVLCKit.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 625CB57D2678E81E00530A6E /* TVVLCKit.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -136,6 +139,9 @@
 		637FCAF3287B5B2600C0A353 /* UDPBroadcast.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = UDPBroadcast.xcframework; path = Carthage/Build/UDPBroadcast.xcframework; sourceTree = "<group>"; };
 		6C1438DC36A93916AACE477B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		796E798440A8807BC2883549 /* Swiftfin tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Swiftfin tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		09B94B476DB14301B0D6F468 /* ItemFilterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ItemFilterTests.swift; sourceTree = "<group>"; };
+		1D5BDFE0A03677D874EE53F3 /* AppChangelogTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppChangelogTests.swift; sourceTree = "<group>"; };
+		61615511905F8C0D166D56C0 /* PlaybackBufferingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackBufferingTests.swift; sourceTree = "<group>"; };
 		B7283F82B960F951ABA41CDC /* MediaErrorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MediaErrorTests.swift; sourceTree = "<group>"; };
 		E1B2AB9628808CDF0072B3B9 /* GoogleCast.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GoogleCast.xcframework; path = Carthage/Build/GoogleCast.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -349,9 +355,12 @@
 		AAD4A20CAC7D1BEC55450E5C /* Swiftfin tvOS Tests */ = {
 			isa = PBXGroup;
 			children = (
-				5DAEE9EF7528B67B93A71FB1 /* VideoPlayerContainerStateTests.swift */,
-				1279A92061D12F3D7D8B6C9E /* NetworkErrorTests.swift */,
+				1D5BDFE0A03677D874EE53F3 /* AppChangelogTests.swift */,
+				09B94B476DB14301B0D6F468 /* ItemFilterTests.swift */,
 				B7283F82B960F951ABA41CDC /* MediaErrorTests.swift */,
+				1279A92061D12F3D7D8B6C9E /* NetworkErrorTests.swift */,
+				61615511905F8C0D166D56C0 /* PlaybackBufferingTests.swift */,
+				5DAEE9EF7528B67B93A71FB1 /* VideoPlayerContainerStateTests.swift */,
 			);
 			path = "Swiftfin tvOS Tests";
 			sourceTree = "<group>";
@@ -635,9 +644,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				08BEEA4E5F77A74D7B6FE59F /* VideoPlayerContainerStateTests.swift in Sources */,
-				B6FD5626C1D953D86DA73199 /* NetworkErrorTests.swift in Sources */,
+				C4C7D16E55A00283695C6BA5 /* AppChangelogTests.swift in Sources */,
+				B77EDBCBE0FA07D2A9C8FE82 /* ItemFilterTests.swift in Sources */,
 				6C6178530A261AC4FD50E4DC /* MediaErrorTests.swift in Sources */,
+				B6FD5626C1D953D86DA73199 /* NetworkErrorTests.swift in Sources */,
+				23A062AD25ABC338AAA5E337 /* PlaybackBufferingTests.swift in Sources */,
+				08BEEA4E5F77A74D7B6FE59F /* VideoPlayerContainerStateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -684,7 +696,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 8NFQ3695PG;
 				ENABLE_PREVIEWS = YES;
@@ -695,7 +707,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.reefy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -714,7 +726,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 8NFQ3695PG;
 				ENABLE_PREVIEWS = YES;
@@ -725,7 +737,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.reefy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
