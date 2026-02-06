@@ -21,6 +21,21 @@ struct ChangelogItem {
 
 enum AppChangelog {
     static let entries: [String: ChangelogEntry] = [
+        "1.1.2": ChangelogEntry(
+            version: "1.1.2",
+            items: [
+                ChangelogItem(
+                    icon: "ant.fill",
+                    title: "Bug Fixes",
+                    description: "Resolved various issues and improved app stability."
+                ),
+                ChangelogItem(
+                    icon: "speedometer",
+                    title: "Performance Improvements",
+                    description: "Enhanced responsiveness and reduced resource usage."
+                ),
+            ]
+        ),
         "1.1.1": ChangelogEntry(
             version: "1.1.1",
             items: [
