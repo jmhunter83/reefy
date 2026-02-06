@@ -36,10 +36,9 @@ extension Trie {
         var currentNode = root
 
         for key in key {
-            if currentNode.children[key] == nil {
-                currentNode.children[key] = TrieNode()
-            }
-            currentNode = currentNode.children[key]!
+            let nextNode = currentNode.children[key] ?? TrieNode()
+            currentNode.children[key] = nextNode
+            currentNode = nextNode
             currentNode.elements.append(element)
         }
         currentNode.isLeafNode = true

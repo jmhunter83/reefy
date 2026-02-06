@@ -290,7 +290,7 @@ struct FlowLayout: Layout {
 
         for i in (0 ..< optimizedRows.count - 1).reversed() {
             while optimizedRows[i + 1].count > minRowLength {
-                let firstItem = optimizedRows[i + 1].first!
+                guard let firstItem = optimizedRows[i + 1].first else { break }
 
                 var testRow = optimizedRows[i]
                 testRow.append(firstItem)

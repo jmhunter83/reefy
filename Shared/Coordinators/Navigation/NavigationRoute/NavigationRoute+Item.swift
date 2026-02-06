@@ -95,7 +95,8 @@ extension NavigationRoute {
                 viewModel: GenreEditorViewModel(item: item),
                 type: .genres,
                 route: { router, viewModel in
-                    router.route(to: .addGenre(viewModel: viewModel as! GenreEditorViewModel))
+                    guard let vm = viewModel as? GenreEditorViewModel else { return }
+                    router.route(to: .addGenre(viewModel: vm))
                 }
             )
         }
@@ -131,7 +132,8 @@ extension NavigationRoute {
                 viewModel: PeopleEditorViewModel(item: item),
                 type: .people,
                 route: { router, viewModel in
-                    router.route(to: .addPeople(viewModel: viewModel as! PeopleEditorViewModel))
+                    guard let vm = viewModel as? PeopleEditorViewModel else { return }
+                    router.route(to: .addPeople(viewModel: vm))
                 }
             )
         }
@@ -143,7 +145,8 @@ extension NavigationRoute {
                 viewModel: StudioEditorViewModel(item: item),
                 type: .studios,
                 route: { router, viewModel in
-                    router.route(to: .addStudio(viewModel: viewModel as! StudioEditorViewModel))
+                    guard let vm = viewModel as? StudioEditorViewModel else { return }
+                    router.route(to: .addStudio(viewModel: vm))
                 }
             )
         }
@@ -155,7 +158,8 @@ extension NavigationRoute {
                 viewModel: TagEditorViewModel(item: item),
                 type: .tags,
                 route: { router, viewModel in
-                    router.route(to: .addTag(viewModel: viewModel as! TagEditorViewModel))
+                    guard let vm = viewModel as? TagEditorViewModel else { return }
+                    router.route(to: .addTag(viewModel: vm))
                 }
             )
         }

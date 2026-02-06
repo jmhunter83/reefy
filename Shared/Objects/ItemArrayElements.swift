@@ -53,19 +53,19 @@ enum ItemArrayElements: Displayable {
         id: String?,
         personRole: String?,
         personKind: PersonKind?
-    ) -> T {
+    ) -> T? {
         switch self {
         case .genres, .tags:
-            return name as! T
+            return name as? T
         case .studios:
-            return NameGuidPair(id: id, name: name) as! T
+            return NameGuidPair(id: id, name: name) as? T
         case .people:
             return BaseItemPerson(
                 id: id,
                 name: name,
                 role: personRole,
                 type: personKind
-            ) as! T
+            ) as? T
         }
     }
 
