@@ -23,7 +23,7 @@ This workflow automates the process of:
 ## Source Data
 
 **Google Sheet**: Reefy Beta/TestFlight Sign-up (Responses)
-- URL: `https://docs.google.com/spreadsheets/d/1e5xx_9UfzJJkgUM31eTLqQqnxr-VH4bQMSgKTw500bY/edit`
+- URL: `https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit`
 - Columns: Timestamp, Email Address, First Name, Last Name
 
 **TestFlight**: App Store Connect
