@@ -27,37 +27,22 @@ enum AppChangelog {
                 ChangelogItem(
                     icon: "music.note.list",
                     title: "Music Playback",
-                    description: "Browse albums and tracks, with a dedicated music player featuring skip, shuffle, repeat, background audio, and ReplayGain normalization."
+                    description: "Browse albums, dedicated player with background audio."
                 ),
                 ChangelogItem(
                     icon: "forward.end.alt",
-                    title: "Skip Intro & Segments",
-                    description: "Automatically detects intro and outro segments from your Jellyfin server and shows skip buttons during playback."
+                    title: "Skip Intro",
+                    description: "Detects intro and outro segments with skip buttons."
                 ),
                 ChangelogItem(
                     icon: "line.3.horizontal.decrease",
                     title: "Library Sorting",
-                    description: "Sort your libraries by name, premiere date, date added, or random order with ascending/descending options."
+                    description: "Sort by name, date, or random from the toolbar."
                 ),
                 ChangelogItem(
-                    icon: "checkmark.circle",
-                    title: "Fixed Authentication",
-                    description: "Resolved critical issue where users could sign in but couldn't access their libraries. All server connections now work reliably."
-                ),
-                ChangelogItem(
-                    icon: "waveform.badge.magnifyingglass",
-                    title: "Smoother Playback",
-                    description: "Improved buffering tolerance for VPN and proxy connections, smarter bitrate detection, and fixes for silent audio and phantom playback."
-                ),
-                ChangelogItem(
-                    icon: "checkmark.shield",
-                    title: "Enhanced Security",
-                    description: "Removed global ATS bypass, HTTPS exceptions now scoped to local network only. Systematic crash prevention across the app."
-                ),
-                ChangelogItem(
-                    icon: "arrow.triangle.2.circlepath",
-                    title: "VLCKit 3.7.2",
-                    description: "Updated video engine with upstream codec and stability improvements."
+                    icon: "wrench.and.screwdriver",
+                    title: "Stability & Performance",
+                    description: "Fixed auth issues, smoother buffering, crash prevention."
                 ),
             ]
         ),
