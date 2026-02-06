@@ -18,8 +18,8 @@ struct SeeAllPosterButton: View {
             onSelect()
         } label: {
             ZStack {
-                Color(UIColor.darkGray)
-                    .opacity(0.5)
+                Color.secondary
+                    .opacity(0.3)
 
                 VStack(spacing: 20) {
                     Image(systemName: "chevron.right")

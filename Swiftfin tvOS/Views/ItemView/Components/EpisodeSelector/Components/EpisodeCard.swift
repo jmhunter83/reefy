@@ -32,11 +32,7 @@ extension SeriesEpisodeSelector {
                     ZStack(alignment: .bottomTrailing) {
                         Color.clear
 
-                        Image(systemName: "checkmark.circle.fill")
-                            .resizable()
-                            .frame(width: 30, height: 30, alignment: .bottomTrailing)
-                            .symbolRenderingMode(.palette)
-                            .foregroundStyle(.white, .black)
+                        WatchedIndicator(size: 45)
                             .padding()
                     }
                 }

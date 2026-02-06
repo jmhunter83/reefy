@@ -133,6 +133,7 @@ struct TVTabView: View {
                 .font(.title)
                 .fontWeight(.bold)
 
+            // TODO: localize "Coming Soon"
             Text("Coming Soon")
                 .font(.title3)
                 .foregroundColor(.secondary)

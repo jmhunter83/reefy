@@ -16,6 +16,7 @@ struct WelcomeView: View {
     var body: some View {
         VStack(spacing: 40) {
             // Title
+            // TODO: localize welcome title
             Text("Welcome to Reefy \(changelog.version)")
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -50,7 +51,7 @@ struct WelcomeView: View {
             Button {
                 onDismiss()
             } label: {
-                Text("Continue")
+                Text(L10n.continue)
                     .font(.title3)
                     .fontWeight(.semibold)
                     .frame(width: 300, height: 60)

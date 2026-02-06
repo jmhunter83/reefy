@@ -25,14 +25,14 @@ extension SeriesEpisodeSelector {
 
         private var subHeaderView: some View {
             Text(subHeader)
-                .font(.caption)
+                .font(.callout)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
         }
 
         private var headerView: some View {
             Text(header)
-                .font(.footnote)
+                .font(.body)
                 .foregroundColor(.primary)
                 .lineLimit(2, reservesSpace: true)
                 .multilineTextAlignment(.leading)
@@ -41,11 +41,10 @@ extension SeriesEpisodeSelector {
 
         private var contentView: some View {
             Text(content)
-                .font(.caption.weight(.light))
+                .font(.callout.weight(.light))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.leading)
                 .lineLimit(3, reservesSpace: true)
-                .font(.caption.weight(.light))
         }
 
         var body: some View {

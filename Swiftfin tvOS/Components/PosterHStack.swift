@@ -29,7 +29,7 @@ struct PosterHStack<Element: Poster, Data: Collection>: View where Data.Element 
                         .font(.title2)
                         .fontWeight(.semibold)
                         .accessibility(addTraits: [.isHeader])
-                        .padding(.leading, 50)
+                        .padding(.leading, EdgeInsets.edgePadding)
 
                     Spacer()
                 }

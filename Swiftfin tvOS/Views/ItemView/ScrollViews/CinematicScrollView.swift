@@ -250,7 +250,7 @@ extension ItemView {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.horizontal, 80)
+            .padding(.horizontal, EdgeInsets.edgePadding)
             .onChange(of: focusedLayer) { _, layer in
                 if layer == .top {
                     if viewModel.item.presentPlayButton {
