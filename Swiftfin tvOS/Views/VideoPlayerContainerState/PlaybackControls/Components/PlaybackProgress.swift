@@ -49,6 +49,15 @@ extension VideoPlayer.PlaybackControls {
                         .fill(.white)
                         .frame(width: progressWidth, height: 6)
 
+                    // Chapter boundary gaps (overlaid on both tracks)
+                    if let chapters = manager.item.fullChapterInfo,
+                       let runtime = manager.item.runtime,
+                       chapters.count > 1
+                    {
+                        ChapterTrackMask(chapters: chapters, runtime: runtime)
+                            .frame(height: 12)
+                    }
+
                     // Current position indicator (circle)
                     Circle()
                         .fill(.white)

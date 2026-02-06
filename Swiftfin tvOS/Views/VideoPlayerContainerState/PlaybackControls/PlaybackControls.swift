@@ -210,7 +210,13 @@ extension VideoPlayer {
                     // Title in top-left
                     titleOverlay
 
-                    // Skip indicator in center
+                    // Center playback buttons (play/pause + jump)
+                    if !isPresentingSupplement, containerState.skipIndicatorText == nil {
+                        PlaybackButtons()
+                            .isVisible(isPresentingOverlay)
+                    }
+
+                    // Skip indicator in center (overlays playback buttons)
                     skipIndicator
                         .animation(.easeOut(duration: 0.2), value: containerState.skipIndicatorText)
 
