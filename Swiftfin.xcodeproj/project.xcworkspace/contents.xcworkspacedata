@@ -4,4 +4,19 @@
    <FileRef
       location = "self:">
    </FileRef>
+   <FileRef
+      location = "group:REEFY_REBRANDING_GUIDE.md">
+   </FileRef>
+   <FileRef
+      location = "group:REBRANDING_CHECKLIST.md">
+   </FileRef>
+   <FileRef
+      location = "group:GETTING_STARTED.md">
+   </FileRef>
+   <FileRef
+      location = "group:ACTION_PLAN.md">
+   </FileRef>
+   <FileRef
+      location = "group:STATUS_REPORT.md">
+   </FileRef>
 </Workspace>

@@ -75,10 +75,18 @@ final class ConnectToServerViewModel: ViewModel {
     @Function(\Action.Cases.connect)
     private func connectToServer(_ url: String) async throws {
 
-        let formattedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedInput = url.trimmingCharacters(in: .whitespacesAndNewlines)
             .trimmingCharacters(in: .objectReplacement)
             .trimmingCharacters(in: ["/"])
-            .prepending("http://", if: !url.contains("://"))
+
+        let formattedURL: String
+        if trimmedInput.contains("://") {
+            formattedURL = trimmedInput
+        } else {
+            let host = URL(string: "http://\(trimmedInput)")?.host
+            let scheme = defaultScheme(for: host)
+            formattedURL = "\(scheme)://\(trimmedInput)"
+        }
 
         guard let url = URL(string: formattedURL) else { throw ErrorMessage("Invalid URL") }
 
@@ -113,14 +121,19 @@ final class ConnectToServerViewModel: ViewModel {
             throw ErrorMessage(L10n.unknownError)
         }
 
-        let connectionURL = processConnectionURL(
+        let connectionResult = processConnectionURL(
             initial: url,
             response: response.response.url
         )
 
+        var urls: Set<URL> = [connectionResult.current]
+        if let alternate = connectionResult.alternate, alternate != connectionResult.current {
+            urls.insert(alternate)
+        }
+
         let newServerState = ServerState(
-            urls: [connectionURL],
-            currentURL: connectionURL,
+            urls: urls,
+            currentURL: connectionResult.current,
             name: name,
             id: id,
             usersIDs: []
@@ -136,20 +149,54 @@ final class ConnectToServerViewModel: ViewModel {
     }
 
     /// In the event of redirects, get the new host URL from response
-    private func processConnectionURL(initial url: URL, response: URL?) -> URL {
+    private func processConnectionURL(initial url: URL, response: URL?) -> (current: URL, alternate: URL?) {
 
-        guard let response else { return url }
+        guard let response else { return (url, nil) }
 
-        if url.scheme != response.scheme ||
-            url.host != response.host
-        {
-            let newURL = response.absoluteString.trimmingSuffix(
-                Paths.getPublicSystemInfo.url?.absoluteString ?? ""
-            )
-            return URL(string: newURL) ?? url
+        let responseBase = baseURL(from: response) ?? url
+        let initialHost = url.host?.lowercased()
+        let responseHost = response.host?.lowercased()
+
+        if initialHost == responseHost {
+            return (responseBase, nil)
         }
 
-        return url
+        if let initialHost, initialHost.looksLikeIPv4Address {
+            return (url, responseBase)
+        }
+
+        return (responseBase, nil)
+    }
+
+    private func baseURL(from response: URL) -> URL? {
+        let newURL = response.absoluteString.trimmingSuffix(
+            Paths.getPublicSystemInfo.url?.absoluteString ?? ""
+        )
+        return URL(string: newURL)
+    }
+
+    private func defaultScheme(for host: String?) -> String {
+        guard let host else { return "http" }
+
+        if host.looksLikeIPv4Address || isLocalHostname(host) {
+            return "http"
+        }
+
+        return "https"
+    }
+
+    private func isLocalHostname(_ host: String) -> Bool {
+        let lowercasedHost = host.lowercased()
+        if lowercasedHost == "localhost" {
+            return true
+        }
+
+        let localSuffixes = ["local", "localdomain", "lan", "home", "home.arpa"]
+        if localSuffixes.contains(lowercasedHost) {
+            return true
+        }
+
+        return localSuffixes.contains { lowercasedHost.hasSuffix(".\($0)") }
     }
 
     private func isDuplicate(server: ServerState) -> Bool {

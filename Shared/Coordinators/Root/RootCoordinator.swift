@@ -68,7 +68,7 @@ final class RootCoordinator: ObservableObject {
             }
             return
         }
-        
+
         logger.info("Signed in")
 
         #if os(tvOS)

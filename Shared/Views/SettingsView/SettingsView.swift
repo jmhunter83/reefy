@@ -59,7 +59,9 @@ struct SettingsView: View {
                     router.route(to: .log)
                 }
             } message: {
-                Text("The logs feature may be unstable on tvOS. Avoid the \"Filters\" options in the sidebar - they will crash the app. If the app closes unexpectedly, simply reopen it.")
+                Text(
+                    "The logs feature may be unstable on tvOS. Avoid the \"Filters\" options in the sidebar - they will crash the app. If the app closes unexpectedly, simply reopen it."
+                )
             }
     }
 

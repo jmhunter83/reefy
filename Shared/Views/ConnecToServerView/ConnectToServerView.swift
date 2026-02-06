@@ -48,7 +48,7 @@ struct ConnectToServerView: View {
 
     @ViewBuilder
     private var connectSection: some View {
-        Section(L10n.connectToServer) {
+        Section {
             TextField(L10n.serverURL, text: $url)
                 .disableAutocorrection(true)
                 .textInputAutocapitalization(.never)
@@ -57,6 +57,14 @@ struct ConnectToServerView: View {
             #if os(tvOS)
                 .frame(minHeight: 60)
             #endif
+        }
+        header: {
+            Text(L10n.connectToServer)
+        }
+        footer: {
+            Text(L10n.serverURLHint)
+                .font(.footnote)
+                .foregroundColor(.secondary)
         }
 
         if viewModel.state == .connecting {
