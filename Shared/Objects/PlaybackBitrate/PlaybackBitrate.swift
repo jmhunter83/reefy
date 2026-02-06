@@ -87,6 +87,8 @@ enum PlaybackBitrate: Int, CaseIterable, Displayable, Storable {
         let testSizeBits = Double(testSize * 8)
         let testBitrate = testSizeBits / testDuration
 
-        return clamp(Int(testBitrate), min: 1_500_000, max: Int(Int32.max))
+        // Apply 20% safety margin to account for network fluctuation
+        let safeBitrate = Int(testBitrate * 0.8)
+        return clamp(safeBitrate, min: 1_500_000, max: Int(Int32.max))
     }
 }

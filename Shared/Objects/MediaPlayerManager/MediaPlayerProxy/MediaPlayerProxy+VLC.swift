@@ -167,8 +167,8 @@ extension VLCMediaPlayerProxy {
                 "network-caching": 5000, // 5 seconds network buffer (default 1000ms)
                 "file-caching": 5000, // 5 seconds file buffer
                 "live-caching": 5000, // 5 seconds live stream buffer
-                "clock-jitter": 0, // Disable clock jitter compensation
-                "clock-synchro": 0, // Disable clock sync (reduces latency sensitivity)
+                "clock-jitter": 1000, // Allow 1s jitter compensation for variable-latency networks
+                "clock-synchro": -1, // Auto-detect clock sync (default)
             ]
 
             // Apply audio output mode settings

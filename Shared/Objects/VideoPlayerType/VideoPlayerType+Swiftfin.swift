@@ -56,7 +56,7 @@ extension VideoPlayerType {
             isBreakOnNonKeyFrames: true,
             context: .streaming,
             maxAudioChannels: "8",
-            minSegments: 2,
+            minSegments: 3,
             protocol: MediaStreamProtocol.hls,
             type: .video
         ) {
