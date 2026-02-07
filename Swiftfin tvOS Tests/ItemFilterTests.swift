@@ -136,3 +136,52 @@ final class ItemFilterTests: XCTestCase {
         XCTAssertEqual(all.sortOrder, ItemSortOrder.allCases)
     }
 }
+
+final class HomeViewModelFilteringTests: XCTestCase {
+
+    func testFilteredHomeLibrariesCoalescesNilCollectionTypeToFolders() {
+        let userViews = [makeUserView(id: "folder-library", collectionType: nil)]
+
+        let result = HomeViewModel.filteredHomeLibraries(from: userViews, excluding: [])
+
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result.first?.id, "folder-library")
+        XCTAssertEqual(result.first?.collectionType, .folders)
+    }
+
+    func testFilteredHomeLibrariesKeepsSupportedTypesAndDropsLiveTV() {
+        let userViews = [
+            makeUserView(id: "movies", collectionType: .movies),
+            makeUserView(id: "tvshows", collectionType: .tvshows),
+            makeUserView(id: "livetv", collectionType: .livetv),
+        ]
+
+        let result = HomeViewModel.filteredHomeLibraries(from: userViews, excluding: [])
+        let ids = result.compactMap(\.id)
+
+        XCTAssertEqual(ids, ["movies", "tvshows"])
+    }
+
+    func testFilteredHomeLibrariesRespectsExcludedLibraryIDs() {
+        let userViews = [
+            makeUserView(id: "folder-library", collectionType: nil),
+            makeUserView(id: "movie-library", collectionType: .movies),
+        ]
+
+        let result = HomeViewModel.filteredHomeLibraries(
+            from: userViews,
+            excluding: ["folder-library"]
+        )
+        let ids = result.compactMap(\.id)
+
+        XCTAssertEqual(ids, ["movie-library"])
+    }
+
+    private func makeUserView(id: String, collectionType: CollectionType?) -> BaseItemDto {
+        var item = BaseItemDto()
+        item.id = id
+        item.collectionType = collectionType
+        item.type = .userView
+        return item
+    }
+}

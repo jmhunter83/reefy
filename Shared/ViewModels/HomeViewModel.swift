@@ -206,9 +206,21 @@ final class HomeViewModel: ViewModel, Stateful {
 
         async let excludedLibraryIDs = getExcludedLibraries()
 
-        return try await (userViews.value.items ?? [])
+        return try await Self.filteredHomeLibraries(
+            from: userViews.value.items ?? [],
+            excluding: excludedLibraryIDs
+        ).map { LatestInLibraryViewModel(parent: $0) }
+    }
+
+    static func filteredHomeLibraries(
+        from userViews: [BaseItemDto],
+        excluding excludedLibraryIDs: [String]
+    ) -> [BaseItemDto] {
+        userViews
+            .coalesced(property: \.collectionType, with: .folders)
             .intersecting(
                 [
+                    .folders,
                     .homevideos,
                     .movies,
                     .musicvideos,
@@ -217,7 +229,6 @@ final class HomeViewModel: ViewModel, Stateful {
                 using: \.collectionType
             )
             .subtracting(excludedLibraryIDs, using: \.id)
-            .map { LatestInLibraryViewModel(parent: $0) }
     }
 
     // TODO: use the more updated server/user data when implemented
