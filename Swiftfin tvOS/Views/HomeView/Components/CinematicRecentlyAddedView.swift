@@ -36,24 +36,26 @@ extension HomeView {
         }
 
         var body: some View {
-            CinematicItemSelector(items: viewModel.elements.elements)
-                .topContent { item in
-                    ImageView(itemSelectorImageSource(for: item))
-                        .placeholder { _ in
-                            EmptyView()
-                        }
-                        .failure {
-                            Text(item.displayTitle)
-                                .font(.largeTitle)
-                                .fontWeight(.semibold)
-                        }
-                        .edgePadding(.leading)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 200, alignment: .bottomLeading)
-                }
-                .onSelect { item in
-                    router.route(to: .item(item: item))
-                }
+            if viewModel.elements.isNotEmpty {
+                CinematicItemSelector(items: viewModel.elements.elements)
+                    .topContent { item in
+                        ImageView(itemSelectorImageSource(for: item))
+                            .placeholder { _ in
+                                EmptyView()
+                            }
+                            .failure {
+                                Text(item.displayTitle)
+                                    .font(.largeTitle)
+                                    .fontWeight(.semibold)
+                            }
+                            .edgePadding(.leading)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 200, alignment: .bottomLeading)
+                    }
+                    .onSelect { item in
+                        router.route(to: .item(item: item))
+                    }
+            }
         }
     }
 }

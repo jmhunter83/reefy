@@ -68,7 +68,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-(empty - ready for future work)
+- **Home Screen Empty State**: Prevented the cinematic recently added section from rendering as a blank hero area when no items are returned, and added an explicit Home empty-state view when all Home sections are empty.
 
 ### Changed
 

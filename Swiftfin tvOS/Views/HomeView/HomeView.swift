@@ -22,29 +22,77 @@ struct HomeView: View {
     @Default(.Customization.Home.showRecentlyAdded)
     private var showRecentlyAdded
 
+    private var hasResumeItems: Bool {
+        viewModel.resumeItems.isNotEmpty
+    }
+
+    private var hasNextUpItems: Bool {
+        viewModel.nextUpViewModel.elements.isNotEmpty
+    }
+
+    private var hasRecentlyAddedItems: Bool {
+        showRecentlyAdded && viewModel.recentlyAddedViewModel.elements.isNotEmpty
+    }
+
+    private var hasLibraryItems: Bool {
+        viewModel.libraries.contains(where: \.elements.isNotEmpty)
+    }
+
+    private var hasVisibleContent: Bool {
+        hasResumeItems || hasNextUpItems || hasRecentlyAddedItems || hasLibraryItems
+    }
+
+    private var isAnySectionRefreshing: Bool {
+        viewModel.nextUpViewModel.state == .refreshing ||
+            viewModel.recentlyAddedViewModel.state == .refreshing ||
+            viewModel.libraries.contains(where: { $0.state == .refreshing })
+    }
+
+    private var emptyStateView: some View {
+        VStack(spacing: 24) {
+            Image(systemName: "rectangle.stack")
+                .font(.system(size: 64))
+                .foregroundStyle(.secondary)
+
+            Text(L10n.noResults)
+                .font(.title3)
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, minHeight: UIScreen.main.bounds.height - 75)
+        .edgePadding(.horizontal)
+    }
+
     private var contentView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
 
-                if viewModel.resumeItems.isNotEmpty {
-                    CinematicResumeView(viewModel: viewModel)
+                if hasVisibleContent {
+                    if hasResumeItems {
+                        CinematicResumeView(viewModel: viewModel)
 
-                    NextUpView(viewModel: viewModel.nextUpViewModel)
+                        NextUpView(viewModel: viewModel.nextUpViewModel)
 
-                    if showRecentlyAdded {
-                        RecentlyAddedView(viewModel: viewModel.recentlyAddedViewModel)
+                        if showRecentlyAdded {
+                            RecentlyAddedView(viewModel: viewModel.recentlyAddedViewModel)
+                        }
+                    } else {
+                        if hasRecentlyAddedItems {
+                            CinematicRecentlyAddedView(viewModel: viewModel.recentlyAddedViewModel)
+                        }
+
+                        NextUpView(viewModel: viewModel.nextUpViewModel)
+                            .safeAreaPadding(.top, hasRecentlyAddedItems ? 150 : 0)
                     }
+
+                    ForEach(viewModel.libraries) { viewModel in
+                        LatestInLibraryView(viewModel: viewModel)
+                    }
+                } else if isAnySectionRefreshing {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, minHeight: UIScreen.main.bounds.height - 75)
                 } else {
-                    if showRecentlyAdded {
-                        CinematicRecentlyAddedView(viewModel: viewModel.recentlyAddedViewModel)
-                    }
-
-                    NextUpView(viewModel: viewModel.nextUpViewModel)
-                        .safeAreaPadding(.top, 150)
-                }
-
-                ForEach(viewModel.libraries) { viewModel in
-                    LatestInLibraryView(viewModel: viewModel)
+                    emptyStateView
                 }
             }
         }
