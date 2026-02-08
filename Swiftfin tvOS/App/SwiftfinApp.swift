@@ -67,10 +67,13 @@ struct SwiftfinApp: App {
                     Defaults[.backgroundTimeStamp] = Date.now
                 }
                 .onNotification(.applicationWillEnterForeground) {
-                    // TODO: needs to check if any background playback is happening
                     let backgroundedInterval = Date.now.timeIntervalSince(Defaults[.backgroundTimeStamp])
+                    let hasActivePlayback = Container.shared.mediaPlayerManager().isAudioPlaybackActive
 
-                    if Defaults[.signOutOnBackground], backgroundedInterval > Defaults[.backgroundSignOutInterval] {
+                    if Defaults[.signOutOnBackground],
+                       backgroundedInterval > Defaults[.backgroundSignOutInterval],
+                       !hasActivePlayback
+                    {
                         Defaults[.lastSignedInUserID] = .signedOut
                         Container.shared.currentUserSession.reset()
                         Notifications[.didSignOut].post()

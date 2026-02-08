@@ -7,6 +7,7 @@
 //
 
 import Combine
+import Factory
 import Foundation
 import Logging
 import MediaPlayer
@@ -31,14 +32,8 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
         ]
     }
 
-    private var queueCommands: [NowPlayableCommand] {
-        [
-            .nextTrack,
-            .previousTrack,
-        ]
-    }
-
     private var itemImageCancellable: AnyCancellable?
+    private var queueCommandStateCancellable: AnyCancellable?
     private var playbackRequestStateBeforeInterruption: MediaPlayerManager.PlaybackRequestStatus = .playing
 
     weak var manager: MediaPlayerManager? {
@@ -94,7 +89,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
                 defaultRegisteredCommands,
                 commandHandler: handleCommand
             )
-            updateQueueCommands()
+            queueDidChange(manager.queue)
         }
     }
 
@@ -121,20 +116,52 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
     }
 
     private func queueDidChange(_ newQueue: AnyMediaPlayerQueue?) {
-        updateQueueCommands()
+        queueCommandStateCancellable?.cancel()
+        queueCommandStateCancellable = nil
+
+        guard let newQueue else {
+            updateQueueCommands(hasNextItem: false, hasPreviousItem: false)
+            return
+        }
+
+        updateQueueCommands(
+            hasNextItem: newQueue.hasNextItem,
+            hasPreviousItem: newQueue.hasPreviousItem
+        )
+
+        queueCommandStateCancellable = newQueue.hasNextItemPublisher
+            .combineLatest(newQueue.hasPreviousItemPublisher)
+            .sink { [weak self] hasNextItem, hasPreviousItem in
+                self?.updateQueueCommands(
+                    hasNextItem: hasNextItem,
+                    hasPreviousItem: hasPreviousItem
+                )
+            }
     }
 
-    private func updateQueueCommands() {
-        let hasQueue = manager?.queue != nil
+    private func updateQueueCommands(hasNextItem: Bool, hasPreviousItem: Bool) {
+        setQueueCommand(.nextTrack, isEnabled: hasNextItem)
+        setQueueCommand(.previousTrack, isEnabled: hasPreviousItem)
+    }
 
-        for command in queueCommands {
-            if hasQueue {
-                command.addHandler(handleCommand)
-                command.isEnabled(true)
-            } else {
-                command.removeHandler()
-                command.isEnabled(false)
-            }
+    private func setQueueCommand(_ command: NowPlayableCommand, isEnabled: Bool) {
+        if isEnabled {
+            command.addHandler(handleCommand)
+            command.isEnabled(true)
+        } else {
+            command.removeHandler()
+            command.isEnabled(false)
+        }
+    }
+
+    private func hasActivePlaybackSession() -> Bool {
+        let activeManager = Container.shared.mediaPlayerManager()
+
+        switch activeManager.state {
+        case .initial, .error, .stopped:
+            return false
+        case .loadingItem, .playback:
+            return true
         }
     }
 
@@ -179,19 +206,24 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
 
     private func handleStopAction() {
         cancellables = []
+        queueCommandStateCancellable?.cancel()
+        queueCommandStateCancellable = nil
 
         for command in defaultRegisteredCommands {
             command.removeHandler()
         }
 
-        for command in queueCommands {
-            command.removeHandler()
-        }
+        updateQueueCommands(hasNextItem: false, hasPreviousItem: false)
 
         Task(priority: .userInitiated) {
             // TODO: figure out way to not need delay
             // Delay to wait for io to stop
             try? await Task.sleep(for: .seconds(0.3))
+
+            guard !hasActivePlaybackSession() else {
+                logger.trace("Skipping audio session deactivation because playback is active")
+                return
+            }
 
             do {
                 try AudioSessionService.shared.deactivateSession()
@@ -319,5 +351,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
         cancellables.removeAll()
         itemImageCancellable?.cancel()
         itemImageCancellable = nil
+        queueCommandStateCancellable?.cancel()
+        queueCommandStateCancellable = nil
     }
 }
