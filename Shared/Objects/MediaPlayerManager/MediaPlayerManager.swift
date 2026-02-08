@@ -196,6 +196,25 @@ final class MediaPlayerManager: ViewModel {
         let activeSegment = playbackItem.mediaSegments.first { $0.contains(time: time) }
 
         if currentSegment?.startTicks != activeSegment?.startTicks {
+            if let activeSegment {
+                logger.debug(
+                    "Entered media segment",
+                    metadata: [
+                        "itemID": .stringConvertible(playbackItem.baseItem.id ?? "nil"),
+                        "segmentType": .stringConvertible(activeSegment.type?.displayTitle ?? "unknown"),
+                        "startTicks": .stringConvertible(activeSegment.startTicks ?? 0),
+                        "endTicks": .stringConvertible(activeSegment.endTicks ?? 0),
+                    ]
+                )
+            } else if currentSegment != nil {
+                logger.debug(
+                    "Exited media segment",
+                    metadata: [
+                        "itemID": .stringConvertible(playbackItem.baseItem.id ?? "nil"),
+                    ]
+                )
+            }
+
             currentSegment = activeSegment
         }
     }
@@ -465,6 +484,16 @@ final class MediaPlayerManager: ViewModel {
         guard let endTicks = segment.endTicks else { return }
         let endSeconds = Double(endTicks) / 10_000_000
         let newDuration = Duration.seconds(endSeconds)
+
+        logger.info(
+            "Skipping media segment",
+            metadata: [
+                "itemID": .stringConvertible(playbackItem?.baseItem.id ?? "nil"),
+                "segmentType": .stringConvertible(segment.type?.displayTitle ?? "unknown"),
+                "targetSeconds": .stringConvertible(endSeconds),
+            ]
+        )
+
         self.seconds = newDuration
         self.proxy?.setSeconds(newDuration)
     }

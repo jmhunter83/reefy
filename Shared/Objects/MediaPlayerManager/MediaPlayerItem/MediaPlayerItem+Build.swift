@@ -9,7 +9,6 @@
 import Defaults
 import Factory
 import Foundation
-import Get
 import JellyfinAPI
 import Logging
 
@@ -157,8 +156,29 @@ extension MediaPlayerItem {
             return nil
         }()
 
-        let mediaSegmentsRequest = Request<[MediaSegmentDto]>(path: "/Items/\(itemID)/MediaSegments", method: .get)
-        let mediaSegments = await (try? userSession.client.send(mediaSegmentsRequest))?.value ?? []
+        let mediaSegments: [MediaSegmentDto]
+        do {
+            let mediaSegmentsRequest = Paths.getItemSegments(itemID: itemID)
+            let mediaSegmentsResponse = try await userSession.client.send(mediaSegmentsRequest).value
+            mediaSegments = mediaSegmentsResponse.items ?? []
+
+            logger.debug(
+                "Fetched media segments",
+                metadata: [
+                    "itemID": .stringConvertible(itemID),
+                    "segmentCount": .stringConvertible(mediaSegments.count),
+                ]
+            )
+        } catch {
+            logger.warning(
+                "Failed to fetch media segments",
+                metadata: [
+                    "itemID": .stringConvertible(itemID),
+                    "error": .stringConvertible(error.localizedDescription),
+                ]
+            )
+            mediaSegments = []
+        }
 
         let mediaPlayerItem = MediaPlayerItem(
             baseItem: item,
