@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		08BEEA4E5F77A74D7B6FE59F /* VideoPlayerContainerStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DAEE9EF7528B67B93A71FB1 /* VideoPlayerContainerStateTests.swift */; };
 		23A062AD25ABC338AAA5E337 /* PlaybackBufferingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61615511905F8C0D166D56C0 /* PlaybackBufferingTests.swift */; };
-		B77EDBCBE0FA07D2A9C8FE82 /* ItemFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B94B476DB14301B0D6F468 /* ItemFilterTests.swift */; };
-		C4C7D16E55A00283695C6BA5 /* AppChangelogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5BDFE0A03677D874EE53F3 /* AppChangelogTests.swift */; };
 		53ABFDDC267972BF00886593 /* TVServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53ABFDDB267972BF00886593 /* TVServices.framework */; };
 		62666DFA27E5013700EC0ECD /* TVVLCKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 625CB57D2678E81E00530A6E /* TVVLCKit.xcframework */; };
 		62666DFB27E5013700EC0ECD /* TVVLCKit.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 625CB57D2678E81E00530A6E /* TVVLCKit.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -30,7 +28,9 @@
 		62666E3227E5021E00EC0ECD /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62666E3127E5021E00EC0ECD /* UIKit.framework */; };
 		6C6178530A261AC4FD50E4DC /* MediaErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7283F82B960F951ABA41CDC /* MediaErrorTests.swift */; };
 		B6FD5626C1D953D86DA73199 /* NetworkErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1279A92061D12F3D7D8B6C9E /* NetworkErrorTests.swift */; };
+		B77EDBCBE0FA07D2A9C8FE82 /* ItemFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B94B476DB14301B0D6F468 /* ItemFilterTests.swift */; };
 		BD88CB422D77E6A0006BB5E3 /* TVOSPicker in Frameworks */ = {isa = PBXBuildFile; productRef = BD88CB412D77E6A0006BB5E3 /* TVOSPicker */; };
+		C4C7D16E55A00283695C6BA5 /* AppChangelogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5BDFE0A03677D874EE53F3 /* AppChangelogTests.swift */; };
 		D04348C2BD461D556AC693DF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C1438DC36A93916AACE477B /* Foundation.framework */; };
 		E1002B6B2793E36600E47059 /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = E1002B6A2793E36600E47059 /* Algorithms */; };
 		E1137D312E090C230091EB60 /* VLCUI in Frameworks */ = {isa = PBXBuildFile; productRef = E1137D302E090C230091EB60 /* VLCUI */; };
@@ -85,7 +85,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		09B94B476DB14301B0D6F468 /* ItemFilterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ItemFilterTests.swift; sourceTree = "<group>"; };
 		1279A92061D12F3D7D8B6C9E /* NetworkErrorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NetworkErrorTests.swift; sourceTree = "<group>"; };
+		1D5BDFE0A03677D874EE53F3 /* AppChangelogTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppChangelogTests.swift; sourceTree = "<group>"; };
 		535870602669D21600D05A09 /* Swiftfin tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Swiftfin tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5362E4A7267D4067000E2F71 /* GoogleCast.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GoogleCast.framework; path = "../../Downloads/GoogleCastSDK-ios-4.6.0_dynamic/GoogleCast.framework"; sourceTree = "<group>"; };
 		5362E4AA267D40AD000E2F71 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -106,6 +108,7 @@
 		5362E4C8267D40F7000E2F71 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		53ABFDDB267972BF00886593 /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS15.0.sdk/System/Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		5DAEE9EF7528B67B93A71FB1 /* VideoPlayerContainerStateTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VideoPlayerContainerStateTests.swift; sourceTree = "<group>"; };
+		61615511905F8C0D166D56C0 /* PlaybackBufferingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackBufferingTests.swift; sourceTree = "<group>"; };
 		625CB57D2678E81E00530A6E /* TVVLCKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = TVVLCKit.xcframework; path = Carthage/Build/TVVLCKit.xcframework; sourceTree = "<group>"; };
 		62666E0027E5016900EC0ECD /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		62666E0527E5017A00EC0ECD /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -139,9 +142,6 @@
 		637FCAF3287B5B2600C0A353 /* UDPBroadcast.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = UDPBroadcast.xcframework; path = Carthage/Build/UDPBroadcast.xcframework; sourceTree = "<group>"; };
 		6C1438DC36A93916AACE477B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		796E798440A8807BC2883549 /* Swiftfin tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Swiftfin tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		09B94B476DB14301B0D6F468 /* ItemFilterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ItemFilterTests.swift; sourceTree = "<group>"; };
-		1D5BDFE0A03677D874EE53F3 /* AppChangelogTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppChangelogTests.swift; sourceTree = "<group>"; };
-		61615511905F8C0D166D56C0 /* PlaybackBufferingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackBufferingTests.swift; sourceTree = "<group>"; };
 		B7283F82B960F951ABA41CDC /* MediaErrorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MediaErrorTests.swift; sourceTree = "<group>"; };
 		E1B2AB9628808CDF0072B3B9 /* GoogleCast.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GoogleCast.xcframework; path = Carthage/Build/GoogleCast.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -693,21 +693,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
-			ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
-			ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-			CODE_SIGN_STYLE = Automatic;
-			CURRENT_PROJECT_VERSION = 12;
-			DEVELOPMENT_ASSET_PATHS = "";
-			DEVELOPMENT_TEAM = 8NFQ3695PG;
-			ENABLE_PREVIEWS = YES;
-			ENABLE_USER_SCRIPT_SANDBOXING = NO;
-			FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-			INFOPLIST_FILE = "Swiftfin tvOS/Resources/Info.plist";
-			LD_RUNPATH_SEARCH_PATHS = (
-				"$(inherited)",
-				"@executable_path/Frameworks",
-			);
-			MARKETING_VERSION = 1.1.2;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 12;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 8NFQ3695PG;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = "Swiftfin tvOS/Resources/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.reefy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -723,21 +723,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
-			ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
-			ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-			CODE_SIGN_STYLE = Automatic;
-			CURRENT_PROJECT_VERSION = 12;
-			DEVELOPMENT_ASSET_PATHS = "";
-			DEVELOPMENT_TEAM = 8NFQ3695PG;
-			ENABLE_PREVIEWS = YES;
-			ENABLE_USER_SCRIPT_SANDBOXING = NO;
-			FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-			INFOPLIST_FILE = "Swiftfin tvOS/Resources/Info.plist";
-			LD_RUNPATH_SEARCH_PATHS = (
-				"$(inherited)",
-				"@executable_path/Frameworks",
-			);
-			MARKETING_VERSION = 1.1.2;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 12;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 8NFQ3695PG;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = "Swiftfin tvOS/Resources/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jmhunter.reefy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
