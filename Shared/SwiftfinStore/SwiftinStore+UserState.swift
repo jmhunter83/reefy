@@ -11,6 +11,7 @@ import Factory
 import Foundation
 import JellyfinAPI
 import KeychainSwift
+import Logging
 import Pulse
 import UIKit
 
@@ -44,7 +45,11 @@ extension UserState {
     var accessToken: String {
         get {
             guard let accessToken = Container.shared.keychainService().get("\(id)-accessToken") else {
-                assertionFailure("access token missing in keychain")
+                let logger = Logger.swiftfin()
+                logger
+                    .warning(
+                        "Access token missing in keychain for user \(id). This can happen if keychain and CoreStore became desynchronized."
+                    )
                 return ""
             }
 
@@ -75,7 +80,8 @@ extension UserState {
     var pin: String {
         get {
             guard let pin = Container.shared.keychainService().get("\(id)-pin") else {
-                assertionFailure("pin missing in keychain")
+                let logger = Logger.swiftfin()
+                logger.warning("PIN missing in keychain for user \(id). This can happen if keychain and CoreStore became desynchronized.")
                 return ""
             }
 

@@ -75,6 +75,13 @@ extension Container {
                 return nil
             }
 
+            guard !userState.accessToken.isEmpty else {
+                let logger = Logger.swiftfin()
+                logger.error("User \(userId) has no access token in keychain. Keychain and database may be desynchronized. Signing out.")
+                Defaults[.lastSignedInUserID] = .signedOut
+                return nil
+            }
+
             return .init(
                 server: server.state,
                 user: userState
