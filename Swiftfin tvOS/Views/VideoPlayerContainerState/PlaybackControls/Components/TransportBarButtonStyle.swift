@@ -168,14 +168,17 @@ struct TransportBarMenu<Label: View, Content: View>: View {
             menuOpenPokeTask?.cancel()
             menuOpenPokeTask = nil
             wasFocused = true
+            // Keep overlay alive while menu is focused
+            containerState.timer.stop()
         } else if wasFocused {
             wasFocused = false
             menuOpenPokeTask?.cancel()
+            // Menu closed — restart the auto-hide countdown with a single poke
             menuOpenPokeTask = Task { @MainActor in
-                while !Task.isCancelled {
-                    containerState.timer.poke()
-                    try? await Task.sleep(for: .seconds(3))
-                }
+                // Brief delay to allow system Menu popup to fully dismiss
+                try? await Task.sleep(for: .milliseconds(300))
+                guard !Task.isCancelled else { return }
+                containerState.timer.poke()
             }
         }
     }
@@ -236,14 +239,15 @@ struct SidePanelMenu<Label: View, Content: View>: View {
         if newValue {
             menuOpenPokeTask?.cancel()
             menuOpenPokeTask = nil
-            containerState.timer.poke()
+            // Keep overlay alive while menu is focused
+            containerState.timer.stop()
         } else {
             menuOpenPokeTask?.cancel()
+            // Menu closed — restart the auto-hide countdown with a single poke
             menuOpenPokeTask = Task { @MainActor in
-                while !Task.isCancelled {
-                    containerState.timer.poke()
-                    try? await Task.sleep(for: .seconds(3))
-                }
+                try? await Task.sleep(for: .milliseconds(300))
+                guard !Task.isCancelled else { return }
+                containerState.timer.poke()
             }
         }
     }

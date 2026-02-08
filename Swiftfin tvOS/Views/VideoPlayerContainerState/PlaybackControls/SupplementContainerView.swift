@@ -73,6 +73,7 @@ struct SupplementContainerView: View {
             }
         }
         .isVisible(containerState.isPresentingOverlay)
+        .disabled(!containerState.isPresentingOverlay)
         .animation(.linear(duration: 0.2), value: containerState.isPresentingOverlay)
         .focusSection()
         .focused($isFocused)

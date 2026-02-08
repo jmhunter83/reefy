@@ -6,7 +6,6 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Defaults
 import JellyfinAPI
 import PreferencesView
 import SwiftUI
@@ -53,11 +52,6 @@ extension VideoPlayer {
         private var backwardResetTask: Task<Void, Never>?
         @State
         private var skipIndicatorResetTask: Task<Void, Never>?
-        @State
-        private var showSkipHelp = false
-        @State
-        private var skipHelpTask: Task<Void, Never>?
-
         private var isPresentingOverlay: Bool {
             containerState.isPresentingOverlay
         }
@@ -143,24 +137,12 @@ extension VideoPlayer {
         @ViewBuilder
         private var transportBar: some View {
             if !isPresentingSupplement {
-                VStack(spacing: 8) {
-                    transportBarContent
-                        .padding(.horizontal, 60)
-                        .padding(.vertical, 30)
-                        .background {
-                            TransportBarBackground()
-                        }
-
-                    // Skip explainer label (shown briefly when overlay first appears)
-                    if showSkipHelp {
-                        Text("← → Skip: 1×=15s  2×=2min  3×=5min")
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.6))
-                            .padding(.horizontal, 60)
-                            .padding(.bottom, 20)
-                            .transition(.opacity)
+                transportBarContent
+                    .padding(.horizontal, 60)
+                    .padding(.vertical, 30)
+                    .background {
+                        TransportBarBackground()
                     }
-                }
             }
         }
 
@@ -210,13 +192,7 @@ extension VideoPlayer {
                     // Title in top-left
                     titleOverlay
 
-                    // Center playback buttons (play/pause + jump)
-                    if !isPresentingSupplement, containerState.skipIndicatorText == nil {
-                        PlaybackButtons()
-                            .isVisible(isPresentingOverlay)
-                    }
-
-                    // Skip indicator in center (overlays playback buttons)
+                    // Skip indicator in center
                     skipIndicator
                         .animation(.easeOut(duration: 0.2), value: containerState.skipIndicatorText)
 
@@ -263,21 +239,6 @@ extension VideoPlayer {
                     DispatchQueue.main.asyncAfter(deadline: .now() + AnimationTiming.skipIndicatorResetDelay) {
                         focusGuide.transition(to: "sideButtons")
                     }
-
-                    // Show skip help briefly
-                    skipHelpTask?.cancel()
-                    withAnimation(.easeIn(duration: 0.2)) {
-                        showSkipHelp = true
-                    }
-                    skipHelpTask = Task { @MainActor in
-                        try? await Task.sleep(for: .seconds(3))
-                        withAnimation(.easeOut(duration: 0.3)) {
-                            showSkipHelp = false
-                        }
-                    }
-                } else {
-                    skipHelpTask?.cancel()
-                    showSkipHelp = false
                 }
             }
             .onReceive(onPressEvent) { press in

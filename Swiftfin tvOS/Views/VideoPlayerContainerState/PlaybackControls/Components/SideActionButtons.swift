@@ -80,6 +80,7 @@ extension VideoPlayer.PlaybackControls {
                 bottom: "transportBar"
             )
             .isVisible(isScrubbing || isPresentingOverlay)
+            .disabled(!(isScrubbing || isPresentingOverlay))
         }
 
         private var isScrubbing: Bool {
