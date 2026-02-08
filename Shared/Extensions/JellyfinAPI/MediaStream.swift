@@ -271,39 +271,39 @@ extension MediaStream {
 extension [MediaStream] {
 
     /// Adjusts track indexes for a full set of media streams.
-    /// For non-transcode stream types:
-    ///   Internal tracks (non-external) are ordered as: Video, Audio, Subtitles, then any others.
-    ///   Their relative order within each group is preserved and indexes start at 0.
-    /// For transcode stream type:
-    ///   Only the first internal video track and the first internal audio track are included, in that order.
-    /// In both cases, external tracks are appended in their original order with indexes continuing after internal tracks.
+    ///
+    /// For **direct play**, VLC opens the original container file so its internal
+    /// track indexes match the server's original indexes. We preserve those indexes
+    /// and only append external tracks (which are loaded by URL, not by index).
+    ///
+    /// For **transcode**, the server repackages streams into a new container with
+    /// sequential indexes, so we remap: first video + selected audio + all subtitles,
+    /// indexed from 0. External tracks follow after.
     func adjustedTrackIndexes(for playMethod: PlayMethod, selectedAudioStreamIndex: Int) -> [MediaStream] {
         let internalTracks = self.filter { !($0.isExternal ?? false) }
         let externalTracks = self.filter { $0.isExternal ?? false }
 
+        if playMethod != .transcode {
+            // Direct play: keep original server indexes so they match VLC's
+            // internal track numbering from the container.
+            return internalTracks + externalTracks
+        }
+
+        // Transcode: server repackages streams, so build sequential indexes.
         var orderedInternal: [MediaStream] = []
 
+        let videoInternal = internalTracks.filter { $0.type == .video }
+        let audioInternal = internalTracks.filter { $0.type == .audio }
         let subtitleInternal = internalTracks.filter { $0.type == .subtitle }
 
-        if playMethod == .transcode {
-            // Only include the first video and first audio track for transcode.
-            let videoInternal = internalTracks.filter { $0.type == .video }
-            let audioInternal = internalTracks.filter { $0.type == .audio }
-
-            if let firstVideo = videoInternal.first {
-                orderedInternal.append(firstVideo)
-            }
-            if let selectedAudio = audioInternal.first(where: { $0.index == selectedAudioStreamIndex }) {
-                orderedInternal.append(selectedAudio)
-            }
-
-            orderedInternal += subtitleInternal
-        } else {
-            let videoInternal = internalTracks.filter { $0.type == .video }
-            let audioInternal = internalTracks.filter { $0.type == .audio }
-
-            orderedInternal = videoInternal + audioInternal + subtitleInternal
+        if let firstVideo = videoInternal.first {
+            orderedInternal.append(firstVideo)
         }
+        if let selectedAudio = audioInternal.first(where: { $0.index == selectedAudioStreamIndex }) {
+            orderedInternal.append(selectedAudio)
+        }
+
+        orderedInternal += subtitleInternal
 
         var newInternalTracks: [MediaStream] = []
         for (index, var track) in orderedInternal.enumerated() {
