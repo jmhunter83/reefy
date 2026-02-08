@@ -21,11 +21,30 @@ import Nuke
 @MainActor
 class NowPlayableObserver: ViewModel, MediaPlayerObserver {
 
+    private enum SeekDirection {
+        case forward
+        case backward
+
+        var sign: Double {
+            switch self {
+            case .forward:
+                return 1
+            case .backward:
+                return -1
+            }
+        }
+    }
+
+    private let seekStep: Duration = .seconds(5)
+    private let seekTickInterval: Duration = .milliseconds(250)
+
     private var defaultRegisteredCommands: [NowPlayableCommand] {
         [
             .play,
             .pause,
             .togglePausePlay,
+            .seekBackward,
+            .seekForward,
             .skipBackward,
             .skipForward,
             .changePlaybackPosition,
@@ -34,6 +53,8 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
 
     private var itemImageCancellable: AnyCancellable?
     private var queueCommandStateCancellable: AnyCancellable?
+    private var seekCommandTask: Task<Void, Never>?
+    private var activeSeekDirection: SeekDirection?
     private var playbackRequestStateBeforeInterruption: MediaPlayerManager.PlaybackRequestStatus = .playing
 
     weak var manager: MediaPlayerManager? {
@@ -208,6 +229,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
         cancellables = []
         queueCommandStateCancellable?.cancel()
         queueCommandStateCancellable = nil
+        stopSeeking()
 
         for command in defaultRegisteredCommands {
             command.removeHandler()
@@ -275,6 +297,12 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
             manager?.setPlaybackRequestStatus(status: .playing)
         case .togglePausePlay:
             manager?.togglePlayPause()
+        case .seekBackward:
+            guard let event = event as? MPSeekCommandEvent else { return .commandFailed }
+            return handleSeekEvent(direction: .backward, event: event)
+        case .seekForward:
+            guard let event = event as? MPSeekCommandEvent else { return .commandFailed }
+            return handleSeekEvent(direction: .forward, event: event)
         case .skipBackward:
             guard let event = event as? MPSkipIntervalCommandEvent else { return .commandFailed }
             manager?.proxy?.jumpBackward(.seconds(event.interval))
@@ -294,6 +322,63 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
         }
 
         return .success
+    }
+
+    private func handleSeekEvent(
+        direction: SeekDirection,
+        event: MPSeekCommandEvent
+    ) -> MPRemoteCommandHandlerStatus {
+        switch event.type {
+        case .beginSeeking:
+            startSeeking(direction: direction)
+        case .endSeeking:
+            // Only end if this is the currently active seek direction.
+            if activeSeekDirection == direction {
+                stopSeeking()
+            }
+        @unknown default:
+            return .commandFailed
+        }
+
+        return .success
+    }
+
+    private func startSeeking(direction: SeekDirection) {
+        stopSeeking()
+        activeSeekDirection = direction
+
+        seekCommandTask = Task { [weak self] in
+            guard let self else { return }
+
+            await self.performSeekTick(direction: direction)
+
+            while !Task.isCancelled {
+                try? await Task.sleep(for: self.seekTickInterval)
+                await self.performSeekTick(direction: direction)
+            }
+        }
+    }
+
+    private func stopSeeking() {
+        seekCommandTask?.cancel()
+        seekCommandTask = nil
+        activeSeekDirection = nil
+    }
+
+    private func performSeekTick(direction: SeekDirection) {
+        guard let manager else { return }
+
+        let currentSeconds = manager.seconds.seconds
+        let targetSeconds = currentSeconds + (direction.sign * seekStep.seconds)
+        let clampedTargetSeconds: Double
+
+        if let runtime = manager.item.runtime?.seconds {
+            clampedTargetSeconds = min(max(0, targetSeconds), runtime)
+        } else {
+            clampedTargetSeconds = max(0, targetSeconds)
+        }
+
+        manager.proxy?.setSeconds(.seconds(clampedTargetSeconds))
     }
 
     private func handleNowPlayablePlaybackChange(
@@ -353,5 +438,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
         itemImageCancellable = nil
         queueCommandStateCancellable?.cancel()
         queueCommandStateCancellable = nil
+        seekCommandTask?.cancel()
+        seekCommandTask = nil
     }
 }
