@@ -70,6 +70,10 @@ private struct BackgroundVLCPlayer: View {
     @State
     private var lastReportedState: VLCVideoPlayer.State?
 
+    /// Track initial item to prevent double-play race condition
+    @State
+    private var initialItemID: String?
+
     private func vlcConfiguration(for item: MediaPlayerItem) -> VLCVideoPlayer.Configuration {
         var configuration = VLCVideoPlayer.Configuration(url: item.url)
         // Disable autoPlay to prevent race condition where VLC starts before audio session is configured
@@ -107,13 +111,24 @@ private struct BackgroundVLCPlayer: View {
                     manager.proxy = audioState.proxy
                     audioState.isPlayerReady = true
 
+                    // Store initial item ID to prevent double-play
+                    initialItemID = manager.playbackItem?.baseItem.id
+
                     // Audio session is already configured in MediaPlayerManager.init()
                     // Now it's safe to manually start playback
                     audioState.proxy.vlcUIProxy.play()
                 }
-                .onReceive(manager.$playbackItem) { playbackItem in
-                    guard let playbackItem, playbackItem.baseItem.type == .audio else { return }
-                    audioState.proxy.vlcUIProxy.playNewMedia(vlcConfiguration(for: playbackItem))
+                .onReceive(manager.$playbackItem) { newItem in
+                    guard let newItem, newItem.baseItem.type == .audio else { return }
+
+                    // Skip the initial emission to prevent double-play race condition
+                    // The VLCVideoPlayer is already configured with this item in its initializer
+                    if newItem.baseItem.id == initialItemID {
+                        initialItemID = nil // Clear after first skip
+                        return
+                    }
+
+                    audioState.proxy.vlcUIProxy.playNewMedia(vlcConfiguration(for: newItem))
                 }
         }
     }

@@ -28,9 +28,13 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
             .skipBackward,
             .skipForward,
             .changePlaybackPosition,
-            // TODO: only register next/previous if there is a queue
-//            .nextTrack,
-//            .previousTrack,
+        ]
+    }
+
+    private var queueCommands: [NowPlayableCommand] {
+        [
+            .nextTrack,
+            .previousTrack,
         ]
     }
 
@@ -72,6 +76,10 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
             .sink { [weak self] newValue in self?.secondsDidChange(newValue) }
             .store(in: &cancellables)
 
+        manager.$queue
+            .sink { [weak self] newValue in self?.queueDidChange(newValue) }
+            .store(in: &cancellables)
+
         Notifications[.avAudioSessionInterruption]
             .publisher
             .sink { [weak self] i in
@@ -86,6 +94,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
                 defaultRegisteredCommands,
                 commandHandler: handleCommand
             )
+            updateQueueCommands()
         }
     }
 
@@ -93,6 +102,7 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
         handleNowPlayablePlaybackChange(
             playing: newStatus == .playing,
             metadata: .init(
+                rate: Float(manager?.rate ?? 1.0),
                 position: manager?.seconds ?? .zero,
                 duration: manager?.item.runtime ?? .zero
             )
@@ -101,12 +111,31 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
 
     private func secondsDidChange(_ newSeconds: Duration) {
         handleNowPlayablePlaybackChange(
-            playing: true,
+            playing: manager?.playbackRequestStatus == .playing,
             metadata: .init(
+                rate: Float(manager?.rate ?? 1.0),
                 position: newSeconds,
                 duration: manager?.item.runtime ?? .zero
             )
         )
+    }
+
+    private func queueDidChange(_ newQueue: AnyMediaPlayerQueue?) {
+        updateQueueCommands()
+    }
+
+    private func updateQueueCommands() {
+        let hasQueue = manager?.queue != nil
+
+        for command in queueCommands {
+            if hasQueue {
+                command.addHandler(handleCommand)
+                command.isEnabled(true)
+            } else {
+                command.removeHandler()
+                command.isEnabled(false)
+            }
+        }
     }
 
     private func actionDidChange(_ newAction: MediaPlayerManager._Action) {
@@ -152,6 +181,10 @@ class NowPlayableObserver: ViewModel, MediaPlayerObserver {
         cancellables = []
 
         for command in defaultRegisteredCommands {
+            command.removeHandler()
+        }
+
+        for command in queueCommands {
             command.removeHandler()
         }
 
