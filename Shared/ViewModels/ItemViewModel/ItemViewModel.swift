@@ -30,6 +30,13 @@ class ItemViewModel: ViewModel, Stateful {
         case selectMediaSource(MediaSourceInfo)
     }
 
+    enum Event: Equatable {
+        case favoriteUpdated(isFavorite: Bool)
+        case favoriteUpdateFailed
+        case playedUpdated(isPlayed: Bool)
+        case playedUpdateFailed
+    }
+
     // MARK: BackgroundState
 
     enum BackgroundState: Hashable {
@@ -80,6 +87,12 @@ class ItemViewModel: ViewModel, Stateful {
     var backgroundStates: Set<BackgroundState> = []
     @Published
     var state: State = .initial
+
+    private let eventSubject = PassthroughSubject<Event, Never>()
+
+    var events: AnyPublisher<Event, Never> {
+        eventSubject.eraseToAnyPublisher()
+    }
 
     private var itemID: String {
         get throws {
@@ -282,18 +295,26 @@ class ItemViewModel: ViewModel, Stateful {
 
             toggleIsFavoriteTask = Task {
 
-                let beforeIsFavorite = item.userData?.isFavorite ?? false
+                let beforeUserData = item.userData
+                let beforeIsFavorite = beforeUserData?.isFavorite ?? false
+                let targetIsFavorite = !beforeIsFavorite
 
                 await MainActor.run {
-                    item.userData?.isFavorite?.toggle()
+                    if item.userData == nil {
+                        item.userData = .init()
+                    }
+                    item.userData?.isFavorite = targetIsFavorite
                 }
 
                 do {
-                    try await setIsFavorite(!beforeIsFavorite)
+                    try await setIsFavorite(targetIsFavorite)
+                    await MainActor.run {
+                        eventSubject.send(.favoriteUpdated(isFavorite: targetIsFavorite))
+                    }
                 } catch {
                     await MainActor.run {
-                        item.userData?.isFavorite = beforeIsFavorite
-                        // emit event that toggle unsuccessful
+                        item.userData = beforeUserData
+                        eventSubject.send(.favoriteUpdateFailed)
                     }
                 }
             }
@@ -306,18 +327,26 @@ class ItemViewModel: ViewModel, Stateful {
 
             toggleIsPlayedTask = Task {
 
-                let beforeIsPlayed = item.userData?.isPlayed ?? false
+                let beforeUserData = item.userData
+                let beforeIsPlayed = beforeUserData?.isPlayed ?? false
+                let targetIsPlayed = !beforeIsPlayed
 
                 await MainActor.run {
-                    item.userData?.isPlayed?.toggle()
+                    if item.userData == nil {
+                        item.userData = .init()
+                    }
+                    item.userData?.isPlayed = targetIsPlayed
                 }
 
                 do {
-                    try await setIsPlayed(!beforeIsPlayed)
+                    try await setIsPlayed(targetIsPlayed)
+                    await MainActor.run {
+                        eventSubject.send(.playedUpdated(isPlayed: targetIsPlayed))
+                    }
                 } catch {
                     await MainActor.run {
-                        item.userData?.isPlayed = beforeIsPlayed
-                        // emit event that toggle unsuccessful
+                        item.userData = beforeUserData
+                        eventSubject.send(.playedUpdateFailed)
                     }
                 }
             }
