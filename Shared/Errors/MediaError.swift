@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that can occur during media playback
-enum MediaError: LocalizedError, Hashable {
+enum MediaError: LocalizedError, Hashable, SystemImageable {
 
     // MARK: - Playback Errors
 
@@ -55,33 +55,33 @@ enum MediaError: LocalizedError, Hashable {
     var errorDescription: String? {
         switch self {
         case .noPlayableSource:
-            return "No playable source available for this item."
+            return L10n.mediaErrorNoPlayableSource
         case let .unsupportedFormat(format):
             if let format {
-                return "The media format '\(format)' is not supported."
+                return L10n.mediaErrorUnsupportedFormatNamed(format)
             }
-            return "The media format is not supported."
+            return L10n.mediaErrorUnsupportedFormat
         case let .transcodingFailed(reason):
-            return reason ?? "Server transcoding failed."
+            return reason ?? L10n.mediaErrorTranscodingFailed
         case .streamEnded:
-            return "The media stream ended unexpectedly."
+            return L10n.mediaErrorStreamEnded
         case let .loadFailed(reason):
-            return reason ?? "Failed to load media."
+            return reason ?? L10n.mediaErrorLoadFailed
         case let .itemNotFound(itemId):
             if let itemId {
-                return "Item '\(itemId)' was not found."
+                return L10n.mediaErrorItemNotFoundNamed(itemId)
             }
-            return "The requested item was not found."
+            return L10n.mediaErrorItemNotFound
         case .noMediaInfo:
-            return "No media information available for this item."
+            return L10n.mediaErrorNoMediaInfo
         case .notPlayable:
-            return "This item type cannot be played."
+            return L10n.mediaErrorNotPlayable
         case .sessionCreationFailed:
-            return "Failed to create playback session."
+            return L10n.mediaErrorSessionCreationFailed
         case .sessionExpired:
-            return "Your playback session has expired."
+            return L10n.mediaErrorSessionExpired
         case .reportingFailed:
-            return "Failed to report playback progress."
+            return L10n.mediaErrorReportingFailed
         }
     }
 
@@ -89,15 +89,15 @@ enum MediaError: LocalizedError, Hashable {
     var errorTitle: String {
         switch self {
         case .noPlayableSource, .unsupportedFormat, .notPlayable:
-            return "Cannot Play"
+            return L10n.mediaErrorTitleCannotPlay
         case .transcodingFailed:
-            return "Transcoding Error"
+            return L10n.mediaErrorTranscoding
         case .streamEnded, .loadFailed:
-            return "Playback Error"
+            return L10n.mediaErrorPlayback
         case .itemNotFound, .noMediaInfo:
-            return "Item Error"
+            return L10n.mediaErrorItemError
         case .sessionCreationFailed, .sessionExpired, .reportingFailed:
-            return "Session Error"
+            return L10n.mediaErrorSessionError
         }
     }
 
@@ -108,6 +108,61 @@ enum MediaError: LocalizedError, Hashable {
             return true
         case .noPlayableSource, .unsupportedFormat, .itemNotFound, .noMediaInfo, .notPlayable, .sessionCreationFailed:
             return false
+        }
+    }
+
+    // MARK: - SystemImageable
+
+    var systemImage: String {
+        switch self {
+        case .noPlayableSource:
+            "xmark.circle"
+        case .unsupportedFormat:
+            "film.fill"
+        case .transcodingFailed:
+            "gearshape.fill"
+        case .streamEnded:
+            "exclamationmark.triangle"
+        case .loadFailed:
+            "exclamationmark.triangle"
+        case .itemNotFound:
+            "questionmark.circle"
+        case .noMediaInfo:
+            "info.circle"
+        case .notPlayable:
+            "xmark.circle"
+        case .sessionCreationFailed:
+            "server.rack"
+        case .sessionExpired:
+            "clock.badge.exclamationmark"
+        case .reportingFailed:
+            "exclamationmark.arrow.circlepath"
+        }
+    }
+
+    /// A recovery suggestion for the error
+    var recoverySuggestion: String? {
+        switch self {
+        case .noPlayableSource:
+            return L10n.mediaErrorRecoveryMovedOrDeleted
+        case .unsupportedFormat:
+            return L10n.mediaErrorRecoveryDifferentFormat
+        case .transcodingFailed:
+            return L10n.mediaErrorRecoveryLowerQuality
+        case .streamEnded, .loadFailed:
+            return L10n.mediaErrorRecoveryTryAgain
+        case .itemNotFound:
+            return L10n.mediaErrorRecoveryRemovedFromServer
+        case .noMediaInfo:
+            return L10n.mediaErrorRecoveryRefreshMetadata
+        case .notPlayable:
+            return nil
+        case .sessionCreationFailed:
+            return L10n.mediaErrorRecoveryTryAgainOrRestart
+        case .sessionExpired:
+            return L10n.mediaErrorRecoverySignInAgain
+        case .reportingFailed:
+            return L10n.mediaErrorRecoveryProgressNotSaved
         }
     }
 }

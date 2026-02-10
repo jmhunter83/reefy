@@ -43,23 +43,23 @@ final class MediaErrorTests: XCTestCase {
     // MARK: - Error Title Tests
 
     func testNoPlayableSourceTitle() {
-        XCTAssertEqual(MediaError.noPlayableSource.errorTitle, "Cannot Play")
+        XCTAssertEqual(MediaError.noPlayableSource.errorTitle, L10n.mediaErrorTitleCannotPlay)
     }
 
     func testTranscodingFailedTitle() {
-        XCTAssertEqual(MediaError.transcodingFailed(reason: nil).errorTitle, "Transcoding Error")
+        XCTAssertEqual(MediaError.transcodingFailed(reason: nil).errorTitle, L10n.mediaErrorTranscoding)
     }
 
     func testStreamEndedTitle() {
-        XCTAssertEqual(MediaError.streamEnded.errorTitle, "Playback Error")
+        XCTAssertEqual(MediaError.streamEnded.errorTitle, L10n.mediaErrorPlayback)
     }
 
     func testItemNotFoundTitle() {
-        XCTAssertEqual(MediaError.itemNotFound(itemId: nil).errorTitle, "Item Error")
+        XCTAssertEqual(MediaError.itemNotFound(itemId: nil).errorTitle, L10n.mediaErrorItemError)
     }
 
     func testSessionExpiredTitle() {
-        XCTAssertEqual(MediaError.sessionExpired.errorTitle, "Session Error")
+        XCTAssertEqual(MediaError.sessionExpired.errorTitle, L10n.mediaErrorSessionError)
     }
 
     // MARK: - Retryability Tests
@@ -112,5 +112,39 @@ final class MediaErrorTests: XCTestCase {
         let error2 = MediaError.itemNotFound(itemId: "xyz")
 
         XCTAssertNotEqual(error1, error2)
+    }
+
+    // MARK: - SystemImageable Tests
+
+    func testSystemImageForPlaybackErrors() {
+        XCTAssertFalse(MediaError.noPlayableSource.systemImage.isEmpty)
+        XCTAssertFalse(MediaError.unsupportedFormat(format: nil).systemImage.isEmpty)
+        XCTAssertFalse(MediaError.transcodingFailed(reason: nil).systemImage.isEmpty)
+        XCTAssertFalse(MediaError.streamEnded.systemImage.isEmpty)
+        XCTAssertFalse(MediaError.loadFailed(reason: nil).systemImage.isEmpty)
+    }
+
+    func testSystemImageForItemErrors() {
+        XCTAssertFalse(MediaError.itemNotFound(itemId: nil).systemImage.isEmpty)
+        XCTAssertFalse(MediaError.noMediaInfo.systemImage.isEmpty)
+        XCTAssertFalse(MediaError.notPlayable.systemImage.isEmpty)
+    }
+
+    func testSystemImageForSessionErrors() {
+        XCTAssertFalse(MediaError.sessionCreationFailed.systemImage.isEmpty)
+        XCTAssertFalse(MediaError.sessionExpired.systemImage.isEmpty)
+        XCTAssertFalse(MediaError.reportingFailed.systemImage.isEmpty)
+    }
+
+    // MARK: - Recovery Suggestion Tests
+
+    func testRecoverySuggestionExists() {
+        XCTAssertNotNil(MediaError.noPlayableSource.recoverySuggestion)
+        XCTAssertNotNil(MediaError.sessionExpired.recoverySuggestion)
+        XCTAssertNotNil(MediaError.transcodingFailed(reason: nil).recoverySuggestion)
+    }
+
+    func testNotPlayableHasNoRecoverySuggestion() {
+        XCTAssertNil(MediaError.notPlayable.recoverySuggestion)
     }
 }

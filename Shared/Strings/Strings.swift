@@ -950,6 +950,64 @@ internal enum L10n {
   internal static let mediaAttributes = L10n.tr("Localizable", "mediaAttributes", fallback: "Media attributes")
   /// Media downloads
   internal static let mediaDownloads = L10n.tr("Localizable", "mediaDownloads", fallback: "Media downloads")
+  /// Item Error
+  internal static let mediaErrorItemError = L10n.tr("Localizable", "mediaErrorItemError", fallback: "Item Error")
+  /// The requested item was not found.
+  internal static let mediaErrorItemNotFound = L10n.tr("Localizable", "mediaErrorItemNotFound", fallback: "The requested item was not found.")
+  /// Item '%@' was not found.
+  internal static func mediaErrorItemNotFoundNamed(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "mediaErrorItemNotFoundNamed", String(describing: p1), fallback: "Item '%@' was not found.")
+  }
+  /// Failed to load media.
+  internal static let mediaErrorLoadFailed = L10n.tr("Localizable", "mediaErrorLoadFailed", fallback: "Failed to load media.")
+  /// No media information available for this item.
+  internal static let mediaErrorNoMediaInfo = L10n.tr("Localizable", "mediaErrorNoMediaInfo", fallback: "No media information available for this item.")
+  /// No playable source available for this item.
+  internal static let mediaErrorNoPlayableSource = L10n.tr("Localizable", "mediaErrorNoPlayableSource", fallback: "No playable source available for this item.")
+  /// This item type cannot be played.
+  internal static let mediaErrorNotPlayable = L10n.tr("Localizable", "mediaErrorNotPlayable", fallback: "This item type cannot be played.")
+  /// Playback Error
+  internal static let mediaErrorPlayback = L10n.tr("Localizable", "mediaErrorPlayback", fallback: "Playback Error")
+  /// Try a different media format or enable transcoding on the server
+  internal static let mediaErrorRecoveryDifferentFormat = L10n.tr("Localizable", "mediaErrorRecoveryDifferentFormat", fallback: "Try a different media format or enable transcoding on the server")
+  /// Try a lower quality setting or check server transcoding settings
+  internal static let mediaErrorRecoveryLowerQuality = L10n.tr("Localizable", "mediaErrorRecoveryLowerQuality", fallback: "Try a lower quality setting or check server transcoding settings")
+  /// The media file may have been moved or deleted
+  internal static let mediaErrorRecoveryMovedOrDeleted = L10n.tr("Localizable", "mediaErrorRecoveryMovedOrDeleted", fallback: "The media file may have been moved or deleted")
+  /// Playback will continue but progress may not be saved
+  internal static let mediaErrorRecoveryProgressNotSaved = L10n.tr("Localizable", "mediaErrorRecoveryProgressNotSaved", fallback: "Playback will continue but progress may not be saved")
+  /// Try refreshing the item's metadata on the server
+  internal static let mediaErrorRecoveryRefreshMetadata = L10n.tr("Localizable", "mediaErrorRecoveryRefreshMetadata", fallback: "Try refreshing the item's metadata on the server")
+  /// The item may have been removed from the server
+  internal static let mediaErrorRecoveryRemovedFromServer = L10n.tr("Localizable", "mediaErrorRecoveryRemovedFromServer", fallback: "The item may have been removed from the server")
+  /// Please sign in again
+  internal static let mediaErrorRecoverySignInAgain = L10n.tr("Localizable", "mediaErrorRecoverySignInAgain", fallback: "Please sign in again")
+  /// Try playing again or restart the app
+  internal static let mediaErrorRecoveryTryAgain = L10n.tr("Localizable", "mediaErrorRecoveryTryAgain", fallback: "Try playing again or restart the app")
+  /// Try again or restart the app
+  internal static let mediaErrorRecoveryTryAgainOrRestart = L10n.tr("Localizable", "mediaErrorRecoveryTryAgainOrRestart", fallback: "Try again or restart the app")
+  /// Failed to report playback progress.
+  internal static let mediaErrorReportingFailed = L10n.tr("Localizable", "mediaErrorReportingFailed", fallback: "Failed to report playback progress.")
+  /// Failed to create playback session.
+  internal static let mediaErrorSessionCreationFailed = L10n.tr("Localizable", "mediaErrorSessionCreationFailed", fallback: "Failed to create playback session.")
+  /// Session Error
+  internal static let mediaErrorSessionError = L10n.tr("Localizable", "mediaErrorSessionError", fallback: "Session Error")
+  /// Your playback session has expired.
+  internal static let mediaErrorSessionExpired = L10n.tr("Localizable", "mediaErrorSessionExpired", fallback: "Your playback session has expired.")
+  /// The media stream ended unexpectedly.
+  internal static let mediaErrorStreamEnded = L10n.tr("Localizable", "mediaErrorStreamEnded", fallback: "The media stream ended unexpectedly.")
+  /// Cannot Play
+  internal static let mediaErrorTitleCannotPlay = L10n.tr("Localizable", "mediaErrorTitleCannotPlay", fallback: "Cannot Play")
+  /// Transcoding Error
+  internal static let mediaErrorTranscoding = L10n.tr("Localizable", "mediaErrorTranscoding", fallback: "Transcoding Error")
+  /// Server transcoding failed.
+  internal static let mediaErrorTranscodingFailed = L10n.tr("Localizable", "mediaErrorTranscodingFailed", fallback: "Server transcoding failed.")
+  /// The media format is not supported.
+  internal static let mediaErrorUnsupportedFormat = L10n.tr("Localizable", "mediaErrorUnsupportedFormat", fallback: "The media format is not supported.")
+  /// The media format '%@' is not supported.
+  internal static func mediaErrorUnsupportedFormatNamed(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "mediaErrorUnsupportedFormatNamed", String(describing: p1), fallback: "The media format '%@' is not supported.")
+  }
   /// Media playback
   internal static let mediaPlayback = L10n.tr("Localizable", "mediaPlayback", fallback: "Media playback")
   /// Mbps
