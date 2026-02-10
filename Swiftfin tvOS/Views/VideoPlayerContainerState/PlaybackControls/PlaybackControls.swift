@@ -52,6 +52,14 @@ extension VideoPlayer {
         private var backwardResetTask: Task<Void, Never>?
         @State
         private var skipIndicatorResetTask: Task<Void, Never>?
+        @State
+        private var sideButtonsFocusTask: Task<Void, Never>?
+        @State
+        private var suppressNextOverlayAutoFocus: Bool = false
+
+        private let multiClickResetDelay: Duration = .milliseconds(600)
+        private let sideButtonsFocusDelayAfterSkip: Duration = .milliseconds(650)
+
         private var isPresentingOverlay: Bool {
             containerState.isPresentingOverlay
         }
@@ -230,15 +238,33 @@ extension VideoPlayer {
             .onDisappear {
                 // Clean up any active scrubbing timers when view disappears
                 containerState.cleanupScrubbing()
+
+                // Cancel and nil all skip-related tasks
                 forwardResetTask?.cancel()
+                forwardResetTask = nil
                 backwardResetTask?.cancel()
+                backwardResetTask = nil
                 skipIndicatorResetTask?.cancel()
+                skipIndicatorResetTask = nil
+                sideButtonsFocusTask?.cancel()
+                sideButtonsFocusTask = nil
+
+                // Reset click counts
+                forwardClickCount = 0
+                backwardClickCount = 0
+                suppressNextOverlayAutoFocus = false
             }
             .onChange(of: isPresentingOverlay) { _, isPresenting in
-                if isPresenting {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + AnimationTiming.skipIndicatorResetDelay) {
-                        focusGuide.transition(to: "sideButtons")
-                    }
+                guard isPresenting else { return }
+
+                // Skip-triggered overlays should preserve arrow presses for multi-click escalation.
+                if suppressNextOverlayAutoFocus {
+                    suppressNextOverlayAutoFocus = false
+                    return
+                }
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + AnimationTiming.skipIndicatorResetDelay) {
+                    focusGuide.transition(to: "sideButtons")
                 }
             }
             .onReceive(onPressEvent) { press in
@@ -300,6 +326,8 @@ extension VideoPlayer {
         private func handleSkip(direction: SkipDirection) {
             // Show overlay if not visible
             if !containerState.isPresentingOverlay {
+                // Keep focus on the container while skip tap-sequence is active.
+                suppressNextOverlayAutoFocus = true
                 withAnimation(.linear(duration: 0.25)) {
                     containerState.isPresentingOverlay = true
                 }
@@ -316,7 +344,8 @@ extension VideoPlayer {
                 containerState.skipIndicatorText = "+\(formatDuration(skipAmount.seconds))"
 
                 forwardResetTask = Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(600))
+                    try? await Task.sleep(for: multiClickResetDelay)
+                    guard !Task.isCancelled else { return }
                     forwardClickCount = 0
                 }
 
@@ -329,16 +358,30 @@ extension VideoPlayer {
                 containerState.skipIndicatorText = "−\(formatDuration(skipAmount.seconds))"
 
                 backwardResetTask = Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(600))
+                    try? await Task.sleep(for: multiClickResetDelay)
+                    guard !Task.isCancelled else { return }
                     backwardClickCount = 0
                 }
             }
+
+            scheduleSideButtonsFocusAfterSkipWindow()
 
             // Auto-hide skip indicator after delay
             skipIndicatorResetTask?.cancel()
             skipIndicatorResetTask = Task { @MainActor in
                 try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else { return }
                 containerState.skipIndicatorText = nil
+            }
+        }
+
+        private func scheduleSideButtonsFocusAfterSkipWindow() {
+            sideButtonsFocusTask?.cancel()
+            sideButtonsFocusTask = Task { @MainActor in
+                try? await Task.sleep(for: sideButtonsFocusDelayAfterSkip)
+                guard !Task.isCancelled else { return }
+                guard containerState.isPresentingOverlay, !containerState.isPresentingSupplement else { return }
+                focusGuide.transition(to: "sideButtons")
             }
         }
 
