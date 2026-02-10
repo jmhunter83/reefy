@@ -61,11 +61,14 @@ struct TVTabView: View {
     var body: some View {
         VStack(spacing: 0) {
             sectionPicker
-                .padding(.top, 20)
-                .padding(.bottom, 30)
+                .padding(.top, 10)
+                .padding(.bottom, 15)
+                .opacity(focusedSection != nil ? 1.0 : 0.3)
+                .scaleEffect(focusedSection != nil ? 1.0 : 0.95)
 
             contentView
         }
+        .animation(.easeInOut(duration: 0.2), value: focusedSection)
     }
 
     // MARK: - Section Picker

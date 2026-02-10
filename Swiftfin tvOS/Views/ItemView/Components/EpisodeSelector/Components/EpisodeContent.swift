@@ -25,33 +25,34 @@ extension SeriesEpisodeSelector {
 
         private var subHeaderView: some View {
             Text(subHeader)
-                .font(.callout)
+                .font(.caption)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
         }
 
         private var headerView: some View {
             Text(header)
-                .font(.body)
+                .font(.callout)
+                .fontWeight(.medium)
                 .foregroundColor(.primary)
-                .lineLimit(2, reservesSpace: true)
+                .lineLimit(3, reservesSpace: true)
                 .multilineTextAlignment(.leading)
                 .padding(.bottom, 1)
         }
 
         private var contentView: some View {
             Text(content)
-                .font(.callout.weight(.light))
+                .font(.caption.weight(.light))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.leading)
-                .lineLimit(3, reservesSpace: true)
+                .lineLimit(2, reservesSpace: true)
         }
 
         var body: some View {
             Button {
                 onSelect()
             } label: {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 5) {
                     subHeaderView
 
                     headerView
