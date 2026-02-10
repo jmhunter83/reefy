@@ -292,11 +292,9 @@ class VideoPlayerContainerState: ObservableObject {
         isGuestSupplement = isGuest
 
         if supplement?.id == selectedSupplement?.id {
-            print("🔄 Dismissing supplement: \(selectedSupplement?.displayTitle ?? "none")")
             selectedSupplement = nil
             containerView?.presentSupplementContainer(false)
         } else {
-            print("📱 Selecting supplement: \(supplement?.displayTitle ?? "none") (was: \(selectedSupplement?.displayTitle ?? "none"))")
             selectedSupplement = supplement
             containerView?.presentSupplementContainer(supplement != nil)
         }
@@ -307,13 +305,7 @@ class VideoPlayerContainerState: ObservableObject {
     private func updatePlaybackControlsVisibility() {
         // Show playback controls when overlay is visible, regardless of supplement state
         // The transport bar positioning is handled by the container view constraints
-        let oldValue = isPresentingPlaybackControls
         isPresentingPlaybackControls = overlayState == .visible
-        if oldValue != isPresentingPlaybackControls {
-            print(
-                "🎮 Playback controls visibility: \(oldValue) -> \(isPresentingPlaybackControls) (overlay: \(overlayState), supplement: \(supplementState))"
-            )
-        }
     }
 
     // MARK: - Hold-to-Scrub Functions
@@ -425,8 +417,9 @@ class VideoPlayerContainerState: ObservableObject {
             newScrubbed = max(0, min(totalDuration, newScrubbed))
         } else {
             // For items without runtime (e.g., live streams), clamp to minimum of 0
-            // Use a large fallback maximum (24 hours) for safety
-            newScrubbed = max(0, min(86400, newScrubbed))
+            // Use a large fallback maximum for safety
+            let fallbackMaxDuration: Double = 86400 // 24 hours in seconds
+            newScrubbed = max(0, min(fallbackMaxDuration, newScrubbed))
         }
 
         scrubbedSeconds.value = .seconds(newScrubbed)

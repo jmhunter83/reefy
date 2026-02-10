@@ -6,7 +6,8 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-// TODO: remove, apply the Stateful macro
+// TODO: Evaluate removing this protocol once @Stateful macro is fully adopted
+// (Currently used by ConnectToServerViewModel, UserSignInViewModel, and others)
 
 protocol Stateful: AnyObject {
 
