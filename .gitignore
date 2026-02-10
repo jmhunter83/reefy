@@ -130,3 +130,10 @@ youtube-script-*.md
 
 # Asset staging/working directories
 new assets/
+
+# Personal files safety net
+tools/
+*.pdf
+*.docx
+*resume*
+*Resume*
