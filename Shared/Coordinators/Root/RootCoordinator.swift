@@ -58,13 +58,26 @@ final class RootCoordinator: ObservableObject {
         root = newRoot
     }
 
+    private static let maxSignInRetries = 5
+
     @objc
     private func didSignIn() {
+        attemptSignIn(attempt: 0)
+    }
+
+    private func attemptSignIn(attempt: Int) {
         // Ensure session is ready before transitioning to prevent 401 race condition
         guard Container.shared.currentUserSession() != nil else {
-            logger.warning("didSignIn called but session not ready yet, retrying...")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                self?.didSignIn()
+            if attempt >= Self.maxSignInRetries {
+                logger.error("Session not ready after \(Self.maxSignInRetries) retries, falling back to user selection")
+                root(.selectUser)
+                return
+            }
+
+            let delay = 0.1 * Double(attempt + 1)
+            logger.warning("didSignIn called but session not ready yet, retry \(attempt + 1)/\(Self.maxSignInRetries) in \(delay)s")
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.attemptSignIn(attempt: attempt + 1)
             }
             return
         }
