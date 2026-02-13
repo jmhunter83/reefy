@@ -25,7 +25,7 @@ struct SwiftfinApp: App {
 
             let handlers: [any LogHandler] = [PersistentLogHandler(label: label)]
             #if DEBUG
-            .appending(SwiftfinConsoleHandler())
+                .appending(SwiftfinConsoleHandler())
             #endif
 
             var multiplexHandler = MultiplexLogHandler(handlers)
@@ -67,10 +67,17 @@ struct SwiftfinApp: App {
                     Defaults[.backgroundTimeStamp] = Date.now
                 }
                 .onNotification(.applicationWillEnterForeground) {
-                    // TODO: needs to check if any background playback is happening
                     let backgroundedInterval = Date.now.timeIntervalSince(Defaults[.backgroundTimeStamp])
+                    let mediaPlayerManager = Container.shared.mediaPlayerManager()
+                    let hasActivePlayback = (
+                        mediaPlayerManager.state == .loadingItem ||
+                            mediaPlayerManager.state == .playback
+                    ) && mediaPlayerManager.item.type == .audio
 
-                    if Defaults[.signOutOnBackground], backgroundedInterval > Defaults[.backgroundSignOutInterval] {
+                    if Defaults[.signOutOnBackground],
+                       backgroundedInterval > Defaults[.backgroundSignOutInterval],
+                       !hasActivePlayback
+                    {
                         Defaults[.lastSignedInUserID] = .signedOut
                         Container.shared.currentUserSession.reset()
                         Notifications[.didSignOut].post()
