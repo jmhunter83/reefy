@@ -25,6 +25,25 @@ This project focuses purely on the tvOS experience — no iOS, just Apple TV.
 
 ---
 
+## Version 1.2.0: Back to Basics
+
+With the best intentions, we pushed hard on the recent music feature work, but the deployment proved unstable and created App Store approval issues.
+
+For version **1.2.0**, we have rolled back and reset to a stable baseline, treating it like a fresh start from **January 28, 2026**.
+
+### What this means right now
+
+- More stable core playback and navigation
+- Fewer unstable moving parts in production
+- Focus on reliability first
+
+### What is still next
+
+- Live TV remains a major goal
+- We will continue building Live TV features on top of a more stable foundation
+
+---
+
 ## Features
 
 - **tvOS 18 Liquid Glass** — Native glass transport bar with tvOS 17 fallback
