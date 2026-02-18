@@ -12,7 +12,8 @@ import KeychainSwift
 
 extension Container {
 
-    // TODO: take a look at all security options
+    // Security: KeychainSwift initialized with defaults; individual keys
+    // use .accessibleWhenUnlockedThisDeviceOnly (enforced at each write site in SwiftinStore+UserState.swift)
     var keychainService: Factory<KeychainSwift> {
         self { KeychainSwift() }.singleton
     }

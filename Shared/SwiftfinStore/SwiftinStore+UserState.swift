@@ -11,8 +11,11 @@ import Factory
 import Foundation
 import JellyfinAPI
 import KeychainSwift
+import Logging
 import Pulse
 import UIKit
+
+private let logger = Logger.swiftfin()
 
 // Note: it is kind of backwards to have a "state" object with a mix of
 //       non-mutable and "mutable" values, but it just works.
@@ -44,7 +47,7 @@ extension UserState {
     var accessToken: String {
         get {
             guard let accessToken = Container.shared.keychainService().get("\(id)-accessToken") else {
-                assertionFailure("access token missing in keychain")
+                logger.error("access token missing in keychain for user \(id)")
                 return ""
             }
 
@@ -75,7 +78,7 @@ extension UserState {
     var pin: String {
         get {
             guard let pin = Container.shared.keychainService().get("\(id)-pin") else {
-                assertionFailure("pin missing in keychain")
+                logger.error("pin missing in keychain for user \(id)")
                 return ""
             }
 
