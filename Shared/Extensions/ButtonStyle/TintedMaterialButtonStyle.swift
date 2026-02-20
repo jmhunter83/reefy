@@ -46,7 +46,7 @@ struct TintedMaterialButtonStyle: PrimitiveButtonStyle {
             TintedMaterial(tint: buttonTint)
                 .id(isSelected)
             #if !os(tvOS)
-            .cornerRadius(10)
+                .cornerRadius(10)
             #endif
 
             configuration.label
@@ -70,7 +70,7 @@ struct TintedMaterialButtonStyle: PrimitiveButtonStyle {
         }
         .buttonStyle(.plain)
         #if os(tvOS)
-        .focused($isFocused)
+            .focused($isFocused)
         #endif
     }
 

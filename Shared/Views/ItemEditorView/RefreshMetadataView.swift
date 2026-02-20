@@ -66,13 +66,13 @@ struct RefreshMetadataView: View {
         }
         .errorMessage($viewModel.error)
         #if os(iOS)
-        .navigationBarCloseButton {
-            router.dismiss()
-        }
-        .topBarTrailing {
-            Button(L10n.run, action: onRun)
-                .buttonStyle(.toolbarPill)
-        }
+            .navigationBarCloseButton {
+                router.dismiss()
+            }
+            .topBarTrailing {
+                Button(L10n.run, action: onRun)
+                    .buttonStyle(.toolbarPill)
+            }
         #endif
     }
 

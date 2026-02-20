@@ -25,7 +25,7 @@ struct ItemView: View {
 
     private static func typeViewModel(for item: BaseItemDto) -> ItemViewModel {
         switch item.type {
-        case .boxSet, .person, .musicArtist:
+        case .boxSet, .person, .musicArtist, .musicAlbum, .season:
             return CollectionItemViewModel(item: item)
         case .episode:
             return EpisodeItemViewModel(item: item)
@@ -36,7 +36,6 @@ struct ItemView: View {
         case .series:
             return SeriesItemViewModel(item: item)
         default:
-            assertionFailure("Unsupported item")
             return ItemViewModel(item: item)
         }
     }
@@ -48,7 +47,7 @@ struct ItemView: View {
     @ViewBuilder
     private var scrollContentView: some View {
         switch viewModel.item.type {
-        case .boxSet, .person, .musicArtist:
+        case .boxSet, .person, .musicArtist, .musicAlbum, .season:
             CollectionItemContentView(viewModel: viewModel as! CollectionItemViewModel)
         case .episode, .musicVideo, .video:
             SimpleItemContentView(viewModel: viewModel)
@@ -77,16 +76,21 @@ struct ItemView: View {
         .eraseToAnyView()
     }
 
+    private var viewState: StateContainer<AnyView, EmptyStateView>.ViewState {
+        switch viewModel.state {
+        case .content:
+            return .content
+        case let .error(error):
+            return .error(error)
+        case .initial, .refreshing:
+            return .loading
+        }
+    }
+
     var body: some View {
-        ZStack {
-            switch viewModel.state {
-            case .content:
-                innerBody
-            case let .error(error):
-                ErrorView(error: error)
-            case .initial, .refreshing:
-                ProgressView()
-            }
+        StateContainer(state: viewState) {
+            innerBody
+                .eraseToAnyView()
         }
         .animation(.linear(duration: 0.1), value: viewModel.state)
         .onFirstAppear {

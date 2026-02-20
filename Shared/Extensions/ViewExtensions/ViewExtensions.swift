@@ -107,20 +107,20 @@ extension View {
         case .landscape:
             posterAspectRatio(type, contentMode: contentMode)
             #if !os(tvOS)
-            .posterBorder()
-            .posterCornerRadius(type)
+                .posterBorder()
+                .posterCornerRadius(type)
             #endif
         case .portrait:
             posterAspectRatio(type, contentMode: contentMode)
             #if !os(tvOS)
-            .posterBorder()
-            .posterCornerRadius(type)
+                .posterBorder()
+                .posterCornerRadius(type)
             #endif
         case .square:
             posterAspectRatio(type, contentMode: contentMode)
             #if os(iOS)
-            .posterBorder()
-            .posterCornerRadius(type)
+                .posterBorder()
+                .posterCornerRadius(type)
             #endif
         }
     }
@@ -167,6 +167,8 @@ extension View {
         }
     }
 
+    /// Applies consistent shadow styling for poster images across tvOS.
+    /// Use with `posterStyle()` for complete poster appearance.
     func posterShadow() -> some View {
         shadow(radius: 4, y: 2)
     }

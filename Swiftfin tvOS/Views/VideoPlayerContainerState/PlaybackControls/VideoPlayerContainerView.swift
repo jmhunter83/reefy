@@ -220,15 +220,17 @@ extension VideoPlayer {
 
         private func setupScenePhaseObserver() {
             NotificationCenter.default
-                .publisher(for: UIScene.willEnterForegroundNotification)
+                .publisher(for: UIScene.didEnterBackgroundNotification)
                 .sink { [weak self] _ in
                     guard let self else { return }
                     Task { @MainActor in
-                        guard let playbackItem = self.manager.playbackItem else { return }
+                        guard self.manager.state == .loadingItem || self.manager.state == .playback else { return }
 
-                        self.manager.logger.info("App returned from background - recreating VLC player to reset decoder")
+                        self.manager.logger.info("App entered background - stopping playback")
 
-                        self.manager.playbackItem = playbackItem
+                        // Cut audio immediately, then clean up manager state.
+                        self.manager.proxy?.stop()
+                        self.manager.stop()
                     }
                 }
                 .store(in: &cancellables)

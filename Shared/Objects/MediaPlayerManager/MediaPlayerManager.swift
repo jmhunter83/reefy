@@ -28,14 +28,7 @@ extension Container {
 
     var mediaPlayerManager: Factory<MediaPlayerManager> {
         self { @MainActor in
-            .init(
-                playbackItem: .init(
-                    baseItem: .init(),
-                    mediaSource: .init(),
-                    playSessionID: "",
-                    url: URL(string: "/")!
-                )
-            )
+            .init(initialState: .stopped)
         }
         .scope(.session)
     }
@@ -108,6 +101,9 @@ final class MediaPlayerManager: ViewModel {
                         "itemID": .stringConvertible(playbackItem.baseItem.id ?? "Unknown"),
                         "itemTitle": .stringConvertible(playbackItem.baseItem.displayTitle),
                         "url": .stringConvertible(playbackItem.url.absoluteString),
+                        "defaultAudioStreamIndex": .stringConvertible(playbackItem.mediaSource.defaultAudioStreamIndex ?? -1),
+                        "selectedAudioStreamIndex": .stringConvertible(playbackItem.selectedAudioStreamIndex ?? -1),
+                        "audioStreamsCount": .stringConvertible(playbackItem.audioStreams.count),
                     ]
                 )
 
@@ -181,6 +177,12 @@ final class MediaPlayerManager: ViewModel {
 //        self.state = .stopped
 //        super.init()
 //    }
+
+    init(initialState: _State = .stopped) {
+        self.item = .init()
+        self.state = initialState
+        super.init()
+    }
 
     init(
         item: BaseItemDto,

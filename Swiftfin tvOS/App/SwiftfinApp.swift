@@ -65,6 +65,29 @@ struct SwiftfinApp: App {
             RootView()
                 .onNotification(.applicationDidEnterBackground) {
                     Defaults[.backgroundTimeStamp] = Date.now
+
+                    // Stop video playback when the app is backgrounded (e.g. Home button).
+                    // Background audio playback is allowed, so only stop non-audio items.
+                    let mediaPlayerManager = Container.shared.mediaPlayerManager()
+                    let hasActivePlayback: Bool = {
+                        switch mediaPlayerManager.state {
+                        case .loadingItem:
+                            // Item is in-flight; allow canceling even before a session is established.
+                            return true
+                        case .playback:
+                            // Avoid treating the placeholder manager as "active playback".
+                            return mediaPlayerManager.playbackItem?.playSessionID.isNotEmpty == true
+                        default:
+                            return false
+                        }
+                    }()
+                    let isAudioItem = mediaPlayerManager.item.type == .audio || mediaPlayerManager.item.type == .audioBook
+
+                    if hasActivePlayback, !isAudioItem {
+                        // Cut audio immediately, then clean up manager state.
+                        mediaPlayerManager.proxy?.stop()
+                        mediaPlayerManager.stop()
+                    }
                 }
                 .onNotification(.applicationWillEnterForeground) {
                     let backgroundedInterval = Date.now.timeIntervalSince(Defaults[.backgroundTimeStamp])

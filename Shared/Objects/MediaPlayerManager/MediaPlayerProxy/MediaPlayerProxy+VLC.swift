@@ -63,7 +63,11 @@ class VLCMediaPlayerProxy: VideoMediaPlayerProxy,
     }
 
     func setAudioStream(_ stream: MediaStream) {
-        vlcUIProxy.setAudioTrack(.absolute(stream.index ?? -1))
+        if let index = stream.index, index >= 0 {
+            vlcUIProxy.setAudioTrack(.absolute(index))
+        } else {
+            vlcUIProxy.setAudioTrack(.auto)
+        }
     }
 
     func setSubtitleStream(_ stream: MediaStream) {
@@ -147,7 +151,13 @@ extension VLCMediaPlayerProxy {
 
             if !baseItem.isLiveStream {
                 configuration.startSeconds = startSeconds
-                configuration.audioIndex = .absolute(mediaSource.defaultAudioStreamIndex ?? -1)
+                if let index = item.selectedAudioStreamIndex, index >= 0 {
+                    configuration.audioIndex = .absolute(index)
+                } else if let index = mediaSource.defaultAudioStreamIndex, index >= 0 {
+                    configuration.audioIndex = .absolute(index)
+                } else {
+                    configuration.audioIndex = .auto
+                }
                 configuration.subtitleIndex = .absolute(mediaSource.defaultSubtitleStreamIndex ?? -1)
             }
 

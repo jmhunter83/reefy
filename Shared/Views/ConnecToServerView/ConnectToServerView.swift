@@ -55,7 +55,7 @@ struct ConnectToServerView: View {
                 .keyboardType(.URL)
                 .focused($isURLFocused)
             #if os(tvOS)
-            .frame(minHeight: 60)
+                .frame(minHeight: 60)
             #endif
         }
 

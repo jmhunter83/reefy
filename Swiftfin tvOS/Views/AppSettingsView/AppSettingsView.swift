@@ -77,9 +77,11 @@ struct AppSettingsView: View {
 
             SignOutIntervalSection()
 
+            #if DEBUG
             ChevronButton(L10n.logs) {
                 router.route(to: .log)
             }
+            #endif
         }
         .navigationTitle(L10n.advanced)
     }

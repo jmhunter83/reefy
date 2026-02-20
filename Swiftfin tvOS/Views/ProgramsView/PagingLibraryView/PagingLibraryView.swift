@@ -254,19 +254,28 @@ struct PagingLibraryView<Element: Poster & Identifiable>: View {
 
     // MARK: Inner Content View
 
-    @ViewBuilder
-    private var innerContent: some View {
+    private var viewState: StateContainer<AnyView, EmptyStateView>.ViewState {
         switch viewModel.state {
         case .content:
             if viewModel.elements.isEmpty {
-                Text(L10n.noResults)
-            } else {
-                gridView
+                return .empty
             }
+            return .content
+        case let .error(error):
+            return .error(error)
         case .initial, .refreshing:
-            ProgressView()
-        default:
-            AssertionFailureView("Expected view for unexpected state")
+            return .loading
+        }
+    }
+
+    private var innerContent: some View {
+        StateContainer(
+            state: viewState,
+            emptyMessage: L10n.noResults,
+            emptySystemImage: "square.stack.3d.up.slash"
+        ) {
+            gridView
+                .eraseToAnyView()
         }
     }
 
@@ -326,12 +335,7 @@ struct PagingLibraryView<Element: Poster & Identifiable>: View {
                     .blurred()
             }
 
-            switch viewModel.state {
-            case .content, .initial, .refreshing:
-                contentView
-            case let .error(error):
-                ErrorView(error: error)
-            }
+            contentView
         }
         .animation(.linear(duration: 0.1), value: viewModel.state)
         .ignoresSafeArea()

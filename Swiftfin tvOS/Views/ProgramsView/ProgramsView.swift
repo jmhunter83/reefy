@@ -70,20 +70,28 @@ struct ProgramsView: View {
         }
     }
 
-    var body: some View {
-        ZStack {
-            switch programsViewModel.state {
-            case .content:
-                if programsViewModel.hasNoResults {
-                    Text(L10n.noResults)
-                } else {
-                    contentView
-                }
-            case let .error(error):
-                ErrorView(error: error)
-            case .initial, .refreshing:
-                ProgressView()
+    private var viewState: StateContainer<AnyView, EmptyStateView>.ViewState {
+        switch programsViewModel.state {
+        case .content:
+            if programsViewModel.hasNoResults {
+                return .empty
             }
+            return .content
+        case let .error(error):
+            return .error(error)
+        case .initial, .refreshing:
+            return .loading
+        }
+    }
+
+    var body: some View {
+        StateContainer(
+            state: viewState,
+            emptyMessage: L10n.noResults,
+            emptySystemImage: "tv.and.mediabox"
+        ) {
+            contentView
+                .eraseToAnyView()
         }
         .animation(.linear(duration: 0.1), value: programsViewModel.state)
         .ignoresSafeArea(edges: [.bottom, .horizontal])

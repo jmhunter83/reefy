@@ -49,6 +49,8 @@ struct PosterHStack<Element: Poster, Data: Collection>: View where Data.Element 
                 }
             }
             .clipsToBounds(false)
+            // Limit to 20 items for optimal horizontal scrolling performance on tvOS.
+            // This balances responsiveness with sufficient content for most rows.
             .dataPrefix(20)
             .insets(horizontal: EdgeInsets.edgePadding, vertical: 20)
             .itemSpacing(EdgeInsets.edgePadding - 20)

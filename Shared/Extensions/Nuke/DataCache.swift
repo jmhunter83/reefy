@@ -28,6 +28,9 @@ extension DataCache.Swiftfin {
             return ImagePipeline.cacheKey(for: url)
         }
 
+        // 1000 MB cache for posters. Nuke handles LRU eviction automatically.
+        // This size provides good balance between memory usage and cache hits
+        // for typical tvOS usage patterns with multiple libraries.
         dataCache?.sizeLimit = 1024 * 1024 * 1000 // 1000 MB
 
         return dataCache

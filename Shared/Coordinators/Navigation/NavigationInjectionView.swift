@@ -89,29 +89,29 @@ struct NavigationInjectionView: View {
         }
         #else
         .presentation(
-            $coordinator.presentedFullScreen,
-            transition: .zoomIfAvailable(
-                options: .init(
-                    dimmingVisualEffect: .systemThickMaterialDark,
+                $coordinator.presentedFullScreen,
+                transition: .zoomIfAvailable(
                     options: .init(
-                        isInteractive: isPresentationInteractive
-                    )
-                ),
-                otherwise: .slide(.init(edge: .bottom), options: .init(isInteractive: isPresentationInteractive))
-            )
-        ) { routeBinding, _ in
-            let vc = UIPreferencesHostingController {
-                NavigationInjectionView(coordinator: .init()) {
-                    routeBinding.wrappedValue.destination
-                        .environment(\.presentationControllerShouldDismiss, $isPresentationInteractive)
+                        dimmingVisualEffect: .systemThickMaterialDark,
+                        options: .init(
+                            isInteractive: isPresentationInteractive
+                        )
+                    ),
+                    otherwise: .slide(.init(edge: .bottom), options: .init(isInteractive: isPresentationInteractive))
+                )
+            ) { routeBinding, _ in
+                let vc = UIPreferencesHostingController {
+                    NavigationInjectionView(coordinator: .init()) {
+                        routeBinding.wrappedValue.destination
+                            .environment(\.presentationControllerShouldDismiss, $isPresentationInteractive)
+                    }
                 }
+
+                // TODO: presentation options for customizing background color, dimming effect, etc.
+                vc.view.backgroundColor = .black
+
+                return vc
             }
-
-            // TODO: presentation options for customizing background color, dimming effect, etc.
-            vc.view.backgroundColor = .black
-
-            return vc
-        }
         #endif
     }
 }

@@ -169,9 +169,11 @@ struct SettingsView: View {
 
     private var diagnosticsSection: some View {
         Section {
+            #if DEBUG || !os(tvOS)
             ChevronButton(L10n.logs) {
                 router.route(to: .log)
             }
+            #endif
 
             #if DEBUG && os(iOS)
             ChevronButton("Debug") {

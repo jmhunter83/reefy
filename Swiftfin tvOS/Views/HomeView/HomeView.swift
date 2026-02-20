@@ -50,18 +50,28 @@ struct HomeView: View {
         }
     }
 
-    var body: some View {
-        ZStack {
-            Color.clear
-
-            switch viewModel.state {
-            case .content:
-                contentView
-            case let .error(error):
-                ErrorView(error: error)
-            case .initial, .refreshing:
-                ProgressView()
+    private var viewState: StateContainer<AnyView, EmptyStateView>.ViewState {
+        switch viewModel.state {
+        case .content:
+            if viewModel.libraries.isEmpty && viewModel.resumeItems.isEmpty {
+                return .empty
             }
+            return .content
+        case let .error(error):
+            return .error(error)
+        case .initial, .refreshing:
+            return .loading
+        }
+    }
+
+    var body: some View {
+        StateContainer(
+            state: viewState,
+            emptyMessage: L10n.noResults,
+            emptySystemImage: "film.stack"
+        ) {
+            contentView
+                .eraseToAnyView()
         }
         .animation(.linear(duration: 0.1), value: viewModel.state)
         .refreshable {

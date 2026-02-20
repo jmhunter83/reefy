@@ -13,12 +13,6 @@ import SwiftUI
 
 // TODO: currently SVGs are only supported for logos, which are only used in a few places.
 //       make it so when displaying an SVG there is a unified `image` caller modifier
-// TODO: `LazyImage` uses a transaction for view swapping, which will fade out old views
-//       and fade in new views, causing a black "flash" between the placeholder and final image.
-//       Since we use blur hashes, we actually just want the final image to fade in on top while
-//       the blur hash view is at full opacity.
-//       - refactor for option
-//       - take a look at `RotateContentView`
 // TODO: make Image and Placeholder generic constraints rather than any View
 struct ImageView<Failure: View>: View {
 
@@ -42,22 +36,28 @@ struct ImageView<Failure: View>: View {
 
     var body: some View {
         if let currentSource = sources.first {
-            LazyImage(url: currentSource.url, transaction: .init(animation: .linear)) { state in
-                if state.isLoading {
+            LazyImage(url: currentSource.url) { state in
+                ZStack {
+                    // Keep placeholder visible during loading to avoid black flash
                     _placeholder(currentSource)
-                } else if let _image = state.image {
-                    if let data = state.imageContainer?.data {
-                        FastSVGView(data: data)
-                    } else {
-                        image(_image.resizable())
-                            .eraseToAnyView()
-                    }
-                } else if state.error != nil {
-                    failure
-                        .onAppear {
-                            sources.removeFirstSafe()
+                        .opacity(state.isLoading || state.image == nil ? 1 : 0)
+
+                    if let _image = state.image {
+                        if let data = state.imageContainer?.data {
+                            FastSVGView(data: data)
+                        } else {
+                            image(_image.resizable())
+                                .eraseToAnyView()
+                                .transition(.opacity)
                         }
+                    } else if state.error != nil {
+                        failure
+                            .onAppear {
+                                sources.removeFirstSafe()
+                            }
+                    }
                 }
+                .animation(.easeInOut(duration: 0.2), value: state.isLoading)
             }
             .pipeline(pipeline)
             .onDisappear(.lowerPriority)

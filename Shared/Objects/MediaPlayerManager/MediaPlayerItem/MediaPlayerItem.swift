@@ -110,12 +110,18 @@ class MediaPlayerItem: ViewModel, MediaPlayerObserver {
 
         super.init()
 
-        // Select audio stream based on user's preferred language, falling back to server default
+        // Select audio stream based on user's preferred language, falling back to server default,
+        // then first available audio track. Avoid using -1 for audio, as VLC treats it as disabled.
         let preferredLanguage = Defaults[.VideoPlayer.Audio.preferredLanguage]
         if let preferredStream = audioStreams.first(where: { $0.language?.lowercased() == preferredLanguage.lowercased() }) {
-            selectedAudioStreamIndex = preferredStream.index ?? mediaSource.defaultAudioStreamIndex ?? -1
+            selectedAudioStreamIndex = preferredStream.index
+        } else if let defaultIndex = mediaSource.defaultAudioStreamIndex,
+                  defaultIndex >= 0,
+                  audioStreams.contains(where: { $0.index == defaultIndex })
+        {
+            selectedAudioStreamIndex = defaultIndex
         } else {
-            selectedAudioStreamIndex = mediaSource.defaultAudioStreamIndex ?? -1
+            selectedAudioStreamIndex = audioStreams.first?.index
         }
 
         selectedSubtitleStreamIndex = mediaSource.defaultSubtitleStreamIndex ?? -1

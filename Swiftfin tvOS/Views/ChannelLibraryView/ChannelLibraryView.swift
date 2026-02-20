@@ -36,20 +36,28 @@ struct ChannelLibraryView: View {
         }
     }
 
-    var body: some View {
-        ZStack {
-            switch viewModel.state {
-            case .content:
-                if viewModel.elements.isEmpty {
-                    Text(L10n.noResults)
-                } else {
-                    contentView
-                }
-            case let .error(error):
-                ErrorView(error: error)
-            case .initial, .refreshing:
-                ProgressView()
+    private var viewState: StateContainer<AnyView, EmptyStateView>.ViewState {
+        switch viewModel.state {
+        case .content:
+            if viewModel.elements.isEmpty {
+                return .empty
             }
+            return .content
+        case let .error(error):
+            return .error(error)
+        case .initial, .refreshing:
+            return .loading
+        }
+    }
+
+    var body: some View {
+        StateContainer(
+            state: viewState,
+            emptyMessage: L10n.noResults,
+            emptySystemImage: "tv"
+        ) {
+            contentView
+                .eraseToAnyView()
         }
         .animation(.linear(duration: 0.1), value: viewModel.state)
         .ignoresSafeArea()
