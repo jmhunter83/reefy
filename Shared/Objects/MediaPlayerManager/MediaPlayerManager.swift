@@ -216,8 +216,11 @@ final class MediaPlayerManager: ViewModel {
 
     @Function(\Action.Cases.ended)
     private func _ended() async throws {
-        // Capture the current item ID at the time ended is called
+        // Capture the current item ID and next item at the time ended is called.
+        // This MUST happen before any async operations because playNewItem()
+        // will trigger queue updates that clear nextItem before we can use it.
         let endedItemID = item.id
+        let nextItemProvider = queue?.nextItem // Capture next item early!
 
         // Verify we're still playing the same item (guards against race conditions
         // where item changed between VLC sending ended and us processing it)
@@ -273,7 +276,9 @@ final class MediaPlayerManager: ViewModel {
         }
 
         // Attempt to play next item in queue if autoplay is enabled
-        if let nextItem = queue?.nextItem, Defaults[.VideoPlayer.autoPlayEnabled] {
+        // Use captured nextItemProvider instead of queue?.nextItem because
+        // the queue will clear nextItem when playbackItem changes.
+        if let nextItem = nextItemProvider, Defaults[.VideoPlayer.autoPlayEnabled] {
             logger.info("Auto-playing next item in queue")
             await self.playNewItem(provider: nextItem)
         } else {
