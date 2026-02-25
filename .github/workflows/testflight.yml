@@ -21,6 +21,9 @@ jobs:
       run: |
         git checkout ${{ github.event.client_payload.commitSHA }}
 
+    - name: Validate ATS configuration
+      run: swift Scripts/Checks/ValidateATSConfiguration.swift
+
     - name: Install SwiftGen
       run: brew install swiftgen
 

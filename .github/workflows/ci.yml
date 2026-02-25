@@ -12,6 +12,17 @@ on:
     branches: [ main ]
 
 jobs:
+  ats-config:
+    name: "ATS Config ✅"
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate ATS configuration
+        run: swift Scripts/Checks/ValidateATSConfiguration.swift
+
   build:
     name: "Build 🔨"
     if: false  # Disabled - requires tvOS 26 SDK
