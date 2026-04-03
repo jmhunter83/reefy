@@ -16,17 +16,40 @@ extension VideoPlayer.PlaybackControls {
         private var manager: MediaPlayerManager
 
         var body: some View {
-            VStack(alignment: .leading, spacing: 10) {
-                if let subtitle = manager.item.subtitle {
-                    Text(subtitle)
-                        .font(.subheadline)
+            HStack(alignment: .bottom, spacing: 20) {
+                titleContent
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                ActionButtons()
+            }
+        }
+
+        @ViewBuilder
+        private var titleContent: some View {
+            VStack(alignment: .leading, spacing: 4) {
+                if manager.item.type == .episode {
+                    if let seasonEpisodeLabel = manager.item.seasonEpisodeLabel {
+                        Text(seasonEpisodeLabel)
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
+
+                    if let seriesName = manager.item.seriesName {
+                        Text(seriesName)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                    }
+
+                    Text(manager.item.displayTitle)
+                        .font(.callout)
+                        .foregroundStyle(.white.opacity(0.7))
+                } else {
+                    Text(manager.item.displayTitle)
+                        .font(.title2)
+                        .fontWeight(.bold)
                         .foregroundStyle(.white)
                 }
-
-                Text(manager.item.displayTitle)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }

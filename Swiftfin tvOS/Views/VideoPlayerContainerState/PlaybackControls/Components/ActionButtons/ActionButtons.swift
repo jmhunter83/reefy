@@ -47,8 +47,15 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             }
 
             // Build set of buttons to exclude based on current state
-            // Exclude audio, subtitles (moved to side), info, aspectFill, skip intro
-            var excluded: Set<VideoPlayerActionButton> = [.audio, .subtitles, .info, .aspectFill, .skipIntro]
+            var excluded: Set<VideoPlayerActionButton> = [.info, .aspectFill, .skipIntro]
+
+            if manager.playbackItem?.audioStreams.isEmpty == true {
+                excluded.insert(.audio)
+            }
+
+            if manager.playbackItem?.subtitleStreams.isEmpty == true {
+                excluded.insert(.subtitles)
+            }
 
             if manager.queue == nil {
                 excluded.formUnion([.autoPlay, .playNextItem, .playPreviousItem])
