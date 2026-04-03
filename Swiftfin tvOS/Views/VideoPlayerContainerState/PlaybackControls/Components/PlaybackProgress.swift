@@ -13,47 +13,40 @@ extension VideoPlayer.PlaybackControls {
     struct PlaybackProgress: View {
 
         @EnvironmentObject
+        private var containerState: VideoPlayerContainerState
+        @EnvironmentObject
         private var manager: MediaPlayerManager
+        @EnvironmentObject
+        private var scrubbedSecondsBox: PublishedBox<Duration>
+        @EnvironmentObject
+        private var focusGuide: FocusGuide
 
-        private var progress: Double {
-            guard let runtime = manager.item.runtime, runtime > .zero else { return 0 }
-            let current = manager.seconds.seconds
-            let total = runtime.seconds
-            return current / total
+        private var totalSeconds: Double {
+            manager.item.runtime?.seconds ?? 0
+        }
+
+        private var scrubbedSecondsBinding: Binding<Double> {
+            Binding(
+                get: { scrubbedSecondsBox.value.seconds },
+                set: { scrubbedSecondsBox.value = .seconds($0) }
+            )
         }
 
         var body: some View {
             VStack(spacing: 12) {
-                // Non-interactive progress bar
-                staticProgressBar
+                CapsuleSlider(value: scrubbedSecondsBinding, total: totalSeconds)
+                    .onEditingChanged { isEditing in
+                        containerState.isScrubbing = isEditing
+                    }
+                    .frame(height: 12)
 
-                // Timestamps
                 SplitTimeStamp()
             }
-        }
-
-        private var staticProgressBar: some View {
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    // Background track
-                    Capsule()
-                        .fill(Color.white.opacity(0.2))
-                        .frame(height: 6)
-
-                    // Progress fill
-                    Capsule()
-                        .fill(.white)
-                        .frame(width: geometry.size.width * progress, height: 6)
-
-                    // Current position indicator (circle)
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 12, height: 12)
-                        .offset(x: geometry.size.width * progress - 6)
-                        .shadow(color: .black.opacity(0.3), radius: 2)
-                }
+            .focusGuide(focusGuide, tag: "playbackProgress", top: "actionButtons")
+            .onReceive(manager.secondsBox.$value) { newSeconds in
+                guard !containerState.isScrubbing else { return }
+                scrubbedSecondsBox.value = newSeconds
             }
-            .frame(height: 12)
         }
     }
 }
