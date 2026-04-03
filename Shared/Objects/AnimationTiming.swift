@@ -11,6 +11,7 @@ import Foundation
 /// Centralized timing constants for animations and delays throughout the app.
 /// Using named constants makes timing behavior consistent and easy to tune.
 enum AnimationTiming {
+
     // MARK: - Focus Delays
 
     /// Short delay to allow UI to settle before focus changes (0.1s)
@@ -21,13 +22,4 @@ enum AnimationTiming {
     /// Used in: VideoPlayerContainerView focus callbacks
     static let focusUpdateDelay: TimeInterval = 0.35
 
-    // MARK: - Skip Indicator
-
-    /// Delay before skip indicator resets after tap (0.4s)
-    /// Used in: PlaybackControls skip indicator
-    static let skipIndicatorResetDelay: TimeInterval = 0.4
-
-    /// Delay before skip indicator auto-hides after hold-scrubbing (1.0s)
-    /// Used in: VideoPlayerContainerState handleArrowPressEnded
-    static let skipIndicatorAutoHideDelay: TimeInterval = 1.0
 }
