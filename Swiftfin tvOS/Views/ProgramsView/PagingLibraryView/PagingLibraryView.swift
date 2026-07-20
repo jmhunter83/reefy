@@ -281,7 +281,7 @@ struct PagingLibraryView<Element: Poster & Identifiable>: View {
 
     private var contentView: some View {
         VStack(spacing: 0) {
-            if let filterViewModel = viewModel.filterViewModel {
+            if let filterViewModel = viewModel.filterViewModel, case .content = viewState {
                 FilterBar(viewModel: filterViewModel)
                     .padding(.top, 40)
                     .padding(.horizontal, 50)
