@@ -16,7 +16,7 @@ extension VideoPlayer.PlaybackControls {
     ///
     /// Holds no focusable views on purpose. While the overlay is hidden the
     /// container swallows presses to reveal it, so select/play/menu for this
-    /// card are handled there against `containerState.isPresentingUpNext`.
+    /// card are handled there against `viewState.isPresentingUpNext`.
     struct UpNextCard: View {
 
         /// How long before the end of the episode the card appears.
@@ -25,8 +25,8 @@ extension VideoPlayer.PlaybackControls {
         @Default(.accentColor)
         private var accentColor
 
-        @EnvironmentObject
-        private var containerState: VideoPlayerContainerState
+        @Environment(VideoPlayer.ViewState.self)
+        private var viewState
         @EnvironmentObject
         private var manager: MediaPlayerManager
 
@@ -43,17 +43,16 @@ extension VideoPlayer.PlaybackControls {
             manager.userSession?.user.data.configuration?.enableNextEpisodeAutoPlay == true
         }
 
-        // `evaluate` runs on every seconds tick, and `@Published` fires whether
-        // or not the value changed. An unguarded write here republishes
-        // `containerState` several times a second, re-rendering everything that
-        // holds it - including an open Menu, which visibly flickers.
+        // `evaluate` runs on every seconds tick. An unguarded write here can
+        // notify `viewState` observers several times a second, re-rendering
+        // everything that reads it - including an open Menu, which visibly flickers.
         private func show(remaining: Int) {
             if remainingSeconds != remaining {
                 remainingSeconds = remaining
             }
 
-            if !containerState.isPresentingUpNext {
-                containerState.isPresentingUpNext = true
+            if !viewState.isPresentingUpNext {
+                viewState.isPresentingUpNext = true
             }
         }
 
@@ -62,8 +61,8 @@ extension VideoPlayer.PlaybackControls {
                 remainingSeconds = nil
             }
 
-            if containerState.isPresentingUpNext {
-                containerState.isPresentingUpNext = false
+            if viewState.isPresentingUpNext {
+                viewState.isPresentingUpNext = false
             }
         }
 
@@ -150,6 +149,7 @@ extension VideoPlayer.PlaybackControls {
             Group {
                 if let remainingSeconds, let nextEpisode {
                     card(for: nextEpisode, remaining: remainingSeconds)
+                        .padding(.bottom, 30)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .trailing)

@@ -13,16 +13,19 @@ extension MediaSegmentDto {
 
     var startSeconds: Duration? {
         guard let startTicks else { return nil }
+
         return Duration.ticks(startTicks)
     }
 
     var endSeconds: Duration? {
         guard let endTicks else { return nil }
+
         return Duration.ticks(endTicks)
     }
 
     func contains(_ seconds: Duration) -> Bool {
         guard let startSeconds, let endSeconds, endSeconds > startSeconds else { return false }
+
         return seconds >= startSeconds && seconds < endSeconds
     }
 }

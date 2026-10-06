@@ -30,7 +30,8 @@ extension JellyfinClient.Configuration {
     ) -> Self {
 
         let client = "Swiftfin \(UIDevice.platform)"
-        let deviceName = UIDevice.current.name
+        let deviceName = UIDevice.current
+            .name
             .folding(options: .diacriticInsensitive, locale: .current)
             .unicodeScalars
             .filter { CharacterSet.urlQueryAllowed.contains($0) }

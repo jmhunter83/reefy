@@ -15,19 +15,19 @@ extension VideoPlayer.PlaybackControls {
     ///
     /// Holds no focusable views, for the same reason as `UpNextCard`: while
     /// the overlay is hidden the container swallows presses, so select/play/
-    /// menu are handled there against `containerState.activeSkipAction`.
+    /// menu are handled there against `viewState.activeSkipAction`.
     struct SkipPill: View {
 
         @Default(.accentColor)
         private var accentColor
 
-        @EnvironmentObject
-        private var containerState: VideoPlayerContainerState
+        @Environment(VideoPlayer.ViewState.self)
+        private var viewState
         @EnvironmentObject
         private var manager: MediaPlayerManager
 
         private func evaluate(seconds: Duration) {
-            guard !containerState.isSkipDismissed,
+            guard !viewState.isSkipDismissed,
                   !manager.isStopping,
                   manager.item.isLiveStream != true
             else {
@@ -40,17 +40,17 @@ extension VideoPlayer.PlaybackControls {
                 runtime: manager.item.runtime,
                 segments: manager.playbackItem?.mediaSegments ?? [],
                 hasNextItem: manager.queue?.nextItem != nil,
-                isUpNextPresented: containerState.isPresentingUpNext
+                isUpNextPresented: viewState.isPresentingUpNext
             )
 
             set(action: action)
         }
 
         /// Guarded because this runs on every seconds tick, and an unguarded
-        /// write republishes container state several times a second
+        /// write notifies view state observers several times a second
         private func set(action: VideoPlayerSkipAction?) {
-            if containerState.activeSkipAction != action {
-                containerState.activeSkipAction = action
+            if viewState.activeSkipAction != action {
+                viewState.activeSkipAction = action
             }
         }
 
@@ -79,15 +79,16 @@ extension VideoPlayer.PlaybackControls {
             // Collapses to nothing when hidden so the controls below keep
             // their layout
             Group {
-                if let action = containerState.activeSkipAction {
+                if let action = viewState.activeSkipAction {
                     pill(for: action)
+                        .padding(.bottom, 30)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
-            .animation(.easeInOut(duration: 0.3), value: containerState.activeSkipAction)
+            .animation(.easeInOut(duration: 0.3), value: viewState.activeSkipAction)
             .onReceive(manager.secondsBox.$value) { evaluate(seconds: $0) }
             .onReceive(manager.$playbackItem) { _ in
-                containerState.isSkipDismissed = false
+                viewState.isSkipDismissed = false
                 set(action: nil)
             }
             .onDisappear {

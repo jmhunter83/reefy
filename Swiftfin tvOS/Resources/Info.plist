@@ -45,6 +45,10 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Reefy needs local network access to discover and connect to your Jellyfin media server.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>UIAppFonts</key>
 	<array>
 		<string>NotoSansCJK-Regular.ttc</string>

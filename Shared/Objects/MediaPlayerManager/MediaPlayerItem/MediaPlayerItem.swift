@@ -24,6 +24,7 @@ class MediaPlayerItem: ViewModel, MediaPlayerObserver {
     var selectedAudioStreamIndex: Int? = nil {
         didSet {
             guard let selectedAudioStreamIndex, selectedAudioStreamIndex != oldValue else { return }
+
             manager?.setTrack(type: .audio, from: oldValue, to: selectedAudioStreamIndex)
         }
     }
@@ -190,7 +191,6 @@ class MediaPlayerItem: ViewModel, MediaPlayerObserver {
 
     private func recordStickySubtitleLanguage(for index: Int?) {
         guard let index else { return }
-
         guard isRememberingSubtitleSelections else {
             logger.trace("Not recording subtitle \(index): Remember Track Selection is off")
             return
@@ -269,11 +269,15 @@ class MediaPlayerItem: ViewModel, MediaPlayerObserver {
             guard let playerIndex,
                   let proxy = manager?.proxy as? any MediaPlayerAudioTrackConfigurable
             else { return }
+
             proxy.setAudioStream(.init(index: playerIndex))
+
         case .subtitle:
             guard let proxy = manager?.proxy as? any MediaPlayerSubtitleTrackConfigurable else { return }
+
             // Disable subtitles until the requested track is available.
             proxy.setSubtitleStream(.init(index: playerIndex ?? -1))
+
         default:
             return
         }
@@ -293,6 +297,7 @@ class MediaPlayerItem: ViewModel, MediaPlayerObserver {
                   let client = manager?.userSession?.client,
                   let url = subtitle.url(with: client)
             else { return nil }
+
             return (jellyfinIndex, url)
         }
 
