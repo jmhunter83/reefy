@@ -259,8 +259,13 @@ extension VideoPlayer {
         private var wasFocusBackstopActive = false
 
         private class FocusBackstopView: UIView {
+
+            /// Only while the overlay is hidden. It sits right under the timeline,
+            /// so while the overlay is up a down press would land on it.
+            var isFocusable = false
+
             override var canBecomeFocused: Bool {
-                true
+                isFocusable
             }
         }
         #endif
@@ -926,6 +931,8 @@ extension VideoPlayer {
             // When the overlay hides, the focused control goes transparent and
             // focus has to land on the backstop rather than escape the player.
             let isBackstopActive = isFocusBackstopActive
+            focusBackstopView.isFocusable = isBackstopActive
+
             if isBackstopActive != wasFocusBackstopActive {
                 wasFocusBackstopActive = isBackstopActive
 
