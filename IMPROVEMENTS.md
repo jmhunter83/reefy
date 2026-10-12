@@ -54,9 +54,9 @@ never actually read. Preferred language and the server default still apply under
 **Menu doesn't drop you out of the app.** When the player overlay hides, every control goes
 transparent and nothing in the container wants focus. Focus escapes, the Menu press never
 reaches the player's handler, and tvOS treats it as unhandled — suspending the app to the
-Home screen. An invisible focus anchor keeps the press inside the player. When the overlay
-comes back, focus is moved off the anchor and back to the timeline, and the anchor isn't
-mistaken for focus leaving the player, which would otherwise keep the overlay up for good.
+Home screen. An invisible focus anchor keeps the press inside the player. The anchor only
+accepts focus while the overlay is hidden. It sits right under the timeline, so otherwise a down
+press lands on it and the controls look frozen.
 
 **Toolbar edits don't disable autoplay.** Upstream #1888 wires the bar/menu button pickers to
 write `enableNextEpisodeAutoPlay` on the Jellyfin account, so removing the AutoPlay button

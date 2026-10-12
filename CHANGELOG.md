@@ -10,10 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-- **Player overlay stuck after pause or skip.** Coming back from hidden, focus could stay on the
-  invisible anchor that keeps Menu inside the player. The overlay then never hid on its own and
-  pressing down couldn't reach Chapters. Focus now moves back to the timeline, and the anchor no
-  longer counts as focus leaving the player.
+- **Player overlay stuck, and down not reaching Chapters.** The invisible anchor that keeps Menu
+  inside the player could take focus while the controls were up. It sits right under the timeline, so
+  touching the remote and pressing down landed on it: full controls up, nothing selected, and the
+  overlay never hid on its own. It only takes focus now while the overlay is hidden.
 
 ---
 
