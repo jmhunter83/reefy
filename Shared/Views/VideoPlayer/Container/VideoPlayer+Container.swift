@@ -879,6 +879,8 @@ extension VideoPlayer {
         override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
             super.didUpdateFocus(in: context, with: coordinator)
 
+            logger.trace("[focus] \(focusDescription(context.previouslyFocusedView)) -> \(focusDescription(context.nextFocusedView))")
+
             // Complete the handoff synchronously when focus leaves the supplement.
             // A late animation completion must not undo navigation within the player
             // or into another focus environment, such as a menu.
@@ -932,7 +934,58 @@ extension VideoPlayer {
                         setNeedsFocusUpdate()
                         updateFocusIfNeeded()
                     }
+                } else {
+                    logHandoff(after: 0)
+                    logHandoff(after: 0.5)
                 }
+            }
+        }
+
+        /// Names a focused view by where it sits in the player, for the focus trace.
+        private func focusDescription(_ view: UIView?) -> String {
+            guard let view else { return "nil" }
+
+            let name = String(describing: type(of: view))
+            if view === focusBackstopView {
+                return "backstop"
+            }
+            if view.isDescendant(of: playbackControlsView) {
+                return "controls/\(name)"
+            }
+            if view.isDescendant(of: supplementContainerView) {
+                return "supplement/\(name)"
+            }
+            if view.isDescendant(of: overlayActionsView) {
+                return "overlayAction/\(name)"
+            }
+            return "outside/\(name)"
+        }
+
+        private var sliderControl: UIControl? {
+            func find(in view: UIView) -> UIControl? {
+                if let control = view as? UIControl, String(describing: type(of: control)).hasPrefix("UISliderContainer") {
+                    return control
+                }
+                for subview in view.subviews {
+                    if let found = find(in: subview) {
+                        return found
+                    }
+                }
+                return nil
+            }
+            return find(in: playbackControlsView)
+        }
+
+        /// Records whether focus made it from the backstop to the slider after the overlay came back.
+        private func logHandoff(after delay: TimeInterval) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                guard let self else { return }
+
+                let focused = UIFocusSystem.focusSystem(for: view)?.focusedItem as? UIView
+                let slider = sliderControl
+                logger.notice(
+                    "[focus] handoff +\(delay)s focused=\(focusDescription(focused)) presentation=\(String(describing: viewState.presentation)) slider alpha=\(slider?.alpha ?? -1) enabled=\(slider?.isEnabled ?? false) canFocus=\(slider?.canBecomeFocused ?? false)"
+                )
             }
         }
 
