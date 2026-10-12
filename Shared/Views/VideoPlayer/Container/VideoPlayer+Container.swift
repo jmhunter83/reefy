@@ -937,8 +937,28 @@ extension VideoPlayer {
                 } else {
                     logHandoff(after: 0)
                     logHandoff(after: 0.5)
+
+                    // Coming back from hidden, SwiftUI's focus request for the slider
+                    // doesn't always land. Left on the backstop, the overlay never
+                    // auto-hides and down can't reach the supplements. The backstop is
+                    // ours, so we can move focus off it ourselves.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                        guard let self,
+                              !isFocusBackstopActive,
+                              isBackstopFocused,
+                              viewIfLoaded?.window != nil
+                        else { return }
+
+                        logger.notice("[focus] still on backstop after overlay showed, re-resolving")
+                        setNeedsFocusUpdate()
+                        updateFocusIfNeeded()
+                    }
                 }
             }
+        }
+
+        private var isBackstopFocused: Bool {
+            UIFocusSystem.focusSystem(for: view)?.focusedItem === focusBackstopView
         }
 
         /// Names a focused view by where it sits in the player, for the focus trace.
@@ -983,8 +1003,19 @@ extension VideoPlayer {
 
                 let focused = UIFocusSystem.focusSystem(for: view)?.focusedItem as? UIView
                 let slider = sliderControl
+
+                // SwiftUI may fade or disable a wrapper rather than the slider itself
+                var minAlpha: CGFloat = 1
+                var isBlocked = false
+                var ancestor: UIView? = slider
+                while let current = ancestor, current !== view {
+                    minAlpha = min(minAlpha, current.alpha)
+                    isBlocked = isBlocked || current.isHidden || !current.isUserInteractionEnabled
+                    ancestor = current.superview
+                }
+
                 logger.notice(
-                    "[focus] handoff +\(delay)s focused=\(focusDescription(focused)) presentation=\(String(describing: viewState.presentation)) slider alpha=\(slider?.alpha ?? -1) enabled=\(slider?.isEnabled ?? false) canFocus=\(slider?.canBecomeFocused ?? false)"
+                    "[focus] handoff +\(delay)s focused=\(focusDescription(focused)) presentation=\(String(describing: viewState.presentation)) slider alpha=\(slider?.alpha ?? -1) chainAlpha=\(minAlpha) chainBlocked=\(isBlocked) enabled=\(slider?.isEnabled ?? false) canFocus=\(slider?.canBecomeFocused ?? false)"
                 )
             }
         }
