@@ -247,7 +247,13 @@ extension VideoPlayer {
         }
 
         var isFocusOutsidePlayer: Bool {
-            focusCoordinator.focusedIDs.isEmpty && focusCoordinator.lastFocusedIDs.isNotEmpty
+            #if os(tvOS)
+            // The backstop holds no coordinated ID but is still inside the player
+            guard !isFocusOnBackstop else { return false }
+
+            #endif
+
+            return focusCoordinator.focusedIDs.isEmpty && focusCoordinator.lastFocusedIDs.isNotEmpty
         }
 
         var presentationControllerShouldDismiss: Bool {
@@ -351,6 +357,16 @@ extension VideoPlayer {
         /// rest of the item rather than coming back on the next tick.
         @ObservationIgnored
         var isSkipDismissed: Bool = false
+
+        /// Whether the container's focus backstop has focus. Set by the container.
+        @ObservationIgnored
+        var isFocusOnBackstop: Bool = false {
+            didSet {
+                guard isFocusOnBackstop != oldValue else { return }
+
+                refreshAutoDismiss()
+            }
+        }
 
         func commitScrub() {
             guard isScrubbing else { return }

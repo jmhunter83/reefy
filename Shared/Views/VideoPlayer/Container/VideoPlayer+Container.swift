@@ -881,6 +881,8 @@ extension VideoPlayer {
 
             logger.trace("[focus] \(focusDescription(context.previouslyFocusedView)) -> \(focusDescription(context.nextFocusedView))")
 
+            viewState.isFocusOnBackstop = context.nextFocusedView === focusBackstopView
+
             // Complete the handoff synchronously when focus leaves the supplement.
             // A late animation completion must not undo navigation within the player
             // or into another focus environment, such as a menu.
