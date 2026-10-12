@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Player overlay stuck after pause or skip.** Coming back from hidden, focus could stay on the
+  invisible anchor that keeps Menu inside the player. The overlay then never hid on its own and
+  pressing down couldn't reach Chapters. Focus now moves back to the timeline, and the anchor no
+  longer counts as focus leaving the player.
+
+---
+
 ## [2.1.0] - 2026-09-27
 
 **Version**: 2.1.0 (Build 1)
@@ -159,26 +170,6 @@ up seven months of upstream work in one go.
 
 - Removed dual state sync code from `VideoPlayerContainerState` (`didSet` observers that synced booleans to enums)
 - Removed commented-out legacy `NetworkError` implementation
-
----
-
-## [Unreleased]
-
-### Added
-
-(empty - ready for future work)
-
-### Fixed
-
-(empty - ready for future work)
-
-### Changed
-
-(empty - ready for future work)
-
-### Removed
-
-(empty - ready for future work)
 
 ---
 
