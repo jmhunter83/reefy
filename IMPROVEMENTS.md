@@ -114,6 +114,14 @@ apps, so the 2.1.0 upload bounced. `Scripts/StripArm64e.sh` runs as the last tvO
 removes the slice, and re-signs the framework. Upstream hasn't shipped a build with MPV yet, so
 it hasn't hit this; comes off once MPVUI drops arm64e or Swiftfin handles it.
 
+**tvOS alternate icons declared by hand.** Upstream's tvOS icon picker (#2340) lists the
+alternates through `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES`, and the asset catalog
+compiler writes `CFBundleAlternateIcons` in the iOS shape, a dictionary of dictionaries. tvOS
+wants a plain array of names, and App Store Connect rejected the first 2.1.1 upload with
+"Missing Image Asset". Those build settings are off for the tvOS target and the list sits in its
+`Info.plist`. Upstream has only run the picker in Debug; comes off once Xcode writes the tvOS
+shape or Swiftfin fixes it.
+
 ---
 
 ## Not yet carried forward

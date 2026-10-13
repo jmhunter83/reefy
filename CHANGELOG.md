@@ -8,12 +8,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+---
+
+## [2.1.1] - 2026-10-13
+
+**Version**: 2.1.1 (Build 1)
+
+### Added (from upstream)
+
+- **App icon picker on tvOS** (Settings → Customize → App Icon). Upstream's Jellyfin colors, plus
+  the Reefy icon as the default.
+
+### Changed (from upstream)
+
+- **Player state rewrite** (#2326) and the Native player rebuilt on AVPlayer (#2046). VLC is still
+  the default.
+- Settings rows no longer clip on tvOS (#2339).
+
 ### Fixed
 
 - **Player overlay stuck, and down not reaching Chapters.** The invisible anchor that keeps Menu
   inside the player could take focus while the controls were up. It sits right under the timeline, so
   touching the remote and pressing down landed on it: full controls up, nothing selected, and the
   overlay never hid on its own. It only takes focus now while the overlay is hidden.
+- **Upload rejected over the alternate icons.** Xcode writes `CFBundleAlternateIcons` in the iOS
+  shape, a dictionary. tvOS wants a plain array of names, so App Store Connect bounced the build with
+  "Missing Image Asset". The list is declared by hand in the tvOS `Info.plist` now.
 
 ---
 
