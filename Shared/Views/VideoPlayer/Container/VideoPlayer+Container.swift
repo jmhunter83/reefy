@@ -884,6 +884,8 @@ extension VideoPlayer {
         override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
             super.didUpdateFocus(in: context, with: coordinator)
 
+            logger.trace("[focus] \(focusDescription(context.previouslyFocusedView)) -> \(focusDescription(context.nextFocusedView))")
+
             viewState.isFocusOnBackstop = context.nextFocusedView === focusBackstopView
 
             // Complete the handoff synchronously when focus leaves the supplement.
@@ -963,6 +965,26 @@ extension VideoPlayer {
 
         private var isBackstopFocused: Bool {
             UIFocusSystem.focusSystem(for: view)?.focusedItem === focusBackstopView
+        }
+
+        /// Names a focused view by where it sits in the player, for the focus trace.
+        private func focusDescription(_ view: UIView?) -> String {
+            guard let view else { return "nil" }
+
+            let name = String(describing: type(of: view))
+            if view === focusBackstopView {
+                return "backstop"
+            }
+            if view.isDescendant(of: playbackControlsView) {
+                return "controls/\(name)"
+            }
+            if view.isDescendant(of: supplementContainerView) {
+                return "supplement/\(name)"
+            }
+            if view.isDescendant(of: overlayActionsView) {
+                return "overlayAction/\(name)"
+            }
+            return "outside/\(name)"
         }
 
         /// Handle view disappearance since tvOS this can be done in non-standard ways
