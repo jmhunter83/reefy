@@ -8,7 +8,6 @@
 
 import Combine
 import Foundation
-import Logging
 import Observation
 import SwiftUI
 
@@ -314,7 +313,6 @@ extension VideoPlayer {
 
         private let timer: PokeIntervalTimer
         private var interactions: Set<Interaction> = []
-        private let logger = Logger.swiftfin()
         @ObservationIgnored
         private var cancellables: Set<AnyCancellable> = []
         @ObservationIgnored
@@ -608,37 +606,8 @@ extension VideoPlayer {
             if canAutoDismiss {
                 timer.poke(interval: autoDismissInterval)
             } else {
-                logger.trace("[dismiss] blocked: \(autoDismissBlocker)")
                 timer.stop()
             }
-        }
-
-        /// Which `canAutoDismiss` guard is holding the overlay open, for the trace.
-        private var autoDismissBlocker: String {
-            if presentation == .hidden {
-                return "hidden"
-            }
-            if isScrubbing {
-                return "scrubbing"
-            }
-            if isPresentingSupplement {
-                return "supplement"
-            }
-            if interactions.isNotEmpty {
-                return "interactions \(interactions)"
-            }
-            if manager?.playbackRequestStatus == .paused {
-                return "paused"
-            }
-            #if os(tvOS)
-            if isPresentingCloseConfirmation {
-                return "closeConfirmation"
-            }
-            if isFocusOutsidePlayer {
-                return "focusOutsidePlayer focused=\(focusCoordinator.focusedIDs) last=\(focusCoordinator.lastFocusedIDs)"
-            }
-            #endif
-            return "none"
         }
 
         private func transition(to presentation: Presentation) {

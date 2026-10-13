@@ -884,8 +884,6 @@ extension VideoPlayer {
         override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
             super.didUpdateFocus(in: context, with: coordinator)
 
-            logger.trace("[focus] \(focusDescription(context.previouslyFocusedView)) -> \(focusDescription(context.nextFocusedView))")
-
             viewState.isFocusOnBackstop = context.nextFocusedView === focusBackstopView
 
             // Complete the handoff synchronously when focus leaves the supplement.
@@ -944,9 +942,6 @@ extension VideoPlayer {
                         updateFocusIfNeeded()
                     }
                 } else {
-                    logHandoff(after: 0)
-                    logHandoff(after: 0.5)
-
                     // Coming back from hidden, SwiftUI's focus request for the slider
                     // doesn't always land. Left on the backstop, the overlay never
                     // auto-hides and down can't reach the supplements. The backstop is
@@ -968,65 +963,6 @@ extension VideoPlayer {
 
         private var isBackstopFocused: Bool {
             UIFocusSystem.focusSystem(for: view)?.focusedItem === focusBackstopView
-        }
-
-        /// Names a focused view by where it sits in the player, for the focus trace.
-        private func focusDescription(_ view: UIView?) -> String {
-            guard let view else { return "nil" }
-
-            let name = String(describing: type(of: view))
-            if view === focusBackstopView {
-                return "backstop"
-            }
-            if view.isDescendant(of: playbackControlsView) {
-                return "controls/\(name)"
-            }
-            if view.isDescendant(of: supplementContainerView) {
-                return "supplement/\(name)"
-            }
-            if view.isDescendant(of: overlayActionsView) {
-                return "overlayAction/\(name)"
-            }
-            return "outside/\(name)"
-        }
-
-        private var sliderControl: UIControl? {
-            func find(in view: UIView) -> UIControl? {
-                if let control = view as? UIControl, String(describing: type(of: control)).hasPrefix("UISliderContainer") {
-                    return control
-                }
-                for subview in view.subviews {
-                    if let found = find(in: subview) {
-                        return found
-                    }
-                }
-                return nil
-            }
-            return find(in: playbackControlsView)
-        }
-
-        /// Records whether focus made it from the backstop to the slider after the overlay came back.
-        private func logHandoff(after delay: TimeInterval) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-                guard let self else { return }
-
-                let focused = UIFocusSystem.focusSystem(for: view)?.focusedItem as? UIView
-                let slider = sliderControl
-
-                // SwiftUI may fade or disable a wrapper rather than the slider itself
-                var minAlpha: CGFloat = 1
-                var isBlocked = false
-                var ancestor: UIView? = slider
-                while let current = ancestor, current !== view {
-                    minAlpha = min(minAlpha, current.alpha)
-                    isBlocked = isBlocked || current.isHidden || !current.isUserInteractionEnabled
-                    ancestor = current.superview
-                }
-
-                logger.notice(
-                    "[focus] handoff +\(delay)s focused=\(focusDescription(focused)) presentation=\(String(describing: viewState.presentation)) slider alpha=\(slider?.alpha ?? -1) chainAlpha=\(minAlpha) chainBlocked=\(isBlocked) enabled=\(slider?.isEnabled ?? false) canFocus=\(slider?.canBecomeFocused ?? false)"
-                )
-            }
         }
 
         /// Handle view disappearance since tvOS this can be done in non-standard ways
