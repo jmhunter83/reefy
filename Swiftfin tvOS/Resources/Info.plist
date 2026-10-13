@@ -6,6 +6,22 @@
 	<string>Reefy</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
+	<!-- tvOS wants CFBundleAlternateIcons as a plain array of names. The asset catalog
+	     compiler writes the iOS dictionary form, which App Store Connect rejects, so
+	     its alternate icon settings are off for this target and the list lives here. -->
+	<key>CFBundleIcons</key>
+	<dict>
+		<key>CFBundleAlternateIcons</key>
+		<array>
+			<string>AppIcon-dark-jellyfin</string>
+			<string>AppIcon-dark-red</string>
+			<string>AppIcon-dark-orange</string>
+			<string>AppIcon-dark-yellow</string>
+			<string>AppIcon-dark-green</string>
+		</array>
+		<key>CFBundlePrimaryIcon</key>
+		<string>App Icon</string>
+	</dict>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
