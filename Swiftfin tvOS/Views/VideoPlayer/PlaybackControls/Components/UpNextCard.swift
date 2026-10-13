@@ -79,6 +79,9 @@ extension VideoPlayer.PlaybackControls {
             }
 
             let remaining = runtime - seconds
+            if remaining <= .seconds(3) {
+                manager.logger.notice("[autoplay] card remaining=\(remaining) seconds=\(seconds) triggered=\(hasTriggeredNext)")
+            }
 
             guard remaining <= Self.leadTime else {
                 hide()
@@ -91,6 +94,7 @@ extension VideoPlayer.PlaybackControls {
                 guard !hasTriggeredNext else { return }
 
                 hasTriggeredNext = true
+                manager.logger.notice("[autoplay] card triggering playNewItem")
                 hide()
                 manager.playNewItem(provider: nextItem)
                 return

@@ -75,7 +75,12 @@ class EpisodeMediaPlayerQueue: ViewModel, MediaPlayerQueue {
                 self.hasPreviousItem = false
             }
 
-            try await self.getAdjacentEpisodes(for: newItem?.baseItem)
+            do {
+                try await self.getAdjacentEpisodes(for: newItem?.baseItem)
+            } catch {
+                self.manager?.logger.notice("[autoplay] adjacent episodes failed: \(error)")
+                throw error
+            }
         }
         .asAnyCancellable()
     }
@@ -144,6 +149,9 @@ class EpisodeMediaPlayerQueue: ViewModel, MediaPlayerQueue {
         guard !Task.isCancelled else { return }
 
         await MainActor.run {
+            self.manager?
+                .logger
+                .notice("[autoplay] queue for \(item.id ?? "nil"): next=\(nextItem?.id ?? "nil") prev=\(previousItem?.id ?? "nil")")
             self.nextItem = nextProvider
             self.previousItem = previousProvider
             self.hasNextItem = nextProvider != nil

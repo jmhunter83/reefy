@@ -273,6 +273,10 @@ extension VLCMediaPlayerProxy {
                     }
                     .onChange(of: proxy.player.state) { _, state in
                         manager.logger.trace("SwiftVLC state updated: \(state)")
+                        manager.logger
+                            .notice(
+                                "[autoplay] vlc state=\(state) intent=\(proxy.player.isPlaybackRequestedActive) vlcTime=\(proxy.player.currentTime) seconds=\(manager.seconds) runtime=\(String(describing: manager.item.runtime))"
+                            )
 
                         switch state {
                         case .buffering, .opening:
@@ -313,6 +317,10 @@ extension VLCMediaPlayerProxy {
                         proxy.applyPendingStartTimeIfPossible()
                     }
                     .onChange(of: proxy.player.didReachEnd) { _, didReachEnd in
+                        manager.logger
+                            .notice(
+                                "[autoplay] didReachEnd=\(didReachEnd) state=\(proxy.player.state) vlcTime=\(proxy.player.currentTime) seconds=\(manager.seconds) runtime=\(String(describing: playbackItem.baseItem.runtime))"
+                            )
                         guard didReachEnd, manager.playbackItem?.baseItem.isLiveStream == false else { return }
 
                         // libVLC resets its clock on stop. Report the completed

@@ -281,6 +281,11 @@ final class MediaPlayerManager: ViewModel {
 
     @Function(\Action.Cases.ended)
     private func _ended() async throws {
+        logger
+            .notice(
+                "[autoplay] _ended isStopping=\(isStopping) item=\(item.id ?? "nil") playbackItem=\(playbackItem?.baseItem.id ?? "nil") seconds=\(seconds) runtime=\(String(describing: item.runtime)) next=\(queue?.nextItem?.item.id ?? "nil") cancelled=\(isAutoPlayCancelled) autoPlayFlag=\(String(describing: try? authenticatedUser.data.configuration?.enableNextEpisodeAutoPlay))"
+            )
+
         // An in-flight stop wins over autoplay
         guard !isStopping else { return }
 
@@ -303,6 +308,7 @@ final class MediaPlayerManager: ViewModel {
 
             guard isNearEnd else {
                 // If not near end, ignore.
+                logger.notice("[autoplay] _ended ignored: not near end")
                 return
             }
         } else {
@@ -355,6 +361,7 @@ final class MediaPlayerManager: ViewModel {
 
     @Function(\Action.Cases.playNewItem)
     private func _playNewItem(_ provider: MediaPlayerItemProvider) async throws {
+        logger.notice("[autoplay] playNewItem \(provider.item.id ?? "nil") isStopping=\(isStopping)")
         guard !isStopping else { return }
 
         resetPlaybackOffsets()
