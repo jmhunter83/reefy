@@ -25,6 +25,7 @@ A small one, mostly a fix.
 
 - The player controls could get stuck on screen. Touch the remote, press down, and you'd land on nothing: controls up, nothing selected, and they'd never hide on their own. Fixed, and down goes to Chapters again like it should
 - New app icon picker in Settings > Customize > App Icon. Swiftfin's colors, with the Reefy icon still the default
+- AVPlayer now uses the same on-screen controls as VLC instead of Apple's player. That change came from Swiftfin; your player setting didn't get reset
 - More of Swiftfin's player work under the hood, and settings rows don't get clipped anymore
 ```
 
@@ -37,6 +38,7 @@ Mostly a player fix, so that's where I'd look:
 - Start something, let the controls hide, then touch the remote and press down. You should land on Chapters (or whatever's under the timeline), and the controls should hide on their own again after a few seconds
 - Mash Menu during playback. You should never land on the Apple TV home screen
 - Settings > Customize > App Icon. Pick a color, check your home screen, then switch back to the default
+- If you use AVPlayer: it has the same controls as VLC now, not Apple's player. Check that your subtitles and captions still show up
 
 If something breaks, send me your Apple TV model, tvOS version, and Jellyfin server version.
 ```

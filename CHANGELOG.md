@@ -21,8 +21,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed (from upstream)
 
-- **Player state rewrite** (#2326) and the Native player rebuilt on AVPlayer (#2046). VLC is still
-  the default.
+- **Player state rewrite** (#2326) and the Native player rebuilt on AVPlayer (#2046). Picking
+  AVPlayer now gives the same on-screen controls as VLC instead of Apple's player, so Apple's
+  transport bar and caption menu are gone. VLC is still the default.
 - Settings rows no longer clip on tvOS (#2339).
 
 ### Fixed
