@@ -495,6 +495,8 @@ extension AVMediaPlayerProxy {
             }
         }
         item.setTrackIndexes(indexMap)
+        // Reefy: Closed Captions + SDH, see AVMediaPlayerProxy+SystemCaptions
+        await selectSystemCaptionsIfNeeded(for: playerItem, item: item)
 
         player.seek(
             to: CMTime(seconds: startSeconds.seconds, preferredTimescale: 600),
