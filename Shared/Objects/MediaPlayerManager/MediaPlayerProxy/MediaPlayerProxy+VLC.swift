@@ -9,6 +9,7 @@
 import Defaults
 import Foundation
 import JellyfinAPI
+import MediaAccessibilityKit
 import SwiftUI
 import SwiftVLC
 
@@ -21,7 +22,8 @@ class VLCMediaPlayerProxy: VideoMediaPlayerLayoutConfigurable,
     let videoSize: PublishedBox<CGSize> = .init(initialValue: .zero)
     let droppedFrames: PublishedBox<Int> = .init(initialValue: 0)
     let corruptedFrames: PublishedBox<Int> = .init(initialValue: 0)
-    let player = Player()
+    // SPIKE: system caption style
+    let player = Player(instance: VLCCaptionStyle.instance())
 
     private var pendingStartTime: Duration?
 
@@ -139,7 +141,9 @@ class VLCMediaPlayerProxy: VideoMediaPlayerLayoutConfigurable,
     }
 
     func setSubtitleConfiguration(_ configuration: SubtitleConfiguration) {
-        player.setSubtitleScale(.init(approximatePoints: Double(25 - configuration.size)))
+        // SPIKE: scale Reefy's size by the system caption size
+        let systemScale = Double(CaptionStyle.current.text.sizeScale.value)
+        player.setSubtitleScale(.init(approximatePoints: Double(25 - configuration.size) * systemScale))
     }
 
     @ViewBuilder
