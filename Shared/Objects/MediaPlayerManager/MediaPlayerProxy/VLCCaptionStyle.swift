@@ -12,35 +12,42 @@ import Foundation
 import MediaAccessibilityKit
 import SwiftVLC
 
-// SPIKE: caption-style spike, not for release.
-//
-// Maps the system caption style (Settings > Accessibility > Subtitles & Captioning)
-// onto libVLC's text renderer. libVLC 4 only reads `freetype-*` at instance level;
-// the `:freetype-*` media options in `VLCMediaPlayerProxy.play` are ignored
-// (checked against the same libVLC build on macOS), so the style has to go here.
-//
-// Known gaps: no separate window box, no live update while playing (needs a new
-// instance), and CEA-608 keeps its own text color and size.
+/// Draws VLC subtitles in the tvOS caption style (Settings > Accessibility > Subtitles &
+/// Captioning) once the user has customized it. Otherwise VLC keeps its own look.
+///
+/// libVLC 4 only reads `freetype-*` when an instance is created. The `:freetype-*` media
+/// options in `VLCMediaPlayerProxy.play` are ignored, so the style goes on the instance,
+/// and a change shows up the next time the player opens.
+///
+/// libVLC can't match Apple's renderer exactly. It has one box behind the text rather than
+/// a separate window, raised and depressed edges are angled shadows, and CEA-608 captions
+/// keep their own text color and size.
 enum VLCCaptionStyle {
 
     @MainActor
-    private static var instances: [[String]: VLCInstance] = [:]
+    private static var cached: (arguments: [String], instance: VLCInstance)?
 
-    /// One instance per distinct style, since libVLC reads these options once.
     @MainActor
     static func instance(for style: CaptionStyle = .current) -> VLCInstance {
+        guard style.isCustomized else { return .shared }
+
         let arguments = VLCInstance.defaultArguments + arguments(for: style)
 
-        if let instance = instances[arguments] {
-            return instance
+        if let cached, cached.arguments == arguments {
+            return cached.instance
         }
 
         guard let instance = try? VLCInstance(arguments: arguments) else {
             return .shared
         }
 
-        instances[arguments] = instance
+        cached = (arguments, instance)
         return instance
+    }
+
+    /// Multiplier for the app's own subtitle size setting.
+    static func sizeScale(for style: CaptionStyle = .current) -> Double {
+        style.isCustomized ? Double(style.text.sizeScale.value) : 1
     }
 
     static func arguments(for style: CaptionStyle) -> [String] {
@@ -51,8 +58,7 @@ enum VLCCaptionStyle {
         }
         arguments.append("--freetype-opacity=\(byte(style.text.opacity.value))")
 
-        // libVLC draws one box behind the text. tvOS presets mostly use the window
-        // fill, so fall back to it when the text background is clear.
+        // tvOS presets mostly use the window fill, so use it when the text background is clear.
         let usesWindow = style.textBackground.opacity.value == 0 && style.window.opacity.value > 0
         let boxColor = usesWindow ? style.window.color.value : style.textBackground.color.value
         let boxOpacity = usesWindow ? style.window.opacity.value : style.textBackground.opacity.value
@@ -67,11 +73,11 @@ enum VLCCaptionStyle {
             arguments.append("--no-cc-opaque")
         }
 
-        // Private system names like .AppleSystemUIFont make libVLC fall back to a
-        // serif, so keep libVLC's default font for those.
+        // Private system names like .AppleSystemUIFont make libVLC fall back to a serif,
+        // so those keep libVLC's default font.
         if let family = family(of: style.text.fonts.default.value), !family.hasPrefix(".") {
             arguments.append("--freetype-font=\(family)")
-            // CEA-608 renders with the monospace font slot.
+            // CEA-608 renders with the monospace font.
             arguments.append("--freetype-monofont=\(family)")
         }
 
