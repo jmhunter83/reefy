@@ -67,6 +67,23 @@ The settings toggle is now the only thing that writes that flag.
 name, and year, dropping whichever parts are missing. Movies pick up a year where they had no
 subtitle at all.
 
+**VLC subtitles in the tvOS caption style.** Once the style in Settings → Accessibility →
+Subtitles & Captioning is customized, VLC draws subtitles with its font, colors, background,
+edges, and size. On Default, VLC keeps its own look. Upstream's MPV player gets the style by
+drawing the text itself. VLC can't do that, because libVLC 4 has no way to hand out cue text.
+So the style goes onto libVLC's own renderer instead (`VLCCaptionStyle`). That only works on
+the libVLC instance: the `:freetype-*` media options upstream sets for its font and color
+settings are ignored, which is an upstream bug worth a PR. A style change applies the next
+time the player opens. It's close to Apple's look, not identical: one box behind the text
+instead of a separate window, raised and depressed edges drawn as shadows, and libVLC's own
+font when the style uses the system font. CEA-608 captions keep their own text color and size.
+
+**AVPlayer turns captions on for Closed Captions + SDH.** Upstream switches off AVPlayer's
+automatic media selection, so the accessibility setting did nothing, and broadcast CEA-608 on
+Live TV (which isn't a Jellyfin stream) couldn't be reached from the subtitle menu at all.
+With the setting on and no subtitle picked, Reefy selects the captions itself
+(`AVMediaPlayerProxy+SystemCaptions`). `AVPlayerLayer` draws them itself, not Swiftfin's overlay.
+
 ---
 
 ## Home

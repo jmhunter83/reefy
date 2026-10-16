@@ -10,6 +10,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.2.0] - 2026-10-16
+
+**Version**: 2.2.0 (Build 1)
+
+### Added
+
+- **VLC subtitles in the tvOS caption style.** When the style in Settings → Accessibility →
+  Subtitles & Captioning is customized, VLC uses its font, colors, background, edges, and size.
+  On Default, VLC looks the same as before. libVLC only reads text styling when it starts, so a
+  style change shows up the next time the player opens. Close to Apple's look but not exact: one
+  box behind the text instead of a separate window, raised and depressed edges drawn as shadows,
+  and VLC's own font when the style uses the system font. CEA-608 captions keep their own text
+  color and size.
+- **AVPlayer honors Closed Captions + SDH.** With it on and no subtitle picked, AVPlayer selects
+  captions itself. That includes broadcast captions on Live TV, which never show up in the
+  subtitle menu.
+
+### Known
+
+- The subtitle font and color settings under Settings → Video Player still don't change VLC.
+  libVLC 4 ignores the per-media options they set. Size works. Same in upstream.
+
+---
+
 ## [2.1.1] - 2026-10-13
 
 **Version**: 2.1.1 (Build 1)
