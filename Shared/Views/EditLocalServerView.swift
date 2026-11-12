@@ -6,9 +6,13 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import FactoryKit
 import SwiftUI
 
 struct EditLocalServerView: View {
+
+    @Injected(\.userSessionManager)
+    private var userSessionManager: UserSessionManager
 
     @Router
     private var router
@@ -83,8 +87,16 @@ struct EditLocalServerView: View {
         .navigationTitle(L10n.server)
         .alert(L10n.deleteServer, isPresented: $isPresentingConfirmDeletion) {
             Button(L10n.delete, role: .destructive) {
-                viewModel.delete()
-                router.dismiss()
+                Task { @MainActor in
+                    // Sign out first when deleting the server the current
+                    // session is on, so nothing reads its data mid-delete.
+                    if userSessionManager.currentSession?.server.id == viewModel.server.id {
+                        await userSessionManager.signOut(reason: .explicit)
+                    }
+
+                    viewModel.delete()
+                    router.dismiss()
+                }
             }
         } message: {
             Text(L10n.confirmDeleteServerAndUsers(viewModel.server.name))
