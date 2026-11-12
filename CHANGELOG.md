@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Switching to a new server no longer dead-ends.** Adding a connection whose URL points to a
+  different Jellyfin server now says so and tells you to use Switch user, then Add server. Settings →
+  Server now has Delete, which signs you out first when it is the server you're on. A connection's
+  Delete button explains why it's unavailable when it's the only or active connection.
+
 ---
 
 ## [2.2.0] - 2026-10-16

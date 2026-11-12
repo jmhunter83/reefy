@@ -57,6 +57,12 @@ struct EditServerConnectionView: View {
         }
     }
 
+    /// The only connection, or the active one, can't be deleted.
+    /// Say why, so the user knows to delete the server instead.
+    private var isDeleteDisabled: Bool {
+        viewModel.connections.count <= 1 || isCurrentConnection
+    }
+
     private var isCurrentConnection: Bool {
         viewModel.activeConnection?.id == initialConnection.id
     }
@@ -272,11 +278,17 @@ struct EditServerConnectionView: View {
             }
 
             if isExistingConnection {
-                Button(L10n.delete, role: .destructive) {
-                    viewModel.deleteConnection(connection)
-                    router.dismiss()
+                Section {
+                    Button(L10n.delete, role: .destructive) {
+                        viewModel.deleteConnection(connection)
+                        router.dismiss()
+                    }
+                    .disabled(isDeleteDisabled)
+                } footer: {
+                    if isDeleteDisabled {
+                        Text(L10n.deleteActiveConnectionFooter)
+                    }
                 }
-                .disabled(viewModel.connections.count <= 1 || isCurrentConnection)
             }
         }
         .navigationTitle(L10n.connection)

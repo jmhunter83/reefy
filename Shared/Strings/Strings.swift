@@ -384,8 +384,8 @@ internal enum L10n {
   internal static let connectionFailed = L10n.tr("Localizable", "connectionFailed", fallback: "Connection Failed")
   /// Connections
   internal static let connections = L10n.tr("Localizable", "connections", fallback: "Connections")
-  /// This connection does not point to the current server.
-  internal static let connectionServerMismatch = L10n.tr("Localizable", "connectionServerMismatch", fallback: "This connection does not point to the current server.")
+  /// This URL points to a different server. To switch servers, choose Switch user, then Add server.
+  internal static let connectionServerMismatch = L10n.tr("Localizable", "connectionServerMismatch", fallback: "This URL points to a different server. To switch servers, choose Switch user, then Add server.")
   /// Connect to a Jellyfin server to get started
   internal static let connectToJellyfinServerStart = L10n.tr("Localizable", "connectToJellyfinServerStart", fallback: "Connect to a Jellyfin server to get started")
   /// Connect to server
@@ -508,6 +508,8 @@ internal enum L10n {
   internal static let defaultFailedLoginDescription = L10n.tr("Localizable", "defaultFailedLoginDescription", fallback: "Admins are locked out after 5 failed attempts. Non-admins are locked out after 3 attempts.")
   /// Delete
   internal static let delete = L10n.tr("Localizable", "delete", fallback: "Delete")
+  /// You can't delete the active connection. Use another connection first, or delete the whole server from the Server screen.
+  internal static let deleteActiveConnectionFooter = L10n.tr("Localizable", "deleteActiveConnectionFooter", fallback: "You can't delete the active connection. Use another connection first, or delete the whole server from the Server screen.")
   /// Failed to delete device
   internal static let deleteDeviceFailed = L10n.tr("Localizable", "deleteDeviceFailed", fallback: "Failed to delete device")
   /// Cannot delete a session from the same device (%1$@).
